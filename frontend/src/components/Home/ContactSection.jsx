@@ -1,91 +1,92 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Send } from 'lucide-react';
+import { ArrowRight, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { livePrograms } from '../../data/livePrograms';
 
 const ContactSection = () => {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  };
+  const featuredPrograms = livePrograms.slice(0, 4);
 
   return (
-    <section id="contact" className="py-24 bg-stone-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
+    <section id="contact" className="relative overflow-hidden py-24 md:py-32">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=2070&auto=format&fit=crop')" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#030b26]/95 via-[#0f1538]/90 to-[#590e18]/85" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          transition={{ duration: 0.6 }}
+          className="rounded-[36px] border border-white/10 bg-white/8 p-6 shadow-[0_28px_80px_-28px_rgba(15,23,42,0.8)] backdrop-blur-md sm:p-8 lg:p-10"
         >
-          <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Get In Touch</h2>
-          <div className="w-16 h-1 bg-amber-500 mx-auto mb-6"></div>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">Have questions? Reach out to us or visit our campus.</p>
-        </motion.div>
-        
-        <div className="flex flex-col lg:flex-row gap-12 bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100">
-          
-          <div className="w-full lg:w-1/2 p-8 md:p-12">
-            <h3 className="text-2xl font-serif font-bold text-slate-900 mb-6">Send a Message</h3>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                <input type="text" className="w-full rounded-lg border border-stone-300 px-4 py-3 outline-none transition focus:border-transparent focus:ring-2 focus:ring-amber-500" placeholder="John Doe" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input type="tel" className="w-full rounded-lg border border-stone-300 px-4 py-3 outline-none transition focus:border-transparent focus:ring-2 focus:ring-amber-500" placeholder="+91 98765 43210" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                <textarea rows="4" className="w-full rounded-lg border border-stone-300 px-4 py-3 outline-none transition focus:border-transparent focus:ring-2 focus:ring-amber-500" placeholder="How can we help you?"></textarea>
-              </div>
-              <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 py-4 font-bold text-zinc-950 transition duration-300 hover:brightness-105">
-                Send Message <Send className="w-5 h-5" />
-              </button>
-              <p className="text-sm text-gray-500">Quick response hours: Monday to Saturday, 8:00 AM to 8:00 PM.</p>
-            </form>
-          </div>
-          
-          <div className="w-full lg:w-1/2 bg-zinc-950 text-white p-8 md:p-12 relative flex flex-col justify-center">
-            {/* Map Placeholder or direct embed */}
-            <h3 className="text-2xl font-serif font-bold mb-8">Contact Information</h3>
-            
-            <div className="space-y-8 mb-12 relative z-10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
-                  <MapPin className="w-6 h-6 text-amber-300" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Location</h4>
-                  <p className="text-gray-400 mt-1">123 Education Hub, Knowledge Park<br/>New Delhi, India 110001</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
-                  <Phone className="w-6 h-6 text-amber-300" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Call Us</h4>
-                  <p className="text-gray-400 mt-1">+91 98765 43210</p>
-                </div>
-              </div>
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Live Courses</p>
+              <h2 className="mt-4 text-[32px] font-extrabold leading-tight tracking-tight text-white md:text-[44px] lg:text-[52px]">
+                Programs students are joining right now
+              </h2>
+              <p className="mt-5 max-w-2xl text-[16px] font-medium leading-relaxed text-slate-200 md:text-[18px]">
+                From Junior Division academics to Olympiads, CUET, CLAT, IPMAT, Bank, SSC, and CA Foundation,
+                Maths Point supports both school learning and competitive goals through a card-based, easy-to-browse format.
+              </p>
 
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
-                  <Mail className="w-6 h-6 text-amber-300" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Email Us</h4>
-                  <p className="text-gray-400 mt-1">info@academicplus.com</p>
-                </div>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#9f1239] px-8 py-3.5 font-bold text-white transition-all hover:bg-[#880d30]"
+                >
+                  Enquire For Admission <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <a
+                  href="tel:+919413669776"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/8 px-8 py-3.5 font-bold text-white transition-all hover:bg-white/12"
+                >
+                  <Phone className="w-4 h-4 text-slate-200" /> Call Us Now
+                </a>
               </div>
             </div>
 
-            {/* Faux generic map background for visual styling */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop')", backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {featuredPrograms.map((program, index) => {
+                const Icon = program.icon;
+                return (
+                  <motion.article
+                    key={program.id}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.06 }}
+                    className="rounded-[28px] border border-white/12 bg-white/10 p-5 text-white shadow-lg backdrop-blur-sm"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/14 text-sky-100">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-200/85">
+                      {program.category}
+                    </p>
+                    <h3 className="mt-2 text-lg font-bold leading-snug">{program.title}</h3>
+                    <p className="mt-2 text-sm font-medium text-slate-200">{program.audience}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {program.highlights.slice(0, 3).map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold text-slate-100"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.article>
+                );
+              })}
+            </div>
           </div>
-          
-        </div>
+        </motion.div>
       </div>
     </section>
   );

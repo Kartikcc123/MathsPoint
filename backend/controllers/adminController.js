@@ -5,6 +5,7 @@ const Fee = require('../models/Fee');
 const Attendance = require('../models/Attendance');
 const Notification = require('../models/Notification');
 const Result = require('../models/Result');
+const Inquiry = require('../models/Inquiry');
 
 const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ').toLowerCase();
 const normalizePhone = (value = '') => value.replace(/\D/g, '');
@@ -67,6 +68,41 @@ const getStudents = async (req, res) => {
   try {
     const students = await User.find({ role: 'student' }).populate('course');
     res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all inquiries
+// @route   GET /api/admin/inquiries
+// @access  Private/Admin
+const getInquiries = async (_req, res) => {
+  try {
+    const inquiries = await Inquiry.find({}).sort({ createdAt: -1 });
+    res.json(inquiries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update inquiry status
+// @route   PATCH /api/admin/inquiry/:id
+// @access  Private/Admin
+const updateInquiryStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const inquiry = await Inquiry.findById(id);
+
+    if (!inquiry) {
+      return res.status(404).json({ message: 'Inquiry not found.' });
+    }
+
+    inquiry.status = status === 'Reviewed' ? 'Reviewed' : 'New';
+    await inquiry.save();
+
+    res.json(inquiry);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -698,4 +734,4 @@ const publishResults = async (req, res) => {
   }
 };
 
-module.exports = { getStudents, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };
+module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };

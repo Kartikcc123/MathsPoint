@@ -44,7 +44,7 @@ const Results = () => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="flex items-center gap-4 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-sm">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600">
             <Trophy className="h-7 w-7" />
           </div>
           <div>
@@ -53,7 +53,7 @@ const Results = () => {
           </div>
         </div>
         <div className="flex items-center gap-4 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-sm">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
             <TrendingUp className="h-7 w-7" />
           </div>
           <div>
@@ -118,7 +118,7 @@ const Results = () => {
                   <td className="px-6 py-4 text-slate-600">{new Date(result.date).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-right">
                     {result.reportCardUrl ? (
-                      <a href={result.reportCardUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:text-blue-800">
+                      <a href={result.reportCardUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-sky-50 p-2 text-sky-600 transition hover:text-sky-800">
                         <ExternalLink className="h-4 w-4" />
                       </a>
                     ) : (

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { getStudents, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
+const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -20,6 +20,9 @@ const upload = multer({ storage });
 router.route('/students')
   .get(protect, admin, getStudents);
 
+router.route('/inquiries')
+  .get(protect, admin, getInquiries);
+
 router.route('/dashboard-summary')
   .get(protect, admin, getDashboardSummary);
 
@@ -28,6 +31,9 @@ router.route('/student')
 
 router.route('/student/:id')
   .delete(protect, admin, deleteStudent);
+
+router.route('/inquiry/:id')
+  .patch(protect, admin, updateInquiryStatus);
 
 router.route('/student/:id/course')
   .patch(protect, admin, assignStudentCourse);

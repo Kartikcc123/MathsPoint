@@ -123,7 +123,7 @@ const AdminResults = () => {
               </table>
             </div>
             <div className="mt-3 flex gap-3">
-              <button onClick={handleCreateDrafts} disabled={uploading} className="rounded-2xl bg-blue-600 px-4 py-2 text-white">Create Drafts</button>
+              <button onClick={handleCreateDrafts} disabled={uploading} className="rounded-2xl bg-sky-600 px-4 py-2 text-white">Create Drafts</button>
               <button onClick={() => { setPreviewRows([]); setMessage('Preview cleared'); }} className="rounded-2xl border px-4 py-2">Cancel</button>
               {createdIds.length > 0 && (
                 <button onClick={handlePublish} disabled={uploading} className="ml-auto rounded-2xl bg-emerald-600 px-4 py-2 text-white">Publish Created</button>

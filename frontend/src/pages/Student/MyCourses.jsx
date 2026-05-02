@@ -28,17 +28,17 @@ const MyCourses = () => {
       {course ? (
         <div className="rounded-[28px] border border-slate-200/80 bg-white p-8 shadow-sm">
           <div className="flex flex-col gap-8 md:flex-row">
-            <Link to="/student/courses/active" className="group flex aspect-video w-full items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-500 text-white md:w-1/3">
+            <Link to="/student/courses/active" className="group flex aspect-video w-full items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-900 via-sky-900 to-cyan-500 text-white md:w-1/3">
               <div className="px-6 text-center">
-                <p className="text-xs uppercase tracking-[0.3em] text-blue-100/80">{course.duration || 'Open batch'}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-100/80">{course.duration || 'Open batch'}</p>
                 <h2 className="mt-3 text-2xl font-bold">{course.title}</h2>
               </div>
             </Link>
             <div className="flex w-full flex-col justify-center md:w-2/3">
-              <div className="mb-2 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-blue-600">
+              <div className="mb-2 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-sky-600">
                 Assigned Course
               </div>
-              <Link to="/student/courses/active" className="inline-block transition hover:text-blue-600">
+              <Link to="/student/courses/active" className="inline-block transition hover:text-sky-600">
                 <h2 className="mb-4 text-3xl font-bold text-slate-800">{course.title}</h2>
               </Link>
               <p className="mb-6 text-slate-600">{course.description}</p>
@@ -54,7 +54,7 @@ const MyCourses = () => {
 
               <div className="flex flex-wrap gap-2">
                 {(course.subjects || []).map((subject) => (
-                  <span key={subject} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{subject}</span>
+                  <span key={subject} className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{subject}</span>
                 ))}
               </div>
             </div>
@@ -76,11 +76,11 @@ const MyCourses = () => {
                   <FileText className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="truncate text-sm font-semibold text-slate-800 transition hover:text-blue-600">{material.title}</h4>
+                  <h4 className="truncate text-sm font-semibold text-slate-800 transition hover:text-sky-600">{material.title}</h4>
                   <span className="text-xs text-slate-400">{material.type} • {material.moduleName || 'General'}</span>
                 </div>
                 <span className="rounded-full p-2 transition hover:bg-slate-50">
-                  <ExternalLink className="h-4 w-4 text-slate-300 transition hover:text-blue-500" />
+                  <ExternalLink className="h-4 w-4 text-slate-300 transition hover:text-sky-500" />
                 </span>
               </a>
             ))}

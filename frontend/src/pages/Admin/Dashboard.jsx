@@ -36,28 +36,28 @@ const AdminDashboard = () => {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
-      <section className="overflow-hidden rounded-[32px] border border-white/60 bg-[linear-gradient(135deg,#020617_0%,#1e3a8a_46%,#0ea5e9_100%)] p-8 text-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)]">
+      <section className="overflow-hidden rounded-[32px] border border-white/60 bg-[linear-gradient(135deg,#020617_0%,#1e3a8a_46%,#3b82f6_100%)] p-8 text-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-blue-50">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-sky-50">
               <Sparkles className="h-4 w-4" /> Admin Overview
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Overview Dashboard</h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-blue-50/85 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-sky-50/85 sm:text-base">
               Keep pharmacy admissions, academic delivery, attendance, and reporting in sync with one clear operations view.
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/12 bg-white/10 px-5 py-4 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.25em] text-blue-100/75">Student Access</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-sky-100/75">Student Access</p>
               <p className="mt-2 text-lg font-semibold">{totals.studentsWithAccess || 0} students can open the panel</p>
-              <p className="text-sm text-blue-100/80">{totals.students || 0} total student records on the website</p>
+              <p className="text-sm text-sky-100/80">{totals.students || 0} total student records on the website</p>
             </div>
             <div className="rounded-2xl border border-white/12 bg-white/10 px-5 py-4 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.25em] text-blue-100/75">Priority Queue</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-sky-100/75">Priority Queue</p>
               <p className="mt-2 text-lg font-semibold">{totals.unpublishedResults || 0} results awaiting publish</p>
-              <p className="text-sm text-blue-100/80">{totals.pendingPayments || 0} payment records need follow-up</p>
+              <p className="text-sm text-sky-100/80">{totals.pendingPayments || 0} payment records need follow-up</p>
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         <motion.div whileHover={{ scale: 1.02, y: -4 }} className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
+            <div className="rounded-2xl bg-sky-50 p-3 text-sky-600">
               <Users className="h-6 w-6" />
             </div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">Total Students</p>
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
 
         <motion.div whileHover={{ scale: 1.02, y: -4 }} className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-2xl bg-purple-50 p-3 text-purple-600">
+            <div className="rounded-2xl bg-cyan-50 p-3 text-cyan-600">
               <BookOpen className="h-6 w-6" />
             </div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">Active Courses</p>
@@ -146,7 +146,7 @@ const AdminDashboard = () => {
         <div className="flex flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 p-6">
             <h2 className="text-lg font-bold text-slate-800">Recent Enrollments</h2>
-            <span className="text-sm font-semibold text-blue-600">{recentStudents.length} recent records</span>
+            <span className="text-sm font-semibold text-sky-600">{recentStudents.length} recent records</span>
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full whitespace-nowrap text-left text-sm">
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className={`rounded-lg px-2.5 py-1 text-xs font-bold tracking-wide ${student.studentPanelAllowed || student.courseTitle ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-700'}`}>
+                      <span className={`rounded-lg px-2.5 py-1 text-xs font-bold tracking-wide ${student.studentPanelAllowed || student.courseTitle ? 'bg-green-50 text-green-600' : 'bg-sky-50 text-sky-700'}`}>
                         {student.studentPanelAllowed || student.courseTitle ? 'Active' : 'Pending Access'}
                       </span>
                     </td>

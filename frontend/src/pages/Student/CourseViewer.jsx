@@ -42,7 +42,7 @@ const CourseViewer = () => {
     <div className="relative flex h-full bg-white">
       <div className="flex h-full flex-1 flex-col overflow-y-auto">
         <div className="flex h-16 items-center border-b border-slate-100 px-6 shrink-0">
-          <Link to="/student/courses" className="flex items-center gap-2 font-medium text-slate-500 transition hover:text-blue-600">
+          <Link to="/student/courses" className="flex items-center gap-2 font-medium text-slate-500 transition hover:text-sky-600">
             <ChevronLeft className="h-5 w-5" /> Back to My Courses
           </Link>
         </div>
@@ -57,13 +57,13 @@ const CourseViewer = () => {
         <div className="flex border-b border-slate-200 px-8 shrink-0">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-6 py-4 font-semibold transition ${activeTab === 'overview' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-6 py-4 font-semibold transition ${activeTab === 'overview' ? 'border-b-2 border-sky-600 text-sky-600' : 'text-slate-500 hover:text-slate-800'}`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('resources')}
-            className={`px-6 py-4 font-semibold transition ${activeTab === 'resources' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-6 py-4 font-semibold transition ${activeTab === 'resources' ? 'border-b-2 border-sky-600 text-sky-600' : 'text-slate-500 hover:text-slate-800'}`}
           >
             Resources & Materials
           </button>
@@ -77,7 +77,7 @@ const CourseViewer = () => {
               {course?.subjects?.length ? (
                 <div className="mt-6 flex flex-wrap gap-2">
                   {course.subjects.map((subject) => (
-                    <span key={subject} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{subject}</span>
+                    <span key={subject} className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{subject}</span>
                   ))}
                 </div>
               ) : null}
@@ -99,7 +99,7 @@ const CourseViewer = () => {
                         <p className="text-xs text-slate-500">{material.type} • {material.moduleName || 'General material'}</p>
                       </div>
                     </div>
-                    <a href={material.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-200 p-2 text-blue-600 transition hover:bg-blue-50">
+                    <a href={material.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-200 p-2 text-sky-600 transition hover:bg-sky-50">
                       <ExternalLink className="h-5 w-5" />
                     </a>
                   </div>
@@ -124,12 +124,12 @@ const CourseViewer = () => {
 
         <div className="space-y-2 p-4">
           {modules.length ? modules.map((mod, index) => (
-            <div key={index} className={`flex gap-4 rounded-xl border p-4 transition ${mod.active ? 'border-blue-200 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white'}`}>
+            <div key={index} className={`flex gap-4 rounded-xl border p-4 transition ${mod.active ? 'border-sky-200 bg-sky-50 shadow-sm' : 'border-slate-200 bg-white'}`}>
               <div className="mt-0.5 shrink-0">
-                {mod.complete ? <CheckCircle className="h-5 w-5 text-green-500" /> : <div className={`h-5 w-5 rounded-full border-2 ${mod.active ? 'border-blue-500' : 'border-slate-300'}`}></div>}
+                {mod.complete ? <CheckCircle className="h-5 w-5 text-green-500" /> : <div className={`h-5 w-5 rounded-full border-2 ${mod.active ? 'border-sky-500' : 'border-slate-300'}`}></div>}
               </div>
               <div>
-                <p className={`text-sm font-semibold ${mod.active ? 'text-blue-700' : 'text-slate-700'}`}>{mod.title}</p>
+                <p className={`text-sm font-semibold ${mod.active ? 'text-sky-700' : 'text-slate-700'}`}>{mod.title}</p>
                 <p className="mt-1 flex items-center gap-2 text-xs text-slate-400">
                   <PlayCircle className="h-3 w-3" /> {mod.duration}
                 </p>

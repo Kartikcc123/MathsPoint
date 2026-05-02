@@ -4,7 +4,7 @@ import api from '../../services/api';
 
 const statusClasses = {
   Paid: 'border border-green-100 bg-green-50 text-green-700',
-  Partial: 'border border-amber-100 bg-amber-50 text-amber-700',
+  Partial: 'border border-amber-100 bg-sky-50 text-sky-700',
   Unpaid: 'border border-red-100 bg-red-50 text-red-700',
 };
 
@@ -101,7 +101,7 @@ const AdminPayments = () => {
         <div className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Pending follow-up</p>
           <p className="mt-3 flex items-center gap-2 text-3xl font-bold text-slate-800">
-            <Wallet className="h-6 w-6 text-amber-500" /> {pendingCount}
+            <Wallet className="h-6 w-6 text-sky-500" /> {pendingCount}
           </p>
           <p className="mt-2 text-sm text-slate-500">Unpaid and partial payment records</p>
         </div>
@@ -144,7 +144,7 @@ const AdminPayments = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     {payment.receiptUrl ? (
-                      <a href={payment.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:text-blue-800">
+                      <a href={payment.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-sky-50 p-2 text-sky-600 transition hover:text-sky-800">
                         <FileText className="h-4 w-4" />
                       </a>
                     ) : (

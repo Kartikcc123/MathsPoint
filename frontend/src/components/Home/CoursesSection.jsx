@@ -1,109 +1,141 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Clock, IndianRupee } from 'lucide-react';
+import { ArrowRight, Calculator, GraduationCap, LineChart, Target, Building, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
-import api from '../../services/api';
 
-const fallbackImages = [
-  'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1596496050827-8299e0220de1?q=80&w=2070&auto=format&fit=crop',
+const examCategories = [
+  {
+    title: "Class 9th",
+    tags: ["CBSE", "ICSE", "State Boards"],
+    path: "/courses?category=class-9",
+    colorClass: "bg-red-50",
+    icon: <Calculator className="w-12 h-12 text-red-400 drop-shadow-sm" />
+  },
+  {
+    title: "Class 10th",
+    tags: ["CBSE", "ICSE", "State Boards"],
+    path: "/courses?category=class-10",
+    colorClass: "bg-amber-50",
+    icon: <BookOpen className="w-12 h-12 text-amber-500 drop-shadow-sm" />
+  },
+  {
+    title: "Class 11th",
+    tags: ["Core Maths", "Applied Maths"],
+    path: "/courses?category=class-11",
+    colorClass: "bg-sky-50",
+    icon: <LineChart className="w-12 h-12 text-sky-500 drop-shadow-sm" />
+  },
+  {
+    title: "Class 12th",
+    tags: ["Core Maths", "Applied Maths", "Boards"],
+    path: "/courses?category=class-12",
+    colorClass: "bg-indigo-50",
+    icon: <GraduationCap className="w-12 h-12 text-indigo-500 drop-shadow-sm" />
+  },
+  {
+    title: "IIT JEE",
+    tags: ["class 11", "class 12", "Dropper"],
+    path: "/courses?category=jee",
+    colorClass: "bg-orange-50",
+    icon: <Target className="w-12 h-12 text-orange-500 drop-shadow-sm" />
+  },
+  {
+    title: "School Boards",
+    tags: ["CBSE", "UP Board", "MP Board", "Bihar Board"],
+    path: "/courses?category=boards",
+    colorClass: "bg-purple-50",
+    icon: <Building className="w-12 h-12 text-purple-500 drop-shadow-sm" />
+  }
 ];
 
 const CoursesSection = () => {
-  const [courses, setCourses] = useState([]);
-
-  useEffect(() => {
-    const loadCourses = async () => {
-      try {
-        const res = await api.get('/public/courses');
-        setCourses(res.data || []);
-      } catch (error) {
-        console.error('Failed to load public courses', error);
-      }
-    };
-
-    loadCourses();
-  }, []);
-
   return (
-    <section id="courses" className="bg-stone-50 py-24">
+    <section id="courses" className="bg-white py-16 md:py-24 border-b border-gray-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
+        {/* Header exact match to screenshot style */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mx-auto mb-16 max-w-3xl text-center"
+          className="mx-auto mb-12 flex flex-col items-center text-center"
         >
-          <h2 className="mb-4 font-serif text-4xl font-bold text-slate-900">Our Core Programs</h2>
-          <div className="mx-auto mb-6 h-1 w-16 bg-amber-500"></div>
-          <p className="text-lg text-gray-600">These courses are loaded directly from the admin panel and updated live on the website.</p>
+          <h2 className="text-[32px] md:text-[40px] font-bold text-slate-900 tracking-tight mb-3">
+            Exam Categories
+          </h2>
+          <p className="text-[15px] md:text-base text-slate-600 max-w-2xl font-medium">
+            Maths Point is preparing students for multiple academic benchmarks. Scroll down to find the one you are preparing for
+          </p>
         </motion.div>
 
-        {courses.length ? (
-          <>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-              {courses.slice(0, 3).map((course, idx) => (
-                <motion.div
-                  key={course._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  className="group flex flex-col overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-amber-950/10"
-                >
-                  <div className="h-56 overflow-hidden">
-                    <img
-                      src={fallbackImages[idx % fallbackImages.length]}
-                      alt={course.title}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="flex flex-grow flex-col p-8">
-                    <h3 className="mb-3 font-serif text-2xl font-bold text-slate-900">{course.title}</h3>
-                    <p className="mb-6 line-clamp-3 flex-grow text-gray-600">{course.description}</p>
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {examCategories.map((category, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              className="relative bg-white rounded-xl border border-gray-200 p-6 md:p-8 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md transition-shadow group h-[240px] cursor-pointer"
+            >
+              
+              {/* Soft right corner curve background */}
+              <div 
+                className={`absolute top-0 right-0 bottom-0 w-[45%] rounded-l-[100px] ${category.colorClass} opacity-80 translate-x-4 md:translate-x-6 transition-transform group-hover:scale-105`}
+              ></div>
+              
+              {/* Floating icon on the right */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                {category.icon}
+              </div>
 
-                    <div className="mb-6 space-y-3 text-sm text-slate-600">
-                      <div className="flex items-center gap-3">
-                        <BookOpen className="h-4 w-4 text-amber-600" />
-                        <span>{(course.subjects || []).slice(0, 3).join(', ') || 'Subjects will be updated by admin'}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Clock className="h-4 w-4 text-amber-600" />
-                        <span>{course.duration || 'Flexible duration'}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <IndianRupee className="h-4 w-4 text-amber-700" />
-                        <span>Rs {course.feeAmount}</span>
-                      </div>
-                    </div>
-
-                    <Link
-                      to={`/courses?course=${course._id}`}
-                      className="mt-auto inline-flex w-max items-center gap-1 rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 hover:text-amber-900"
+              {/* Card Content (Left Aligned) */}
+              <div className="relative z-10 -mt-1 max-w-[65%]">
+                <h3 className="text-xl md:text-[22px] font-bold text-slate-900 mb-5">{category.title}</h3>
+                
+                {/* Pill Tags */}
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {category.tags.map(tag => (
+                    <span 
+                      key={tag} 
+                      className="px-3.5 py-1 box-border bg-white border border-gray-200 rounded-full text-[12px] text-gray-500 font-medium whitespace-nowrap"
                     >
-                      Learn More <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Explore Link at Bottom */}
+              <div className="relative z-10 mt-auto">
+                <Link 
+                  to={category.path} 
+                  className="inline-flex items-center gap-3 text-[14px] font-medium text-slate-700 hover:text-slate-900 transition-colors"
+                >
+                  Explore Category 
+                  <span className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                    <ArrowRight className="w-4 h-4 text-slate-600" />
+                  </span>
+                </Link>
+              </div>
+              
+            </motion.div>
+          ))}
+        </div>
 
-            <div className="mt-12 flex justify-center">
-              <Link
-                to="/courses"
-                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-7 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
-              >
-                Load More Courses <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </>
-        ) : (
-          <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 shadow-sm">
-            No courses have been created by admin yet.
-          </div>
-        )}
+        {/* Bottom Link */}
+        <div className="mt-10 flex justify-center">
+          <Link
+            to="/courses"
+            className="text-[15px] font-medium text-indigo-600 hover:text-indigo-800 transition-colors relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[1px] after:bg-indigo-600 after:border-b after:border-dashed after:border-indigo-600 inline-block px-1"
+            style={{ textDecoration: 'none', borderBottom: '1px dashed currentColor' }}
+          >
+            View All Categories (6)
+          </Link>
+        </div>
+
       </div>
     </section>
   );

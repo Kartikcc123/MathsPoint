@@ -165,7 +165,7 @@ const AdminAttendance = () => {
       </header>
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
-      {info && <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">{info}</div>}
+      {info && <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700">{info}</div>}
 
       <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -181,7 +181,7 @@ const AdminAttendance = () => {
                   setError('');
                 }}
                 disabled={loadingPage}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-slate-50"
               >
                 <option value="">Select course</option>
                 {courses.map((course) => (
@@ -203,7 +203,7 @@ const AdminAttendance = () => {
                   setInfo('');
                   setError('');
                 }}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </label>
 
@@ -271,9 +271,9 @@ const AdminAttendance = () => {
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-red-700">Absent</p>
                 <p className="mt-3 text-3xl font-bold text-red-800">{summary.Absent}</p>
               </div>
-              <div className="rounded-[24px] border border-slate-200/80 bg-amber-50 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-700">Late</p>
-                <p className="mt-3 text-3xl font-bold text-amber-800">{summary.Late}</p>
+              <div className="rounded-[24px] border border-slate-200/80 bg-sky-50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-700">Late</p>
+                <p className="mt-3 text-3xl font-bold text-sky-800">{summary.Late}</p>
               </div>
             </div>
 
@@ -300,7 +300,7 @@ const AdminAttendance = () => {
                         <select
                           value={student.attendanceStatus}
                           onChange={(event) => handleStatusChange(student._id, event.target.value)}
-                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
                         >
                           {STATUS_OPTIONS.map((status) => (
                             <option key={status} value={status}>

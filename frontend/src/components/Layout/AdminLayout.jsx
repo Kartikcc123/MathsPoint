@@ -62,7 +62,7 @@ const AdminLayout = () => {
   const getLinkClasses = (path) => {
     const isActive = location.pathname === path || (path === '/admin' && location.pathname === '/admin/dashboard');
     return isActive
-      ? 'flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-500/12 px-4 py-3 font-medium text-amber-300 shadow-inner shadow-amber-950/20'
+      ? 'flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-sky-500/12 px-4 py-3 font-medium text-sky-300 shadow-inner shadow-amber-950/20'
       : 'flex items-center gap-3 rounded-2xl px-4 py-3 font-medium text-slate-300 transition duration-200 hover:bg-white/6 hover:text-white';
   };
 
@@ -75,14 +75,14 @@ const AdminLayout = () => {
           imageClassName="h-11 w-11"
           titleClassName="font-serif text-xl font-bold tracking-tight text-white"
           tagline="Admin Control Suite"
-          taglineClassName="text-[11px] uppercase tracking-[0.28em] text-amber-100/70"
+          taglineClassName="text-[11px] uppercase tracking-[0.28em] text-sky-100/70"
           textClassName=""
         />
       </div>
 
       <div className="px-4 pt-6">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-slate-200">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-200">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-sky-200">
             <Sparkles className="h-4 w-4" /> Operations Snapshot
           </div>
           <p className="text-sm leading-relaxed text-slate-300/90">
@@ -131,7 +131,7 @@ const AdminLayout = () => {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-700">Admin Workspace</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">Admin Workspace</p>
               <h1 className="text-xl font-bold tracking-tight text-slate-800">Control Center</h1>
             </div>
           </div>
@@ -149,7 +149,7 @@ const AdminLayout = () => {
                 className="relative rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-400 transition hover:text-slate-700"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-amber-500"></span>
+                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-sky-500"></span>
               </button>
 
               {showNotifications && (
@@ -185,7 +185,7 @@ const AdminLayout = () => {
               </div>
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-slate-800">{user.name || 'Admin User'}</p>
-                <p className="text-xs text-slate-500">Pharmacy operations admin</p>
+                <p className="text-xs text-slate-500">Admin workspace</p>
               </div>
               <button onClick={handleLogout} className="rounded-xl p-2 text-slate-400 transition hover:text-red-500" title="Logout">
                 <LogOut className="h-5 w-5" />

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Search, Filter, UserPlus, ShieldCheck, X, BookOpenCheck, LoaderCircle, Trash2 } from 'lucide-react';
+import { Users, Search, Filter, UserPlus, ShieldCheck, X, BookOpenCheck, LoaderCircle, Trash2, MailPlus, Clock3, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 
 const initialForm = {
@@ -16,6 +16,7 @@ const initialForm = {
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(initialForm);
@@ -27,19 +28,22 @@ const AdminStudents = () => {
   const [assigningStudentId, setAssigningStudentId] = useState('');
   const [togglingPanelId, setTogglingPanelId] = useState('');
   const [deletingStudentId, setDeletingStudentId] = useState('');
+  const [updatingInquiryId, setUpdatingInquiryId] = useState('');
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError('');
-      const [studentsRes, coursesRes] = await Promise.all([
+      const [studentsRes, coursesRes, inquiriesRes] = await Promise.all([
         api.get('/admin/students'),
         api.get('/admin/courses'),
+        api.get('/admin/inquiries'),
       ]);
 
       const loadedStudents = studentsRes.data || [];
       setStudents(loadedStudents);
       setCourses(coursesRes.data || []);
+      setInquiries(inquiriesRes.data || []);
       setCourseSelections(
         loadedStudents.reduce((accumulator, student) => {
           accumulator[student._id] = student.course?._id || '';
@@ -71,6 +75,11 @@ const AdminStudents = () => {
   const studentsWithoutCourse = useMemo(
     () => students.filter((student) => !student.course).length,
     [students]
+  );
+
+  const newInquiryCount = useMemo(
+    () => inquiries.filter((inquiry) => inquiry.status === 'New').length,
+    [inquiries]
   );
 
   const openModal = () => {
@@ -192,16 +201,37 @@ const AdminStudents = () => {
     }
   };
 
+  const handleReviewInquiry = async (inquiry) => {
+    setUpdatingInquiryId(inquiry._id);
+    setError('');
+    setSuccess('');
+
+    try {
+      const nextStatus = inquiry.status === 'Reviewed' ? 'New' : 'Reviewed';
+      const res = await api.patch(`/admin/inquiry/${inquiry._id}`, { status: nextStatus });
+      const updatedInquiry = res.data;
+
+      setInquiries((current) =>
+        current.map((item) => (item._id === updatedInquiry._id ? updatedInquiry : item))
+      );
+      setSuccess(updatedInquiry.status === 'Reviewed' ? 'Inquiry marked as reviewed.' : 'Inquiry marked as new again.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update inquiry.');
+    } finally {
+      setUpdatingInquiryId('');
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
       <header className="flex flex-col justify-between gap-4 rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm md:flex-row md:items-center">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-800">
-            <Users className="h-6 w-6 text-blue-600" /> Student Directory
+            <Users className="h-6 w-6 text-sky-600" /> Student Directory
           </h2>
           <p className="mt-1 tracking-wide text-slate-500">Create student records automatically, then grant course access only from the admin panel.</p>
         </div>
-        <button onClick={openModal} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700">
+        <button onClick={openModal} className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-sky-700">
           <UserPlus className="h-5 w-5" /> Add New Student
         </button>
       </header>
@@ -223,9 +253,90 @@ const AdminStudents = () => {
         <div className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Verification</p>
           <p className="mt-3 flex items-center gap-2 text-lg font-semibold text-slate-800">
-            <ShieldCheck className="h-5 w-5 text-blue-600" /> Duplicate protection active
+            <ShieldCheck className="h-5 w-5 text-sky-600" /> Duplicate protection active
           </p>
           <p className="mt-2 text-sm text-slate-500">Repeated email, mobile number, student ID, and name entries are blocked</p>
+        </div>
+        <div className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">New inquiries</p>
+          <p className="mt-3 flex items-center gap-2 text-3xl font-bold text-slate-800">
+            <MailPlus className="h-7 w-7 text-violet-600" /> {newInquiryCount}
+          </p>
+          <p className="mt-2 text-sm text-slate-500">Fresh website inquiries submitted from the contact page</p>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 bg-slate-50/50 p-5 md:flex-row md:items-center">
+          <div>
+            <h3 className="text-xl font-bold text-slate-800">New Inquiries</h3>
+            <p className="mt-1 text-sm text-slate-500">Contact form requests appear here before you decide to create a full student record.</p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600">
+            <Clock3 className="h-4 w-4" /> {inquiries.length} total inquiries
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full whitespace-nowrap text-left text-sm">
+            <thead className="border-b border-slate-100 bg-white text-slate-400">
+              <tr>
+                <th className="px-6 py-4 font-semibold">Inquirer</th>
+                <th className="px-6 py-4 font-semibold">Program</th>
+                <th className="px-6 py-4 font-semibold">Subject</th>
+                <th className="px-6 py-4 font-semibold">Message</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!loading && inquiries.length > 0 ? inquiries.map((inquiry) => (
+                <tr key={inquiry._id} className="border-b border-slate-50 align-top transition hover:bg-slate-50/50">
+                  <td className="px-6 py-4">
+                    <p className="font-semibold text-slate-800">{inquiry.name}</p>
+                    <p className="text-xs text-slate-500">{inquiry.email}</p>
+                    <p className="mt-1 text-xs text-slate-500">{inquiry.phone || 'No phone shared'}</p>
+                  </td>
+                  <td className="px-6 py-4 text-slate-700">{inquiry.program || 'General inquiry'}</td>
+                  <td className="px-6 py-4 text-slate-700">{inquiry.subject || 'Admission inquiry'}</td>
+                  <td className="px-6 py-4">
+                    <p className="max-w-sm whitespace-normal text-sm leading-6 text-slate-600">{inquiry.message}</p>
+                    <p className="mt-2 text-xs text-slate-400">
+                      {new Date(inquiry.createdAt).toLocaleString('en-IN')}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      inquiry.status === 'New' ? 'bg-violet-100 text-violet-700' : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {inquiry.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      type="button"
+                      onClick={() => handleReviewInquiry(inquiry)}
+                      disabled={updatingInquiryId === inquiry._id}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {updatingInquiryId === inquiry._id ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4" />
+                      )}
+                      {inquiry.status === 'New' ? 'Mark Reviewed' : 'Mark New'}
+                    </button>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-14 text-center text-slate-500">
+                    {loading ? 'Loading inquiries...' : 'No inquiries submitted yet.'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -238,7 +349,7 @@ const AdminStudents = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name, email, mobile, ID, or course..."
-              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </div>
           <div className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-600">
@@ -271,7 +382,7 @@ const AdminStudents = () => {
                       <select
                         value={courseSelections[student._id] ?? student.course?._id ?? ''}
                         onChange={(event) => handleCourseSelectionChange(student._id, event.target.value)}
-                        className="min-w-[220px] rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="min-w-[220px] rounded-2xl border border-slate-200 px-4 py-2.5 text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
                       >
                         <option value="">No course access</option>
                         {courses.map((course) => (
@@ -340,17 +451,17 @@ const AdminStudents = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <input name="name" value={form.name} onChange={handleChange} placeholder="Student name" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Student email" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Temporary password" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="studentId" value={form.studentId} onChange={handleChange} placeholder="Student ID" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="phone" value={form.phone} onChange={handleChange} placeholder="Student mobile number" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="parentPhone" value={form.parentPhone} onChange={handleChange} placeholder="Parent phone" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="parentEmail" type="email" value={form.parentEmail} onChange={handleChange} placeholder="Parent email" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input name="name" value={form.name} onChange={handleChange} placeholder="Student name" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Student email" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Temporary password" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="studentId" value={form.studentId} onChange={handleChange} placeholder="Student ID" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="phone" value={form.phone} onChange={handleChange} placeholder="Student mobile number" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="parentPhone" value={form.parentPhone} onChange={handleChange} placeholder="Parent phone" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="parentEmail" type="email" value={form.parentEmail} onChange={handleChange} placeholder="Parent email" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
               </div>
-              <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" rows="3" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" rows="3" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
 
-              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-700">
                 Course selection is intentionally not part of registration. Only admins can grant or remove course access from the student directory.
               </div>
 
@@ -358,7 +469,7 @@ const AdminStudents = () => {
                 <button type="button" onClick={closeModal} className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 transition hover:bg-slate-50">
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70">
+                <button type="submit" disabled={saving} className="rounded-2xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
                   {saving ? 'Creating...' : 'Create Student'}
                 </button>
               </div>

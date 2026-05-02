@@ -4,7 +4,7 @@ import api from '../../services/api';
 
 const statusClasses = {
   Paid: 'border border-green-100 bg-green-50 text-green-700',
-  Partial: 'border border-amber-100 bg-amber-50 text-amber-700',
+  Partial: 'border border-amber-100 bg-sky-50 text-sky-700',
   Unpaid: 'border border-red-100 bg-red-50 text-red-700',
 };
 
@@ -103,20 +103,20 @@ const Fees = () => {
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white shadow-lg">
+        <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-sky-600 to-sky-700 p-8 text-white shadow-lg">
           <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 transform opacity-10">
             <IndianRupee className="h-48 w-48" />
           </div>
-          <h3 className="relative z-10 mb-2 font-medium text-blue-100">Total Outstanding Dues</h3>
+          <h3 className="relative z-10 mb-2 font-medium text-sky-100">Total Outstanding Dues</h3>
           <div className="relative z-10 mb-6 text-5xl font-bold">Rs {totalOutstanding}</div>
-          <p className="relative z-10 mb-8 text-sm text-blue-100">
+          <p className="relative z-10 mb-8 text-sm text-sky-100">
             {latestOutstanding ? `${latestOutstanding.month} is currently marked as ${latestOutstanding.status}.` : 'No outstanding fees at the moment.'}
           </p>
           {latestOutstanding ? (
             <button
               type="button"
               onClick={() => openPaymentModal(latestOutstanding)}
-              className="relative z-10 rounded-2xl bg-white px-8 py-3 font-bold text-blue-600 shadow-md transition hover:bg-slate-50"
+              className="relative z-10 rounded-2xl bg-white px-8 py-3 font-bold text-sky-600 shadow-md transition hover:bg-slate-50"
             >
               Pay Latest Due
             </button>
@@ -180,12 +180,12 @@ const Fees = () => {
                         <button
                           type="button"
                           onClick={() => openPaymentModal(fee)}
-                          className="inline-flex rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+                          className="inline-flex rounded-xl bg-sky-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-700"
                         >
                           Pay Now
                         </button>
                       ) : fee.receiptUrl ? (
-                        <a href={fee.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:text-blue-800">
+                        <a href={fee.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-sky-50 p-2 text-sky-600 transition hover:text-sky-800">
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       ) : (
@@ -226,7 +226,7 @@ const Fees = () => {
                 {paymentMethods.map(({ value, label, icon: Icon, helper }) => (
                   <label
                     key={value}
-                    className={`cursor-pointer rounded-[24px] border p-5 transition ${paymentForm.method === value ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`cursor-pointer rounded-[24px] border p-5 transition ${paymentForm.method === value ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                   >
                     <input
                       type="radio"
@@ -237,7 +237,7 @@ const Fees = () => {
                       className="sr-only"
                     />
                     <div className="flex items-start gap-3">
-                      <div className={`rounded-2xl p-3 ${paymentForm.method === value ? 'bg-white text-blue-600' : 'bg-slate-50 text-slate-600'}`}>
+                      <div className={`rounded-2xl p-3 ${paymentForm.method === value ? 'bg-white text-sky-600' : 'bg-slate-50 text-slate-600'}`}>
                         <Icon className="h-5 w-5" />
                       </div>
                       <div>
@@ -262,7 +262,7 @@ const Fees = () => {
                   onChange={handlePaymentChange}
                   placeholder={paymentForm.method === 'UPI' ? 'UPI transaction reference' : 'Bank transaction reference'}
                   required
-                  className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
                 <input
                   value={`Rs ${selectedFee.amount}`}
@@ -277,7 +277,7 @@ const Fees = () => {
                 onChange={handlePaymentChange}
                 rows="3"
                 placeholder="Optional note"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
 
               <div className="flex justify-end gap-3">
@@ -291,7 +291,7 @@ const Fees = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                   {submitting ? 'Processing...' : `Pay via ${paymentForm.method}`}

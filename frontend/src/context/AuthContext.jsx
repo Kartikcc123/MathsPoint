@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import api from '../services/api';
 
 export const AuthContext = createContext();
@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from token if it exists when app mounts
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
@@ -15,11 +14,11 @@ export const AuthProvider = ({ children }) => {
         try {
           const res = await api.get('/auth/profile');
           setUser(res.data);
-        } catch (error) {
-           console.error("Token invalid or expired");
-           localStorage.removeItem('token');
+        } catch (_error) {
+          localStorage.removeItem('token');
         }
       }
+
       setLoading(false);
     };
 
@@ -32,7 +31,7 @@ export const AuthProvider = ({ children }) => {
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);
-      return userData; // Returning to decide routing based on role
+      return userData;
     } catch (error) {
       throw error.response?.data?.message || 'Login failed';
     }

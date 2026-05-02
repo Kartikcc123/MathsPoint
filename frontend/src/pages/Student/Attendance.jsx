@@ -52,12 +52,12 @@ const Attendance = () => {
         <div className="rounded-[28px] border border-slate-200/80 bg-white p-8 shadow-sm md:col-span-3">
           <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <h3 className="flex items-center gap-2 text-xl font-bold text-slate-800">
-              <CalendarIcon className="h-6 w-6 text-blue-500" /> {activeMonthLabel}
+              <CalendarIcon className="h-6 w-6 text-sky-500" /> {activeMonthLabel}
             </h3>
             <div className="flex flex-wrap gap-4 text-sm font-medium">
               <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-green-500"></span> Present</div>
               <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-red-500"></span> Absent</div>
-              <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-500"></span> Late</div>
+              <div className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-sky-500"></span> Late</div>
             </div>
           </div>
 
@@ -67,7 +67,7 @@ const Attendance = () => {
                 const isPresent = record.status === 'Present' || record.status === 'Late';
                 return (
                   <div key={`${record.date}-${record.status}`} className={`flex items-center justify-between rounded-2xl border p-4 ${
-                    record.status === 'Present' ? 'border-green-200 bg-green-50' : record.status === 'Absent' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'
+                    record.status === 'Present' ? 'border-green-200 bg-green-50' : record.status === 'Absent' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-sky-50'
                   }`}>
                     <div>
                       <p className="font-semibold text-slate-800">{record.dateObj.toLocaleDateString()}</p>

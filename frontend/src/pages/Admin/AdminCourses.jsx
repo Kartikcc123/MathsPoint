@@ -85,11 +85,11 @@ const AdminCourses = () => {
       <header className="flex flex-col justify-between gap-4 rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm md:flex-row md:items-center">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-800">
-            <BookOpen className="h-6 w-6 text-purple-600" /> Course Management
+            <BookOpen className="h-6 w-6 text-cyan-600" /> Course Management
           </h2>
           <p className="mt-1 tracking-wide text-slate-500">Create, organize, and refine active academic batches.</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700">
+        <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700">
           <Layers3 className="h-4 w-4" /> {courseCountLabel}
         </div>
       </header>
@@ -98,17 +98,17 @@ const AdminCourses = () => {
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <button onClick={openModal} className="flex min-h-[300px] flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-slate-400 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600">
+        <button onClick={openModal} className="flex min-h-[300px] flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-slate-400 transition hover:border-sky-400 hover:bg-sky-50 hover:text-sky-600">
           <PlusCircle className="mb-4 h-12 w-12 text-slate-300 transition" />
           <p className="font-bold">Create New Course</p>
         </button>
 
         {courses.slice(0, 2).map((course) => (
           <div key={course._id} className="group col-span-1 flex min-h-[300px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
-            <div className="relative flex h-40 items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-500 px-6 text-white">
+            <div className="relative flex h-40 items-center justify-center bg-gradient-to-br from-slate-900 via-sky-900 to-cyan-500 px-6 text-white">
               <div className="absolute right-4 top-4 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-bold text-slate-800 shadow backdrop-blur">Active</div>
               <div className="text-center">
-                <p className="text-xs uppercase tracking-[0.3em] text-blue-100/80">{course.duration || 'Open Batch'}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-100/80">{course.duration || 'Open Batch'}</p>
                 <h3 className="mt-3 text-2xl font-bold">{course.title}</h3>
               </div>
             </div>
@@ -117,7 +117,7 @@ const AdminCourses = () => {
                 <p className="text-sm leading-relaxed text-slate-500">{course.description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {(course.subjects || []).map((subject) => (
-                    <span key={subject} className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">{subject}</span>
+                    <span key={subject} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">{subject}</span>
                   ))}
                 </div>
               </div>
@@ -179,18 +179,18 @@ const AdminCourses = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <input name="title" value={form.title} onChange={handleChange} placeholder="Course title" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="duration" value={form.duration} onChange={handleChange} placeholder="Duration, e.g. 1 Year" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="feeAmount" type="number" min="0" value={form.feeAmount} onChange={handleChange} placeholder="Fee amount" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="subjects" value={form.subjects} onChange={handleChange} placeholder="Subjects, comma separated" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input name="title" value={form.title} onChange={handleChange} placeholder="Course title" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="duration" value={form.duration} onChange={handleChange} placeholder="Duration, e.g. 1 Year" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="feeAmount" type="number" min="0" value={form.feeAmount} onChange={handleChange} placeholder="Fee amount" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="subjects" value={form.subjects} onChange={handleChange} placeholder="Subjects, comma separated" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
               </div>
-              <textarea name="description" value={form.description} onChange={handleChange} placeholder="Course description" rows="4" required className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <textarea name="description" value={form.description} onChange={handleChange} placeholder="Course description" rows="4" required className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
 
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={closeModal} className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 transition hover:bg-slate-50">
                   Cancel
                 </button>
-                <button type="submit" disabled={saving} className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70">
+                <button type="submit" disabled={saving} className="rounded-2xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
                   {saving ? 'Creating...' : 'Create Course'}
                 </button>
               </div>

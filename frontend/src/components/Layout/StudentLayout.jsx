@@ -62,7 +62,7 @@ const StudentLayout = () => {
   const getLinkClasses = (path) => {
     const isActive = location.pathname === path || (path === '/student' && location.pathname === '/student/dashboard');
     return isActive
-      ? 'flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-amber-500/12 px-4 py-3 font-medium text-amber-300 shadow-inner shadow-amber-950/20'
+      ? 'flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-sky-500/12 px-4 py-3 font-medium text-sky-300 shadow-inner shadow-amber-950/20'
       : 'flex items-center gap-3 rounded-2xl px-4 py-3 font-medium text-slate-300 transition duration-200 hover:bg-white/6 hover:text-white';
   };
 
@@ -75,14 +75,14 @@ const StudentLayout = () => {
           imageClassName="h-11 w-11"
           titleClassName="font-serif text-xl font-bold tracking-tight text-white"
           tagline="Student Hub"
-          taglineClassName="text-[11px] uppercase tracking-[0.28em] text-amber-100/70"
+          taglineClassName="text-[11px] uppercase tracking-[0.28em] text-sky-100/70"
           textClassName=""
         />
       </div>
 
       <div className="px-4 pt-6">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-slate-200">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-200">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-sky-200">
             <Sparkles className="h-4 w-4" /> Learning Snapshot
           </div>
           <p className="text-sm leading-relaxed text-slate-300/90">
@@ -131,13 +131,13 @@ const StudentLayout = () => {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-700">Student Workspace</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">Student Workspace</p>
               <h1 className="text-xl font-bold tracking-tight text-slate-800">Pharmacy Student Portal</h1>
             </div>
           </div>
 
           <div className="relative flex items-center gap-4 sm:gap-6">
-            <div className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:flex">
+            <div className="hidden items-center gap-2 rounded-full border border-amber-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-800 sm:flex">
               <PlayCircle className="h-4 w-4" /> Next pharmacy session at 4:00 PM
             </div>
 
@@ -184,12 +184,12 @@ const StudentLayout = () => {
             </div>
 
             <div className="hidden items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 sm:flex">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 font-bold text-zinc-950 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-400 font-bold text-zinc-950 shadow-sm">
                 {user.name.charAt(0)}
               </div>
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                <p className="text-xs text-slate-500">Pharmacy learner profile</p>
+                <p className="text-xs text-slate-500">Student account</p>
               </div>
               <button onClick={handleLogout} className="rounded-xl p-2 text-slate-400 transition hover:text-red-500" title="Logout">
                 <LogOut className="h-5 w-5" />

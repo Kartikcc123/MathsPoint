@@ -79,13 +79,13 @@ const Register = () => {
             </div>
 
             <div>
-              <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition">
+              <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition">
                 Create account
               </button>
             </div>
 
             <p className="text-sm text-gray-400 text-center">
-              Already have an account? <Link to="/login" className="text-amber-400">Sign in</Link>
+              Already have an account? <Link to="/login" className="text-sky-400">Sign in</Link>
             </p>
           </form>
         </div>

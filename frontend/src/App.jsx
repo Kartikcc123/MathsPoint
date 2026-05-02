@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Public Pages
 import Home from './pages/Public/Home';
+import About from './pages/Public/About';
 import Courses from './pages/Public/Courses';
 import Faculties from './pages/Public/Faculties';
 import Contact from './pages/Public/Contact';
@@ -38,6 +39,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
           <Route path="courses" element={<Courses />} />
           <Route path="faculties" element={<Faculties />} />
           <Route path="contact" element={<Contact />} />

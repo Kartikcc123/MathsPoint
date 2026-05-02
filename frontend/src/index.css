@@ -4,6 +4,18 @@
 @theme {
   --font-sans: 'Montserrat', system-ui, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
+  
+  /* Overriding standard blue with the logo theme (cerulean #0093DD) */
+  --color-blue-50: #f0f9ff;
+  --color-blue-100: #e0f2fe;
+  --color-blue-200: #bae6fd;
+  --color-blue-300: #7dd3fc;
+  --color-blue-400: #38bdf8;
+  --color-blue-500: #0ea5e9;
+  --color-blue-600: #0093DD; 
+  --color-blue-700: #0284c7;
+  --color-blue-800: #0369a1;
+  --color-blue-900: #0c4a6e;
 }
 
 @layer utilities {
@@ -24,7 +36,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 30%),
+    radial-gradient(circle at top, rgba(0, 147, 221, 0.12), transparent 30%),
     linear-gradient(180deg, #f8fbff 0%, #f8fafc 45%, #eef2ff 100%);
   color: #1f2937;
 }
@@ -34,6 +46,6 @@ body {
 }
 
 ::selection {
-  background-color: rgba(37, 99, 235, 0.18);
+  background-color: rgba(0, 147, 221, 0.18);
   color: #0f172a;
 }

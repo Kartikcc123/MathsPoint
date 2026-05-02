@@ -40,7 +40,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background blobs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/20 blur-3xl opacity-50 mix-blend-screen"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-sky-500/20 blur-3xl opacity-50 mix-blend-screen"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-yellow-300/15 blur-3xl opacity-50 mix-blend-screen"></div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
@@ -55,7 +55,7 @@ const Login = () => {
         </div>
         <h2 className="mt-2 text-center text-3xl font-extrabold text-white">Sign in to your account</h2>
         <p className="mt-2 text-center text-sm text-gray-400">
-          Or <Link to="/" className="font-medium text-amber-400 hover:text-amber-300">return to home page</Link>
+          Or <Link to="/" className="font-medium text-sky-400 hover:text-sky-300">return to home page</Link>
         </p>
       </div>
 
@@ -113,7 +113,7 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-amber-500 focus:ring-amber-500 border-gray-600 rounded bg-slate-800"
+                  className="h-4 w-4 text-sky-500 focus:ring-amber-500 border-gray-600 rounded bg-slate-800"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
                   Remember me
@@ -124,7 +124,7 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition"
               >
                 Sign in
               </button>
@@ -132,7 +132,7 @@ const Login = () => {
 
             <p className="text-sm text-center text-gray-400">
               Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-amber-400 hover:text-amber-300">
+              <Link to="/register" className="font-medium text-sky-400 hover:text-sky-300">
                 Create one here
               </Link>
             </p>

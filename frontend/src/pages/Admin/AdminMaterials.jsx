@@ -186,7 +186,7 @@ const AdminMaterials = () => {
                   </td>
                   <td className="px-6 py-4 text-slate-600">{material.moduleName || 'General'}</td>
                   <td className="px-6 py-4">
-                    <a href={material.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+                    <a href={material.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sky-600 hover:text-sky-800">
                       <LinkIcon className="h-4 w-4" /> Open
                     </a>
                   </td>
@@ -229,26 +229,26 @@ const AdminMaterials = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <select name="course" value={form.course} onChange={handleChange} required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select name="course" value={form.course} onChange={handleChange} required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
                   <option value="">Select course</option>
                   {courses.map((course) => (
                     <option key={course._id} value={course._id}>{course.title}</option>
                   ))}
                 </select>
-                <select name="type" value={form.type} onChange={handleChange} className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select name="type" value={form.type} onChange={handleChange} className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
                   <option value="Notes">Notes</option>
                   <option value="Assignment">Assignment</option>
                   <option value="Practice Set">Practice Set</option>
                   <option value="Video">Video</option>
                   <option value="Link">Link</option>
                 </select>
-                <input name="title" value={form.title} onChange={handleChange} placeholder="Material title" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input name="moduleName" value={form.moduleName} onChange={handleChange} placeholder="Module / chapter name" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input name="title" value={form.title} onChange={handleChange} placeholder="Material title" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <input name="moduleName" value={form.moduleName} onChange={handleChange} placeholder="Module / chapter name" className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
               </div>
 
               <div className="space-y-3 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
                 <div className="flex items-center gap-3 text-slate-700">
-                  <LinkIcon className="h-5 w-5 text-blue-500" />
+                  <LinkIcon className="h-5 w-5 text-sky-500" />
                   <p className="font-semibold">Use a Google Drive or direct material URL</p>
                 </div>
                 <input
@@ -258,14 +258,14 @@ const AdminMaterials = () => {
                   onChange={handleChange}
                   placeholder="https://drive.google.com/..."
                   required
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
                 <p className="text-sm text-slate-500">
                   Add the shareable Drive link where your notes, assignments, videos, or other study materials are stored.
                 </p>
               </div>
 
-              <textarea name="description" value={form.description} onChange={handleChange} placeholder="Short description or instructions" rows="4" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <textarea name="description" value={form.description} onChange={handleChange} placeholder="Short description or instructions" rows="4" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500" />
 
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={closeModal} className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 transition hover:bg-slate-50">
