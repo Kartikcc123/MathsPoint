@@ -14,9 +14,9 @@ import {
   Target,
   Users,
 } from 'lucide-react';
-import heroImage from '../../assets/hero.png';
-import storyImage from '../../assets/image.png';
-import directorImage from '../../assets/Director.jpeg';
+import heroImage from '../../assets/about-hero-maths.png';
+import directorImage from '../../assets/DirectorCutout.png';
+import mathsPointLogo from '../../assets/logo_transparent.png';
 
 const storyPoints = [
   {
@@ -172,8 +172,30 @@ const About = () => {
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-sky-50 to-transparent" />
         <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-[1.05fr_minmax(0,1fr)] lg:px-8">
           <motion.div {...fadeUp} className="space-y-6">
-            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-              <img src={storyImage} alt="MathsPoint learning environment" className="h-[320px] w-full object-cover sm:h-[420px]" />
+            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#eff7ff_0%,#ffffff_48%,#f8fbff_100%)] shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+              <div className="relative flex min-h-[320px] flex-col items-center justify-center gap-6 px-6 py-10 text-center sm:min-h-[420px] sm:px-10">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_42%)]" />
+                <div className="absolute -left-12 top-10 h-28 w-28 rounded-full bg-sky-100/70 blur-2xl" />
+                <div className="absolute -right-10 bottom-10 h-32 w-32 rounded-full bg-cyan-100/80 blur-2xl" />
+
+                <div className="relative flex h-44 w-44 items-center justify-center overflow-hidden rounded-[34px] border border-white/80 bg-white shadow-[0_18px_45px_rgba(14,165,233,0.16)] sm:h-52 sm:w-52">
+                  <img
+                    src={mathsPointLogo}
+                    alt="Maths Point Elite Shield"
+                    className="h-full w-full scale-[1.2] object-cover object-[center_60%]"
+                  />
+                </div>
+
+                <div className="relative max-w-md">
+                  <p className="text-xs font-semibold uppercase tracking-[0.34em] text-sky-700">MathsPoint Institute</p>
+                  <h3 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                    Clear teaching. Strong practice. Real progress.
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
+                    A focused mathematics brand built around student confidence, disciplined learning, and consistent academic results.
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6">
@@ -339,10 +361,25 @@ const About = () => {
             {...fadeUp}
             className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-900 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
           >
-            <img src={directorImage} alt="MathsPoint mentor" className="h-64 w-full object-cover" />
+            <div className="relative h-[360px] overflow-hidden bg-[linear-gradient(180deg,#1e3a8a_0%,#0f172a_56%,#020617_100%)]">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(125,211,252,0.28),transparent_34%)]" />
+              <div className="absolute inset-x-8 bottom-0 h-20 rounded-t-[999px] bg-white/10 blur-2xl" />
+              <img
+                src={directorImage}
+                alt="MathsPoint mentor"
+                className="absolute bottom-0 left-1/2 z-10 h-[112%] max-w-none -translate-x-1/2 object-contain object-bottom"
+              />
+            </div>
             <div className="space-y-4 p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">Client Snapshot</p>
-              <h3 className="text-2xl font-bold">MathsPoint</h3>
+              <div className="flex items-center gap-3">
+                <img
+                  src={mathsPointLogo}
+                  alt="Maths Point Elite Shield"
+                  className="h-10 w-10 object-contain drop-shadow-md sm:h-12 sm:w-12"
+                />
+                <h3 className="text-2xl font-bold">MathsPoint</h3>
+              </div>
               <p className="text-sm leading-7 text-slate-300">
                 A mathematics-focused education brand that wants its website to communicate trust, clarity, and a
                 professional student journey from the first visit onward.

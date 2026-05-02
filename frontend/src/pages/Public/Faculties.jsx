@@ -1,12 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, BookOpen, BriefcaseBusiness, GraduationCap, Users } from 'lucide-react';
-import directorImage from '../../assets/Director.jpeg';
+import directorImage from '../../assets/DirectorCutout.png';
 
 const director = {
   name: 'Poochika Soni',
   role: 'Director',
   image: directorImage,
+  transparentImage: true,
   description:
     'The director leads Maths Point with a strong focus on disciplined academic planning, student-first mentoring, and meaningful long-term results.',
   highlights: ['Academic leadership', 'Student-centered approach', 'Result-driven vision'],
@@ -92,6 +93,56 @@ const administration = [
   },
 ];
 
+const heroFaculty = [
+  {
+    name: teachers[0].name,
+    role: teachers[0].role,
+    image: teachers[0].image,
+    className:
+      'left-[3%] top-[11%] z-10 hidden h-[170px] w-[130px] rotate-[-8deg] md:block lg:h-[205px] lg:w-[158px]',
+  },
+  {
+    name: teachers[1].name,
+    role: teachers[1].role,
+    image: teachers[1].image,
+    className:
+      'left-[30%] top-[7%] z-20 h-[210px] w-[160px] rotate-[-3deg] md:h-[290px] md:w-[215px] lg:left-[24%] lg:h-[330px] lg:w-[245px]',
+  },
+  {
+    name: teachers[2].name,
+    role: teachers[2].role,
+    image: teachers[2].image,
+    className:
+      'right-[5%] top-[11%] z-10 hidden h-[170px] w-[130px] rotate-[8deg] md:block lg:h-[205px] lg:w-[158px]',
+  },
+  {
+    name: teachers[3].name,
+    role: teachers[3].role,
+    image: teachers[3].image,
+    className:
+      'left-[11%] bottom-[6%] z-10 hidden h-[150px] w-[120px] rotate-[-4deg] lg:block',
+  },
+  {
+    name: teachers[4].name,
+    role: teachers[4].role,
+    image: teachers[4].image,
+    className:
+      'right-[12%] bottom-[6%] z-10 hidden h-[150px] w-[120px] rotate-[5deg] lg:block',
+  },
+];
+
+const facultyHeroHighlights = [
+  'School to competitive exam mentoring',
+  'Concept-first teaching with practice discipline',
+  'Guidance across academics, careers, and performance',
+];
+
+const facultyHeroStats = [
+  { value: '6+', label: 'Faculty mentors' },
+  { value: '5th-12th', label: 'Academic coverage' },
+  { value: 'Exam Ready', label: 'Structured preparation' },
+];
+
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
@@ -107,12 +158,30 @@ const FacultyCard = ({ faculty, compact = false }) => (
     }`}
   >
     <div className="bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] p-5">
-      <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-100">
-        <img
-          src={faculty.image}
-          alt={faculty.name}
-          className={`w-full object-cover ${compact ? 'h-[280px]' : 'h-[260px]'}`}
-        />
+      <div
+        className={`overflow-hidden rounded-[22px] border border-slate-200 ${
+          faculty.transparentImage
+            ? 'relative bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fafc_45%,#ffffff_100%)]'
+            : 'bg-slate-100'
+        }`}
+      >
+        {faculty.transparentImage ? (
+          <div className={`${compact ? 'h-[360px]' : 'h-[320px]'} relative overflow-hidden`}>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_34%)]" />
+            <div className="absolute inset-x-10 bottom-0 h-16 rounded-t-[999px] bg-slate-900/8 blur-2xl" />
+            <img
+              src={faculty.image}
+              alt={faculty.name}
+              className="absolute bottom-0 left-1/2 z-10 h-[112%] max-w-none -translate-x-1/2 object-contain object-bottom"
+            />
+          </div>
+        ) : (
+          <img
+            src={faculty.image}
+            alt={faculty.name}
+            className={`w-full object-cover ${compact ? 'h-[280px]' : 'h-[260px]'}`}
+          />
+        )}
       </div>
     </div>
     <div className="border-t border-slate-100 px-5 pb-6 pt-4">
@@ -144,25 +213,90 @@ const FacultyCard = ({ faculty, compact = false }) => (
 const Faculties = () => {
   return (
     <div className="w-full bg-white text-slate-800">
-      <section className="relative flex min-h-[320px] items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop')" }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.75),rgba(14,165,233,0.22))]" />
+      <section className="relative overflow-hidden bg-[#f4efe6]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.18),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0))]" />
+        <div className="absolute left-[-8%] top-[-14%] h-64 w-64 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute right-[-6%] bottom-[-10%] h-72 w-72 rounded-full bg-amber-200/60 blur-3xl" />
+        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(15,23,42,0.15),transparent)]" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55 }}
-          className="relative z-10 px-4 text-center text-white"
-        >
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">Our Expert Faculty</p>
-          <h1 className="mt-4 font-serif text-4xl font-bold md:text-6xl">Meet The Team Behind Maths Point</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-200 md:text-lg">
-            A dedicated faculty structure with academic leadership, experienced teachers, and administrative support working together for student success.
-          </p>
-        </motion.div>
+        <div className="relative mx-auto grid min-h-[460px] max-w-7xl gap-12 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            className="relative z-20 max-w-2xl"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-700 shadow-sm backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-sky-500" />
+              Faculty Team
+            </div>
+            <h1 className="mt-5 max-w-xl font-serif text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
+              Faculty That Teaches With Structure, Care, and Consistency
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-8 text-slate-600 md:text-lg">
+              Meet the mentors guiding Maths Point students across school academics, competitive preparation, and long-term academic confidence.
+            </p>
+
+            <div className="mt-8 space-y-3">
+              {facultyHeroHighlights.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/70 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm backdrop-blur"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sky-700">•</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {facultyHeroStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-[24px] border border-slate-200/80 bg-white/75 px-4 py-4 shadow-sm backdrop-blur"
+                >
+                  <p className="text-2xl font-bold text-slate-950">{stat.value}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.08 }}
+            className="relative h-[360px] md:h-[460px] lg:h-[520px]"
+          >
+            <div className="absolute inset-x-[7%] top-[10%] bottom-[10%] rounded-[40px] border border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(241,245,249,0.8))] shadow-[0_35px_90px_rgba(15,23,42,0.12)]" />
+            <div className="absolute left-[12%] top-[14%] right-[12%] h-[58%] rounded-[32px] border border-slate-200/80 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),rgba(255,255,255,0.65),rgba(251,146,60,0.12))]" />
+            <div className="absolute bottom-[11%] left-[18%] right-[18%] h-16 rounded-full bg-slate-900/10 blur-2xl" />
+            <div className="absolute right-[3%] top-[18%] hidden rounded-[22px] border border-white/80 bg-white/85 px-4 py-3 text-right shadow-lg backdrop-blur lg:block">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Learning Focus</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">Clarity first. Practice next.</p>
+            </div>
+            <div className="absolute bottom-[14%] left-[1%] hidden rounded-[22px] border border-white/80 bg-slate-900 px-4 py-3 text-white shadow-lg lg:block">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Student Outcome</p>
+              <p className="mt-2 text-sm font-semibold">Mentored for exams and beyond</p>
+            </div>
+
+            {heroFaculty.map((member) => (
+              <div
+                key={member.name}
+                className={`absolute overflow-hidden rounded-[30px] border border-white/70 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)] ${member.className}`}
+              >
+                <img src={member.image} alt={member.name} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_34%,rgba(15,23,42,0.86)_100%)]" />
+                <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                  <p className="text-sm font-semibold">{member.name}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-sky-100">{member.role}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </section>
 
       <section className="bg-slate-50 py-18 sm:py-20">
