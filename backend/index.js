@@ -18,6 +18,14 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://mathspoint-client.onrender.com',
+];
+
+const effectiveOrigins = allowedOrigins.length === 0 ? defaultOrigins : [...new Set([...allowedOrigins, ...defaultOrigins])];
+
 const corsOptions = {
   origin(origin, callback) {
     // Allow tools like Postman and same-origin server requests.
@@ -25,16 +33,7 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.length === 0) {
-      const defaultOrigins = [
-        'http://localhost:5173', 
-        'http://127.0.0.1:5173',
-        'https://mathspoint-client.onrender.com'
-      ];
-      return callback(null, defaultOrigins.includes(origin));
-    }
-
-    return callback(null, allowedOrigins.includes(origin));
+    return callback(null, effectiveOrigins.includes(origin));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
@@ -59,6 +58,8 @@ const authLimiter = rateLimit({
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
+// Ensure preflight requests are handled with the same CORS options
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(requireJsonBody);
 app.use(attachRequestContext);
