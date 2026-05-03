@@ -26,8 +26,12 @@ const corsOptions = {
     }
 
     if (allowedOrigins.length === 0) {
-      const localOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
-      return callback(null, localOrigins.includes(origin));
+      const defaultOrigins = [
+        'http://localhost:5173', 
+        'http://127.0.0.1:5173',
+        'https://mathspoint-client.onrender.com'
+      ];
+      return callback(null, defaultOrigins.includes(origin));
     }
 
     return callback(null, allowedOrigins.includes(origin));
