@@ -77,7 +77,7 @@ app.use('/api/public', publicRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
-  res.send('Academic Plus API is running...');
+  res.send('Maths Point API is running...');
 });
 
 app.use(notFound);
