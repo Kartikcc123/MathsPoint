@@ -58,8 +58,14 @@ const authLimiter = rateLimit({
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
-// Ensure preflight requests are handled with the same CORS options
-app.options('*', cors(corsOptions));
+// Handle preflight (OPTIONS) requests via middleware to avoid registering
+// a route with the literal '*' path which some path parsers reject.
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return cors(corsOptions)(req, res, next);
+  }
+  return next();
+});
 app.use(express.json());
 app.use(requireJsonBody);
 app.use(attachRequestContext);
