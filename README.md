@@ -1,6 +1,6 @@
-# Academic Plus
+# Math Point
 
-Academic Plus is a full-stack student management and learning platform built for a coaching or institute workflow. It combines a public-facing website with separate admin and student panels so the institute can manage courses, materials, attendance, fees, notifications, and results from one system.
+Math Point is a full-stack student management and learning platform built for a coaching or institute workflow. It combines a public-facing website with separate admin and student panels so the institute can manage courses, materials, attendance, fees, notifications, and results from one system.
 
 ## Overview
 
@@ -64,7 +64,7 @@ This project is split into two parts:
 ## Project Structure
 
 ```text
-Academic-Plus/
+Math-Point/
 |-- backend/
 |   |-- controllers/
 |   |-- middleware/
@@ -164,7 +164,7 @@ Create a `.env` file inside `backend/` and add:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/academic-plus
+MONGO_URI=mongodb://127.0.0.1:27017/math-point
 JWT_SECRET=your_jwt_secret
 ```
 
@@ -202,8 +202,8 @@ node seed.js
 
 This creates:
 
-- Admin: `admin@academicplus.com` / `admin123`
-- Student: `student@academicplus.com` / `password`
+- Admin: `admin@mathpoint.com` / `admin123`
+- Student: `student@mathpoint.com` / `password`
 
 ## Authentication and Access
 
@@ -229,4 +229,4 @@ This creates:
 
 ## Author
 
-Built for the Academic Plus management and student learning workflow.
+Built for the Math Point management and student learning workflow.
