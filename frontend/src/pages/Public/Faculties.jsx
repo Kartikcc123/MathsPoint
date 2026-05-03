@@ -3,84 +3,61 @@ import { motion } from 'framer-motion';
 import { buildSrcSet } from '../../utils/image';
 import { Award, BookOpen, BriefcaseBusiness, GraduationCap, Users } from 'lucide-react';
 import directorImage from '../../assets/DirectorCutout.png';
+import shruutiImg from '../../assets/Shruuti.jpeg';
+import akankshaImg from '../../assets/Akanksha.jpeg';
+import deepakImg from '../../assets/Deepak.jpeg';
+import mansiImg from '../../assets/Mansi.jpeg';
 
 const director = {
-  name: 'Poochika Soni',
-  role: 'Director',
+  name: 'Ashish Upadhyay',
+  role: 'Director & Senior Faculty',
+  expertise: 'B.Tech',
+  experience: '21 Years Experience',
   image: directorImage,
   transparentImage: true,
   description:
-    'The director leads Maths Point with a strong focus on disciplined academic planning, student-first mentoring, and meaningful long-term results.',
+    'With 21 years of experience and a B.Tech background, Ashish leads Maths Point with a strong focus on disciplined academic planning, student-first mentoring, and meaningful long-term results.',
   highlights: ['Academic leadership', 'Student-centered approach', 'Result-driven vision'],
 };
 
 const teachers = [
   {
-    name: 'Piyush Soni Sir',
-    role: 'Senior Faculty',
-    expertise: 'Foundation and School Academics',
-    experience: '8+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Known for building strong fundamentals for junior and middle school learners through simple explanation and regular practice.',
-    bullets: ['5th-8th support', 'Concept clarity', 'Classroom discipline'],
+    name: 'Mansi Acharya',
+    role: 'Chemistry Catalyst',
+    expertise: 'Chemistry',
+    experience: '8 Years Experience',
+    image: mansiImg,
+    description: 'Expert in unraveling the complexities of Chemistry, simplifying organic and inorganic concepts for a competitive edge.',
+    bullets: ['Chemistry mastery', 'Organic & Inorganic', 'Competitive focus'],
   },
   {
-    name: 'Sujit Singh Rathore Sir',
-    role: 'Academic Faculty',
-    expertise: 'Secondary and Senior Secondary',
-    experience: '10+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Supports board-oriented preparation with balanced attention to subject depth, exam readiness, and scoring strategy.',
-    bullets: ['9th-10th academics', '11th-12th guidance', 'Board preparation'],
+    name: 'Deepak Sharma',
+    role: 'Physics Expert',
+    expertise: 'Physics',
+    experience: '10 Years Experience',
+    image: deepakImg,
+    description: 'Master of Physics concepts, dedicated to simplifying complex theories and numericals for exam readiness.',
+    bullets: ['Physics theories', 'Problem-solving', 'Board & competitive preparation'],
   },
   {
-    name: 'Hemendra Singh Sir',
-    role: 'Competitive Mentor',
-    expertise: 'Scholarship and Entrance Preparation',
-    experience: '9+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Helps students prepare for olympiads, NTSE, KVPY, and other competitive tracks through focused mentoring and testing.',
-    bullets: ['Olympiad foundation', 'NTSE and KVPY', 'Competitive mindset'],
+    name: 'Shruuti Kharbanda',
+    role: 'B.St Coach',
+    expertise: 'Business Studies',
+    experience: '18 yrs Experience',
+    image: shruutiImg,
+    imagePosition: 'object-center scale-110',
+    description: 'Highly experienced Business Studies coach providing comprehensive guidance and practical corporate insights.',
+    bullets: ['Business Studies coaching', 'Concept clarity', 'Practical approach'],
   },
   {
-    name: 'Anil Sharma Sir',
-    role: 'Commerce and Career Faculty',
-    expertise: 'CUET, CLAT, IPMAT, Bank, SSC',
-    experience: '7+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Guides students toward university and career examinations with structured preparation, aptitude support, and exam strategy.',
-    bullets: ['CUET and CLAT', 'IPMAT guidance', 'Bank and SSC prep'],
-  },
-  {
-    name: 'Devendra Sen Sir',
-    role: 'Professional Course Mentor',
-    expertise: 'CA Foundation',
-    experience: '6+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Provides clarity for commerce and professional-entry learners through systematic teaching and strong conceptual grounding.',
-    bullets: ['CA Foundation', 'Commerce support', 'Professional readiness'],
-  },
-  {
-    name: 'Rudrakshyam Prajapat Sir',
-    role: 'Student Support Faculty',
-    expertise: 'Mentoring and Practice Oversight',
-    experience: '5+ Years Experience',
-    image:
-      'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Supports students with motivation, practice structure, and follow-up so classroom learning turns into measurable progress.',
-    bullets: ['Practice monitoring', 'Motivation support', 'Performance tracking'],
-  },
+    name: 'Akanksha Gautam',
+    role: 'Biology Expert',
+    expertise: 'Biology',
+    experience: '9 Years Experience',
+    image: akankshaImg,
+    description: 'Specialized in Biology, helping students build strong foundational knowledge and clear medical entrance exams.',
+    bullets: ['Biology fundamentals', 'Exam readiness', 'Conceptual depth'],
+  }
 ];
 
 const administration = [
@@ -96,40 +73,33 @@ const administration = [
 
 const heroFaculty = [
   {
-    name: teachers[0].name,
-    role: teachers[0].role,
-    image: teachers[0].image,
+    name: teachers[0]?.name,
+    role: teachers[0]?.role,
+    image: teachers[0]?.image,
     className:
       'left-[3%] top-[11%] z-10 hidden h-[170px] w-[130px] rotate-[-8deg] md:block lg:h-[205px] lg:w-[158px]',
   },
   {
-    name: teachers[1].name,
-    role: teachers[1].role,
-    image: teachers[1].image,
+    name: teachers[1]?.name,
+    role: teachers[1]?.role,
+    image: teachers[1]?.image,
     className:
       'left-[30%] top-[7%] z-20 h-[210px] w-[160px] rotate-[-3deg] md:h-[290px] md:w-[215px] lg:left-[24%] lg:h-[330px] lg:w-[245px]',
   },
   {
-    name: teachers[2].name,
-    role: teachers[2].role,
-    image: teachers[2].image,
+    name: teachers[2]?.name,
+    role: teachers[2]?.role,
+    image: teachers[2]?.image,
     className:
       'right-[5%] top-[11%] z-10 hidden h-[170px] w-[130px] rotate-[8deg] md:block lg:h-[205px] lg:w-[158px]',
   },
   {
-    name: teachers[3].name,
-    role: teachers[3].role,
-    image: teachers[3].image,
+    name: teachers[3]?.name,
+    role: teachers[3]?.role,
+    image: teachers[3]?.image,
     className:
       'left-[11%] bottom-[6%] z-10 hidden h-[150px] w-[120px] rotate-[-4deg] lg:block',
-  },
-  {
-    name: teachers[4].name,
-    role: teachers[4].role,
-    image: teachers[4].image,
-    className:
-      'right-[12%] bottom-[6%] z-10 hidden h-[150px] w-[120px] rotate-[5deg] lg:block',
-  },
+  }
 ];
 
 const facultyHeroHighlights = [
@@ -179,13 +149,13 @@ const FacultyCard = ({ faculty, compact = false }) => (
             />
           </div>
         ) : (
-          <img
-            src={faculty.image}
-            alt={faculty.name}
-            loading="lazy"
-            decoding="async"
-            className={`w-full object-cover ${compact ? 'h-[280px]' : 'h-[260px]'}`}
-          />
+            <img
+              src={faculty.image}
+              alt={faculty.name}
+              loading="lazy"
+              decoding="async"
+              className={`w-full object-cover ${faculty.imagePosition || 'object-top'} ${compact ? 'h-[280px]' : 'h-[260px]'}`}
+            />
         )}
       </div>
     </div>
@@ -292,7 +262,7 @@ const Faculties = () => {
                 key={member.name}
                 className={`absolute overflow-hidden rounded-[30px] border border-white/70 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)] ${member.className}`}
               >
-                <img src={member.image} alt={member.name} srcSet={buildSrcSet(member.image)} sizes="(max-width:640px) 200px, (max-width:1024px) 300px, 420px" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <img src={member.image} alt={member.name} srcSet={buildSrcSet(member.image)} sizes="(max-width:640px) 200px, (max-width:1024px) 300px, 420px" loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_34%,rgba(15,23,42,0.86)_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-4 text-white">
                   <p className="text-sm font-semibold">{member.name}</p>

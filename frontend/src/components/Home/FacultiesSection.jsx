@@ -1,31 +1,36 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { buildSrcSet } from '../../utils/image';
+
+import deepakImg from '../../assets/Deepak.jpeg';
+import mansiImg from '../../assets/Mansi.jpeg';
+import ashishImg from '../../assets/DirectorCutout.png';
 
 const faculties = [
   { 
-    name: "Arvind Sharma", 
-    subject: "Senior Mathematics", 
-    exp: "15+ Years", 
-    tag: "Ex-HOD",
-    desc: "Renowned for simplifying complex calculus and algebra for JEE Advanced.",
-    img: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop" 
+    name: "Ashish Upadhyay", 
+    subject: "Mathematics", 
+    exp: "21 Years", 
+    tag: "Director",
+    desc: "Visionary leader and senior faculty, driving academic excellence and disciplined mentoring for over two decades.",
+    img: ashishImg
   },
   { 
-    name: "Priya Singh", 
-    subject: "Algebra & Geometry", 
-    exp: "8+ Years", 
-    tag: "Olympiad Specialist",
-    desc: "Expert in building strong foundations for 9th and 10th-grade board toppers.",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop" 
+    name: "Mansi Acharya", 
+    subject: "Chemistry", 
+    exp: "8 Years", 
+    tag: "Chemistry Catalyst",
+    desc: "Expert in unraveling the complexities of Chemistry, simplifying concepts for a competitive edge.",
+    img: mansiImg
   },
   { 
-    name: "Ravi Verma", 
-    subject: "Competitive Math", 
-    exp: "10+ Years", 
-    tag: "Gold Medalist",
-    desc: "Master of shortcut tricks and speed strategies to crack objective math exams.",
-    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop" 
+    name: "Deepak Sharma", 
+    subject: "Physics", 
+    exp: "10 Years", 
+    tag: "Physics Expert",
+    desc: "Master of Physics concepts, dedicated to simplifying complex theories for exam readiness.",
+    img: deepakImg 
   }
 ];
 
@@ -68,7 +73,7 @@ const FacultiesSection = () => {
 
               {/* Portrait */}
               <div className="relative w-[120px] h-[120px] rounded-full border-[3px] border-[#0a1128] p-1 bg-white z-10 mb-5 group-hover:scale-105 transition-transform duration-300">
-                <img src={fac.img} alt={fac.name} srcSet={buildSrcSet(fac.img)} sizes="120px" loading="lazy" decoding="async" width={120} height={120} className="w-full h-full object-cover rounded-full" />
+                <img src={fac.img} alt={fac.name} srcSet={buildSrcSet(fac.img)} sizes="120px" loading="lazy" decoding="async" width={120} height={120} className="w-full h-full object-cover object-top rounded-full bg-slate-50" />
               </div>
               
               {/* Info */}
@@ -94,6 +99,21 @@ const FacultiesSection = () => {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="mt-14 text-center"
+        >
+          <Link 
+            to="/faculties" 
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-[15px] font-bold text-white bg-slate-900 rounded-full shadow-md hover:bg-slate-800 transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            Meet All Our Faculties &rarr;
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

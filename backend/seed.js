@@ -20,7 +20,7 @@ const seedDatabase = async () => {
     const adminPassword = await bcrypt.hash('admin123', 10);
     const admin = new User({
       name: 'System Admin',
-      email: 'admin@academicplus.com',
+      email: 'admin@mathspoint.com',
       password: adminPassword,
       role: 'admin',
     });
@@ -34,7 +34,7 @@ const seedDatabase = async () => {
     const studentPassword = await bcrypt.hash('password', 10);
     const student = new User({
       name: 'Rohan Sharma',
-      email: 'student@academicplus.com',
+      email: 'student@mathspoint.com',
       password: studentPassword,
       role: 'student',
       studentId: 'STU1001',
@@ -46,8 +46,8 @@ const seedDatabase = async () => {
     });
 
     console.log('Database seeded successfully!');
-    console.log('Admin: admin@academicplus.com / admin123');
-    console.log('Student: student@academicplus.com / password');
+    console.log('Admin: admin@mathspoint.com / admin123');
+    console.log('Student: student@mathspoint.com / password');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error);

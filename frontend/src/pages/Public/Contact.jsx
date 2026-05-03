@@ -16,7 +16,7 @@ const initialForm = {
 const contactCards = [
   {
     title: 'Visit Us',
-    value: 'R.C. Vyas Colony, Near Mother Teresa School, Bhilwara, Rajasthan 311001',
+    value: 'Krishi Mandi Road Near Fumes & Flames Old Majdur Chouraha RK Colony Bhilwara',
     icon: MapPin,
     accentClass: 'bg-sky-50 text-sky-700',
   },

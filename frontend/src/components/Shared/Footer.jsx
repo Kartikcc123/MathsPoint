@@ -39,7 +39,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-sky-400" />
-                <span className="text-sm">R.C. Vyas Colony, Near Mother Teresa School, Bhilwara, Rajasthan 311001</span>
+                <span className="text-sm">Krishi Mandi Road Near Fumes & Flames Old Majdur Chouraha RK Colony Bhilwara</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0 text-sky-400" />
