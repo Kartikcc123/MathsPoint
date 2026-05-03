@@ -1,4 +1,6 @@
 import React from 'react';
+import { buildSrcSet } from '../../utils/image';
+import LazyImage from '../Shared/LazyImage';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide, useSwiper } from "swiper/react";
 import "swiper/css";
@@ -77,10 +79,17 @@ export default function HeroSection() {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div
-              className="w-full h-full bg-cover bg-center flex items-center px-4 md:px-12 lg:px-20 relative"
-              style={{ backgroundImage: `url(${slide.img})` }}
-            >
+            <div className="w-full h-full flex items-center px-4 md:px-12 lg:px-20 relative">
+              <LazyImage
+                src={slide.img}
+                srcSet={buildSrcSet(slide.img)}
+                sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
+                alt=""
+                ariaHidden={true}
+                placeholder={slide.img}
+                className="absolute inset-0 w-full h-full object-cover object-center -z-10"
+                style={{ position: 'absolute', inset: 0 }}
+              />
               {/* Cinematic Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/80 to-transparent z-0"></div>
               <div className="absolute inset-0 bg-black/20 z-0"></div>

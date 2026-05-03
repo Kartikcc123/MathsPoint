@@ -20,7 +20,11 @@ const Login = () => {
     try {
       const user = await login(email, password);
       // Route based on role and enrollment / admin override
-      if (user.role === 'admin') {
+      if (user.actualRole === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else if (user.actualRole === 'parent') {
+        navigate('/parent/dashboard');
+      } else if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
         // student: only allow to student dashboard if enrolled or admin allowed

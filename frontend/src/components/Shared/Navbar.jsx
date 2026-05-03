@@ -25,6 +25,7 @@ const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const exploreRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const closeTimerRef = useRef(null);
 
   const groupedPrograms = useMemo(() => {
@@ -56,7 +57,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (exploreRef.current && !exploreRef.current.contains(event.target)) {
+      // If click is outside both the desktop explore dropdown and the mobile menu area, close explore
+      const clickedInsideExplore = exploreRef.current && exploreRef.current.contains(event.target);
+      const clickedInsideMobileMenu = mobileMenuRef.current && mobileMenuRef.current.contains(event.target);
+      if (!clickedInsideExplore && !clickedInsideMobileMenu) {
         setIsExploreOpen(false);
       }
     };
@@ -283,7 +287,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="border-t border-slate-200 bg-white p-4 shadow-2xl lg:hidden">
+        <div ref={mobileMenuRef} className="border-t border-slate-200 bg-white p-4 shadow-2xl lg:hidden">
           <div className="space-y-1">
             <button
               type="button"

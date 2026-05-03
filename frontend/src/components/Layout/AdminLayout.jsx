@@ -28,6 +28,7 @@ const navItems = [
   { path: '/admin/payments', label: 'Payment Records', icon: Receipt },
   { path: '/admin/notifications', label: 'Notifications', icon: Megaphone },
   { path: '/admin/attendance', label: 'Master Attendance', icon: CheckCircle },
+  { path: '/admin/attendance/simple', label: 'Fast Attendance', icon: Sparkles },
   { path: '/admin/results', label: 'Test Results', icon: FileText },
 ];
 
@@ -45,7 +46,19 @@ const AdminLayout = () => {
     navigate('/');
   };
 
-  if (!user || user.role !== 'admin') {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.actualRole === 'teacher') {
+    return <Navigate to="/teacher/dashboard" replace />;
+  }
+
+  if (user.actualRole === 'parent') {
+    return <Navigate to="/parent/dashboard" replace />;
+  }
+
+  if (user.role !== 'admin') {
     return <Navigate to="/login" replace />;
   }
 

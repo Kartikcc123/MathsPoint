@@ -1,5 +1,7 @@
 import React from 'react';
 import { Play, Clock3 } from 'lucide-react';
+import { buildSrcSet } from '../../utils/image';
+import LazyImage from '../Shared/LazyImage';
 
 const CourseCard = ({ course = {}, onContinue }) => {
   const { title, faculty, thumbnail, progress = 0, enrolled = false, category } = course;
@@ -7,9 +9,12 @@ const CourseCard = ({ course = {}, onContinue }) => {
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_22px_55px_-28px_rgba(15,23,42,0.28)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_65px_-26px_rgba(37,99,235,0.28)] dark:border-slate-800/90 dark:bg-slate-900/90">
       <div className="relative h-44 w-full overflow-hidden bg-slate-200">
-        <img
+        <LazyImage
           src={thumbnail || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80'}
+          srcSet={buildSrcSet(thumbnail || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80')}
+          sizes="(max-width: 640px) 640px, 900px"
           alt={title}
+          placeholder={thumbnail || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=100&q=10'}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08),rgba(15,23,42,0.72))]" />

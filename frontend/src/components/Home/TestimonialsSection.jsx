@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { buildSrcSet } from '../../utils/image';
+import LazyImage from '../Shared/LazyImage';
 
 const testimonials = [
   { 
@@ -49,10 +51,13 @@ const TestimonialsSection = () => {
         >
            {/* Visual Graphic Left Placeholder */}
            <div className="md:w-1/3 bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
-             <img 
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
-                alt="Featured Student" 
-                className="w-full h-full object-cover opacity-60 mix-blend-luminosity" 
+             <LazyImage
+               src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop"
+               srcSet={buildSrcSet('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop')}
+               sizes="(max-width: 768px) 100vw, 600px"
+               alt="Featured Student"
+               placeholder="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=10&w=200&auto=format&fit=crop"
+               className="w-full h-full object-cover opacity-60 mix-blend-luminosity"
              />
              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 pointer-events-none">
                  <h3 className="text-white font-extrabold text-3xl">JEE ADV</h3>
@@ -92,7 +97,7 @@ const TestimonialsSection = () => {
               </p>
               
               <div className="flex items-center gap-4 mt-auto border-t border-gray-50 pt-5 relative z-10">
-                <img src={test.img} alt={test.name} className="w-11 h-11 rounded-full object-cover border border-gray-200" />
+                <LazyImage src={test.img} srcSet={buildSrcSet(test.img)} sizes="44px" alt={test.name} placeholder={`${test.img}?q=10&w=80`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-gray-200" />
                 <div>
                   <h4 className="font-extrabold text-[#1a202c] text-[15px] mb-0.5">{test.name}</h4>
                   <span className="text-[#4b6bfb] text-[12px] font-bold">{test.role.split('|')[0]} <span className="text-gray-300 mx-1">|</span> {test.role.split('|')[1]}</span>

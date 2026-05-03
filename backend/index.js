@@ -4,6 +4,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { errorHandler, notFound } = require('./middleware/errorMiddleware');
+const { attachRequestContext, requireJsonBody } = require('./middleware/requestMiddleware');
 
 dotenv.config();
 
@@ -54,6 +56,8 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(requireJsonBody);
+app.use(attachRequestContext);
 app.use(apiLimiter);
 app.use('/uploads', express.static('uploads')); // For serving uploaded files
 
@@ -61,18 +65,23 @@ app.use('/uploads', express.static('uploads')); // For serving uploaded files
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const parentRoutes = require('./routes/parentRoutes');
 const publicRoutes = require('./routes/publicRoutes');
 
 // Mount Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/parent', parentRoutes);
 app.use('/api/public', publicRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
   res.send('Academic Plus API is running...');
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 if (!MONGO_URI) {
   console.error('Missing MONGO_URI in environment variables.');

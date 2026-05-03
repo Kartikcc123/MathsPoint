@@ -13,4 +13,7 @@ const feeSchema = new mongoose.Schema({
   paymentNote: { type: String, trim: true },
 }, { timestamps: true });
 
+feeSchema.index({ studentId: 1, dueDate: -1, createdAt: -1 });
+feeSchema.index({ studentId: 1, status: 1 });
+
 module.exports = mongoose.model('Fee', feeSchema);

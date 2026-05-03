@@ -4,6 +4,9 @@ const Result = require('../models/Result');
 const Attendance = require('../models/Attendance');
 const CourseMaterial = require('../models/CourseMaterial');
 const Notification = require('../models/Notification');
+const { AppError, applyRevalidationHeaders, sendErrorResponse } = require('../utils/api');
+const { normalizeAttendanceDateInput } = require('../utils/date');
+const { serializeAttendanceForStudent } = require('../utils/attendance');
 
 // @desc    Get student dashboard stats
 // @route   GET /api/student/dashboard
@@ -11,33 +14,16 @@ const Notification = require('../models/Notification');
 const getStudentDashboard = async (req, res) => {
   try {
     const studentId = req.user._id;
-    const student = await User.findById(studentId).populate('course');
+    const student = await User.findById(studentId).select('-password').populate('course');
 
     const fees = await Fee.find({ studentId }).sort({ dueDate: -1 });
     const results = await Result.find({ studentId }).sort({ date: -1 });
     const materials = student?.course
       ? await CourseMaterial.find({ course: student.course._id }).sort({ createdAt: -1 })
       : [];
-    const attendanceDocs = student?.course
-      ? await Attendance.find({ course: student.course._id }).sort({ date: -1 })
-      : [];
-
-    const attendanceRecords = attendanceDocs
-      .map((entry) => {
-        const record = entry.records.find((item) => String(item.studentId) === String(studentId));
-        if (!record) return null;
-
-        return {
-          date: entry.date,
-          status: record.status,
-        };
-      })
-      .filter(Boolean);
-
-    const attendedCount = attendanceRecords.filter((entry) => entry.status === 'Present' || entry.status === 'Late').length;
-    const attendancePercentage = attendanceRecords.length
-      ? Math.round((attendedCount / attendanceRecords.length) * 100)
-      : 0;
+    const attendanceSummary = student?.course
+      ? await serializeAttendanceForStudent({ studentId, courseId: student.course._id })
+      : { attendanceRecords: [], attendancePercentage: 0, latestUpdateAt: null };
     
     res.json({
       fees,
@@ -45,11 +31,51 @@ const getStudentDashboard = async (req, res) => {
       materials,
       course: student?.course || null,
       user: student,
-      attendanceRecords,
-      attendancePercentage,
+      attendanceRecords: attendanceSummary.attendanceRecords,
+      attendancePercentage: attendanceSummary.attendancePercentage,
+      attendanceSyncedAt: attendanceSummary.latestUpdateAt,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load student dashboard.');
+  }
+};
+
+const getStudentAttendance = async (req, res) => {
+  try {
+    const student = await User.findById(req.user._id).select('_id role course linkedStudents').populate('course');
+    if (!student?.course) {
+      return res.json({
+        attendanceRecords: [],
+        attendancePercentage: 0,
+        syncedAt: null,
+      });
+    }
+
+    const from = req.query.from ? normalizeAttendanceDateInput(req.query.from) : null;
+    const to = req.query.to ? normalizeAttendanceDateInput(req.query.to) : null;
+    if ((req.query.from && !from) || (req.query.to && !to)) {
+      throw new AppError(400, 'Invalid attendance range.', { code: 'ATTENDANCE_RANGE_INVALID' });
+    }
+
+    const attendanceSummary = await serializeAttendanceForStudent({
+      studentId: student._id,
+      courseId: student.course._id,
+      from,
+      to,
+    });
+
+    const versionToken = `student-attendance:${student._id}:${attendanceSummary.latestUpdateAt?.getTime?.() || 0}:${attendanceSummary.attendanceRecords.length}`;
+    if (applyRevalidationHeaders(req, res, versionToken)) {
+      return;
+    }
+
+    res.json({
+      attendanceRecords: attendanceSummary.attendanceRecords,
+      attendancePercentage: attendanceSummary.attendancePercentage,
+      syncedAt: attendanceSummary.latestUpdateAt,
+    });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load attendance.');
   }
 };
 
@@ -67,7 +93,7 @@ const getStudentMaterials = async (req, res) => {
 
     res.json(materials);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load materials.');
   }
 };
 
@@ -76,7 +102,7 @@ const getStudentPayments = async (req, res) => {
     const payments = await Fee.find({ studentId: req.user._id }).sort({ dueDate: -1, createdAt: -1 });
     res.json(payments);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load payments.');
   }
 };
 
@@ -113,7 +139,7 @@ const payStudentFee = async (req, res) => {
     await fee.save();
     res.json(fee);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to submit payment.');
   }
 };
 
@@ -128,8 +154,8 @@ const getStudentNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load notifications.');
   }
 };
 
-module.exports = { getStudentDashboard, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications };
+module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications };

@@ -9,15 +9,17 @@ const userSchema = new mongoose.Schema({
   normalizedName: { type: String, unique: true, sparse: true },
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'student'], default: 'student' },
+  role: { type: String, enum: ['admin', 'teacher', 'student', 'parent'], default: 'student', index: true },
   // Student specific fields
   studentId: { type: String, unique: true, sparse: true, trim: true },
-  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', index: true },
   parentEmail: { type: String },
   parentPhone: { type: String },
   phone: { type: String, trim: true },
   normalizedPhone: { type: String, unique: true, sparse: true },
   address: { type: String },
+  linkedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  taughtCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   // Allow admin to grant student panel access even without enrollment
   studentPanelAllowed: { type: Boolean, default: false },
   enrolledDate: { type: Date, default: Date.now },
@@ -54,6 +56,14 @@ userSchema.pre('validate', function () {
   if (this.isModified('address') || this.isNew) {
     this.address = this.address?.trim() || undefined;
   }
+
+  if (this.role !== 'parent') {
+    this.linkedStudents = [];
+  }
+
+  if (this.role !== 'teacher') {
+    this.taughtCourses = [];
+  }
 });
 
 // Hash password before saving
@@ -66,5 +76,9 @@ userSchema.pre('save', async function () {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+userSchema.index({ role: 1, course: 1 });
+userSchema.index({ role: 1, linkedStudents: 1 });
+userSchema.index({ role: 1, taughtCourses: 1 });
 
 module.exports = mongoose.model('User', userSchema);

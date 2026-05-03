@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { buildSrcSet } from '../../utils/image';
 import { Award, BookOpen, BriefcaseBusiness, GraduationCap, Users } from 'lucide-react';
 import directorImage from '../../assets/DirectorCutout.png';
 
@@ -172,6 +173,8 @@ const FacultyCard = ({ faculty, compact = false }) => (
             <img
               src={faculty.image}
               alt={faculty.name}
+              loading="lazy"
+              decoding="async"
               className="absolute bottom-0 left-1/2 z-10 h-[112%] max-w-none -translate-x-1/2 object-contain object-bottom"
             />
           </div>
@@ -179,6 +182,8 @@ const FacultyCard = ({ faculty, compact = false }) => (
           <img
             src={faculty.image}
             alt={faculty.name}
+            loading="lazy"
+            decoding="async"
             className={`w-full object-cover ${compact ? 'h-[280px]' : 'h-[260px]'}`}
           />
         )}
@@ -287,7 +292,7 @@ const Faculties = () => {
                 key={member.name}
                 className={`absolute overflow-hidden rounded-[30px] border border-white/70 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)] ${member.className}`}
               >
-                <img src={member.image} alt={member.name} className="h-full w-full object-cover" />
+                <img src={member.image} alt={member.name} srcSet={buildSrcSet(member.image)} sizes="(max-width:640px) 200px, (max-width:1024px) 300px, 420px" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_34%,rgba(15,23,42,0.86)_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-4 text-white">
                   <p className="text-sm font-semibold">{member.name}</p>

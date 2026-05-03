@@ -58,6 +58,10 @@ const AboutSection = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop" 
                   alt="Lead Mentor" 
+                  loading="lazy"
+                  decoding="async"
+                  width={224}
+                  height={224}
                   className="w-40 h-40 md:w-56 md:h-56 object-cover object-top rounded-full border-4 border-white shadow-xl bg-indigo-50"
                 />
                 {/* Speech Bubble */}
@@ -73,6 +77,10 @@ const AboutSection = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1974&auto=format&fit=crop" 
                   alt="Student" 
+                  loading="lazy"
+                  decoding="async"
+                  width={144}
+                  height={144}
                   className="w-24 h-24 md:w-36 md:h-36 object-cover object-top rounded-full border-4 border-white shadow-lg bg-pink-50"
                 />
                 {/* Speech Bubble */}

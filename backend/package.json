@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "cleanup:attendance-duplicates": "node scripts/cleanupAttendanceDuplicates.js",
+    "test": "node test/attendancePolicy.test.js"
   },
   "type": "commonjs",
   "dependencies": {

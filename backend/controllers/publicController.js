@@ -1,12 +1,13 @@
 const Course = require('../models/Course');
 const Inquiry = require('../models/Inquiry');
+const { sendErrorResponse } = require('../utils/api');
 
 const getPublicCourses = async (req, res) => {
   try {
     const courses = await Course.find({}).sort({ createdAt: -1 });
     res.json(courses);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load public courses.');
   }
 };
 
@@ -32,7 +33,7 @@ const createPublicInquiry = async (req, res) => {
       inquiry,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to create inquiry.');
   }
 };
 

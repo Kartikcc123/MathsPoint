@@ -12,4 +12,7 @@ const resultSchema = new mongoose.Schema({
   published: { type: Boolean, default: false },
 }, { timestamps: true });
 
+resultSchema.index({ studentId: 1, date: -1 });
+resultSchema.index({ published: 1, date: -1 });
+
 module.exports = mongoose.model('Result', resultSchema);

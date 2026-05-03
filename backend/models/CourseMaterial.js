@@ -10,4 +10,7 @@ const courseMaterialSchema = new mongoose.Schema({
   publishedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
+courseMaterialSchema.index({ course: 1, createdAt: -1 });
+courseMaterialSchema.index({ publishedBy: 1, createdAt: -1 });
+
 module.exports = mongoose.model('CourseMaterial', courseMaterialSchema);

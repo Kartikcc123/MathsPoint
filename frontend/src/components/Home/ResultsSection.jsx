@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { buildSrcSet } from '../../utils/image';
+import LazyImage from '../Shared/LazyImage';
 
 const categories = [
   "UPSC CSE",
@@ -65,16 +67,24 @@ const ResultsSection = () => {
         {/* Simple, Pure Banner Image Container */}
         <div className="w-full relative rounded-lg overflow-hidden flex items-center justify-center bg-slate-50">
           <AnimatePresence mode="wait">
-             <motion.img 
-                key={activeTab}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                src={bannerData[activeTab] || bannerData["UPSC CSE"]}
-                alt={`${activeTab} Results Wall`}
-                className="w-full h-auto object-cover max-h-[600px] rounded-lg shadow-sm"
-             />
+             <motion.div
+               key={activeTab}
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: -20 }}
+               transition={{ duration: 0.3 }}
+               className="w-full"
+             >
+               <LazyImage
+                 src={bannerData[activeTab] || bannerData['UPSC CSE']}
+                 srcSet={buildSrcSet(bannerData[activeTab] || bannerData['UPSC CSE'])}
+                 sizes="100vw"
+                 alt={`${activeTab} Results Wall`}
+                 placeholder={(bannerData[activeTab] || bannerData['UPSC CSE']) + '?q=10&w=200'}
+                 className="w-full h-auto object-cover max-h-[600px] rounded-lg shadow-sm"
+               />
+             </motion.div>
+             
           </AnimatePresence>
         </div>
         

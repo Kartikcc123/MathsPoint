@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import api from '../../services/api';
+import { buildSrcSet } from '../../utils/image';
 
 const fallbackImages = [
   'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop',
@@ -191,9 +192,15 @@ const Courses = () => {
   return (
     <div className="w-full bg-white text-slate-800">
       <section className="relative flex min-h-[340px] items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop')" }}
+        <img
+          src="https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop"
+          srcSet={buildSrcSet('https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop')}
+          sizes="100vw"
+          alt="Courses background"
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 z-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 z-0 bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.72),rgba(14,165,233,0.3))]" />
 
@@ -288,7 +295,11 @@ const Courses = () => {
                     <div className="relative h-52 overflow-hidden">
                       <img
                         src={course.visual}
+                        srcSet={buildSrcSet(course.visual)}
+                        sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
                         alt={course.title}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06),rgba(15,23,42,0.82))]" />
@@ -388,7 +399,11 @@ const Courses = () => {
               <div className="relative min-h-[320px] overflow-hidden bg-slate-950">
                 <img
                   src={normalizedCourses.find((course) => course._id === selectedCourse._id)?.visual || fallbackImages[0]}
+                  srcSet={buildSrcSet(normalizedCourses.find((course) => course._id === selectedCourse._id)?.visual || fallbackImages[0])}
+                  sizes="100vw"
                   alt={selectedCourse.title}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />

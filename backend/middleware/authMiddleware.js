@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { AppError } = require('../utils/api');
 
 const protect = async (req, res, next) => {
   let token;
@@ -7,29 +8,40 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select('-password').populate('course linkedStudents taughtCourses');
 
       if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
+        return next(new AppError(401, 'Not authorized, user not found.', { code: 'AUTH_USER_NOT_FOUND' }));
       }
 
       return next();
     } catch (error) {
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      return next(new AppError(401, 'Not authorized, token failed.', { code: 'AUTH_TOKEN_FAILED' }));
     }
   }
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return next(new AppError(401, 'Not authorized, no token.', { code: 'AUTH_TOKEN_MISSING' }));
   }
 };
 
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(401).json({ message: 'Not authorized as an admin' });
+const authorizeRoles = (...roles) => (req, _res, next) => {
+  if (req.user && roles.includes(req.user.role)) {
+    return next();
   }
+
+  return next(new AppError(403, 'You do not have permission to perform this action.', {
+    code: 'AUTH_FORBIDDEN',
+    details: { requiredRoles: roles },
+  }));
 };
 
-module.exports = { protect, admin };
+const admin = authorizeRoles('admin');
+const attendanceManager = authorizeRoles('admin', 'teacher');
+
+module.exports = {
+  protect,
+  admin,
+  attendanceManager,
+  authorizeRoles,
+};

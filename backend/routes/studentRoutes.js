@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getStudentDashboard, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications } = require('../controllers/studentController');
-const { protect } = require('../middleware/authMiddleware');
+const { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications } = require('../controllers/studentController');
+const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 
-router.route('/dashboard').get(protect, getStudentDashboard);
-router.route('/materials').get(protect, getStudentMaterials);
-router.route('/payments').get(protect, getStudentPayments);
-router.route('/payments/:feeId/pay').post(protect, payStudentFee);
-router.route('/notifications').get(protect, getStudentNotifications);
+router.route('/dashboard').get(protect, authorizeRoles('student'), getStudentDashboard);
+router.route('/attendance').get(protect, authorizeRoles('student'), getStudentAttendance);
+router.route('/materials').get(protect, authorizeRoles('student'), getStudentMaterials);
+router.route('/payments').get(protect, authorizeRoles('student'), getStudentPayments);
+router.route('/payments/:feeId/pay').post(protect, authorizeRoles('student'), payStudentFee);
+router.route('/notifications').get(protect, authorizeRoles('student'), getStudentNotifications);
 
 module.exports = router;

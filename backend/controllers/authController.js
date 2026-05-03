@@ -1,5 +1,14 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sendErrorResponse } = require('../utils/api');
+
+const getUiRole = (user) => {
+  if (user.role === 'teacher') {
+    return 'admin';
+  }
+
+  return user.role;
+};
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -32,17 +41,20 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: getUiRole(user),
+        actualRole: user.role,
         studentId: user.studentId,
         course: user.course,
         studentPanelAllowed: !!user.studentPanelAllowed,
+        linkedStudents: user.linkedStudents || [],
+        taughtCourses: user.taughtCourses || [],
         token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: 'Invalid email or password', code: 'AUTH_INVALID_CREDENTIALS' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Login failed.');
   }
 };
 
@@ -58,7 +70,7 @@ const registerAdmin = async (req, res) => {
     const setupKey = req.headers['x-admin-setup-key'];
 
     if (adminCount > 0 && (!process.env.ADMIN_SETUP_KEY || setupKey !== process.env.ADMIN_SETUP_KEY)) {
-      return res.status(403).json({ message: 'Admin registration is restricted.' });
+      return res.status(403).json({ message: 'Admin registration is restricted.', code: 'ADMIN_REGISTRATION_RESTRICTED' });
     }
 
     const userExists = await User.findOne({
@@ -69,7 +81,7 @@ const registerAdmin = async (req, res) => {
     });
 
     if (userExists) {
-      return res.status(400).json({ message: userExists.email === normalizedEmail ? 'This email is already registered.' : 'This admin name already exists.' });
+      return res.status(400).json({ message: userExists.email === normalizedEmail ? 'This email is already registered.' : 'This admin name already exists.', code: 'ADMIN_ALREADY_EXISTS' });
     }
 
     const user = await User.create({
@@ -88,10 +100,10 @@ const registerAdmin = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: 'Invalid user data', code: 'ADMIN_INVALID_DATA' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Admin registration failed.');
   }
 };
 
@@ -106,7 +118,7 @@ const registerStudent = async (req, res) => {
     const userExists = await User.findOne({ email: normalizedEmail });
 
     if (userExists) {
-      return res.status(400).json({ message: 'This email is already registered.' });
+      return res.status(400).json({ message: 'This email is already registered.', code: 'STUDENT_ALREADY_EXISTS' });
     }
 
     const user = await User.create({
@@ -126,10 +138,10 @@ const registerStudent = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: 'Invalid user data', code: 'STUDENT_INVALID_DATA' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Student registration failed.');
   }
 };
 // @desc    Get user profile
@@ -140,20 +152,27 @@ const getUserProfile = async (req, res) => {
     return res.status(401).json({ message: 'Not authorized' });
   }
 
-  const user = await User.findById(req.user._id).populate('course');
+  const user = await User.findById(req.user._id)
+    .select('-password')
+    .populate('course')
+    .populate('linkedStudents', 'name email studentId course')
+    .populate('taughtCourses', 'title duration');
 
   if (user) {
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: getUiRole(user),
+      actualRole: user.role,
       studentId: user.studentId,
       course: user.course,
       studentPanelAllowed: !!user.studentPanelAllowed,
+      linkedStudents: user.linkedStudents || [],
+      taughtCourses: user.taughtCourses || [],
     });
   } else {
-    return res.status(404).json({ message: 'User not found' });
+    return res.status(404).json({ message: 'User not found', code: 'AUTH_PROFILE_NOT_FOUND' });
   }
 };
 

@@ -17,6 +17,8 @@ const BrandLogo = ({
       <img
         src={mathsPointLogo}
         alt="Maths Point Elite Shield"
+        loading="lazy"
+        decoding="async"
         className={imageClassName}
       />
       <div className={textClassName}>

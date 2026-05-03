@@ -86,13 +86,13 @@ const AppHighlightSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top App Header */}
-        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 bg-white/50 backdrop-blur-sm p-4 md:p-6 rounded-2xl border border-white/60 shadow-sm relative z-10 w-max md:w-full mx-auto md:mx-0">
-          <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-800 tracking-tight text-center md:text-left">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6 md:mb-12 gap-4 md:gap-6 bg-white/50 backdrop-blur-sm p-4 md:p-6 rounded-2xl border border-white/60 shadow-sm w-full">
+          <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-800 tracking-tight text-center md:text-left min-w-0 break-words">
             Learn more about <span className="text-blue-600">Maths Point App</span>
           </h2>
-          
-          <div className="flex items-center gap-6 flex-wrap justify-center">
-            <div className="flex items-center gap-4">
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 justify-center">
+            <div className="flex items-center gap-4 min-w-0">
               <div className="flex items-center gap-1.5">
                 <Play className="w-5 h-5 text-emerald-500 fill-current" />
                 <span className="font-bold text-slate-700">4.8</span>
@@ -102,8 +102,8 @@ const AppHighlightSection = () => {
                 <span className="font-bold text-slate-700">4.9</span>
               </div>
             </div>
-            
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors shadow-md shadow-blue-600/20 whitespace-nowrap">
+
+            <button aria-label="Download Maths Point app" className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors shadow-md shadow-blue-600/20 whitespace-nowrap min-w-[120px]">
               Download App
             </button>
           </div>

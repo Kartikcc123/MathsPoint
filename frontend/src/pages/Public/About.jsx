@@ -126,9 +126,13 @@ const About = () => {
   return (
     <div className="w-full overflow-hidden bg-white text-slate-800">
       <section className="relative isolate flex min-h-[380px] items-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
+        <img
+          src={heroImage}
+          alt="About hero"
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(15,23,42,0.88),rgba(15,23,42,0.55),rgba(2,132,199,0.3))]" />
         <div className="absolute -bottom-20 right-0 h-56 w-56 rounded-full bg-sky-400/20 blur-3xl" />
@@ -182,6 +186,8 @@ const About = () => {
                   <img
                     src={mathsPointLogo}
                     alt="Maths Point Elite Shield"
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full scale-[1.2] object-cover object-[center_60%]"
                   />
                 </div>
@@ -367,6 +373,8 @@ const About = () => {
               <img
                 src={directorImage}
                 alt="MathsPoint mentor"
+                loading="lazy"
+                decoding="async"
                 className="absolute bottom-0 left-1/2 z-10 h-[112%] max-w-none -translate-x-1/2 object-contain object-bottom"
               />
             </div>
@@ -376,6 +384,8 @@ const About = () => {
                 <img
                   src={mathsPointLogo}
                   alt="Maths Point Elite Shield"
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 w-10 object-contain drop-shadow-md sm:h-12 sm:w-12"
                 />
                 <h3 className="text-2xl font-bold">MathsPoint</h3>

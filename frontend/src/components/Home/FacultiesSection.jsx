@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { buildSrcSet } from '../../utils/image';
 
 const faculties = [
   { 
@@ -67,7 +68,7 @@ const FacultiesSection = () => {
 
               {/* Portrait */}
               <div className="relative w-[120px] h-[120px] rounded-full border-[3px] border-[#0a1128] p-1 bg-white z-10 mb-5 group-hover:scale-105 transition-transform duration-300">
-                <img src={fac.img} alt={fac.name} className="w-full h-full object-cover rounded-full" />
+                <img src={fac.img} alt={fac.name} srcSet={buildSrcSet(fac.img)} sizes="120px" loading="lazy" decoding="async" width={120} height={120} className="w-full h-full object-cover rounded-full" />
               </div>
               
               {/* Info */}

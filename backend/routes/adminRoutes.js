@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
-const { protect, admin } = require('../middleware/authMiddleware');
+const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
+const { protect, admin, attendanceManager } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.route('/students')
-  .get(protect, admin, getStudents);
+  .get(protect, attendanceManager, getStudents);
 
 router.route('/inquiries')
   .get(protect, admin, getInquiries);
@@ -28,6 +28,9 @@ router.route('/dashboard-summary')
 
 router.route('/student')
   .post(protect, admin, registerStudent);
+
+router.route('/user')
+  .post(protect, admin, createManagedUser);
 
 router.route('/student/:id')
   .delete(protect, admin, deleteStudent);
@@ -41,8 +44,14 @@ router.route('/student/:id/course')
 router.route('/student/:id/panel')
   .patch(protect, admin, require('../controllers/adminController').toggleStudentPanel);
 
+router.route('/parent/:id/students')
+  .patch(protect, admin, linkParentStudents);
+
+router.route('/teacher/:id/courses')
+  .patch(protect, admin, assignTeacherCourses);
+
 router.route('/courses')
-  .get(protect, admin, getCourses);
+  .get(protect, attendanceManager, getCourses);
 
 router.route('/course')
   .post(protect, admin, createCourse);
@@ -60,9 +69,15 @@ router.route('/notifications')
 router.route('/notifications/:id')
   .patch(protect, admin, updateNotification);
 
+router.route('/attendance/summary')
+  .get(protect, attendanceManager, getAttendanceSummary);
+
+router.route('/attendance/trends')
+  .get(protect, attendanceManager, getAttendanceTrends);
+
 router.route('/attendance/:courseId')
-  .get(protect, admin, getAttendanceRecord)
-  .post(protect, admin, saveAttendanceRecord);
+  .get(protect, attendanceManager, getAttendanceRecord)
+  .post(protect, attendanceManager, saveAttendanceRecord);
 
 router.route('/material')
   .post(protect, admin, upload.single('file'), createMaterial);

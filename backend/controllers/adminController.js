@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const CourseMaterial = require('../models/CourseMaterial');
@@ -6,6 +7,43 @@ const Attendance = require('../models/Attendance');
 const Notification = require('../models/Notification');
 const Result = require('../models/Result');
 const Inquiry = require('../models/Inquiry');
+const { AppError, applyRevalidationHeaders, createRequestFingerprint, sendErrorResponse } = require('../utils/api');
+const { attendanceDateToUtcDate } = require('../utils/date');
+const { emitAttendanceEvent } = require('../utils/attendanceEvents');
+const {
+  buildAttendancePayloadHash,
+  resolveCorrectionReason,
+  ensureCourseExists,
+  ensureTeacherCanManageCourse,
+  findAttendanceByCourseAndDate,
+  getCourseRoster,
+  validateAttendanceRecords,
+} = require('../utils/attendance');
+
+const parsePositiveInteger = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const buildAttendanceRangeMatch = (req, attendanceDateField = 'attendanceDate') => {
+  const from = req.query.from;
+  const to = req.query.to;
+  const rangeMatch = {};
+
+  if (from) {
+    rangeMatch.$gte = from;
+  }
+
+  if (to) {
+    rangeMatch.$lte = to;
+  }
+
+  if (!Object.keys(rangeMatch).length) {
+    return null;
+  }
+
+  return { [attendanceDateField]: rangeMatch };
+};
 
 const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ').toLowerCase();
 const normalizePhone = (value = '') => value.replace(/\D/g, '');
@@ -66,10 +104,26 @@ const getDuplicateStudentMessage = async ({ email, phone, name, studentId }, exc
 // @access  Private/Admin
 const getStudents = async (req, res) => {
   try {
-    const students = await User.find({ role: 'student' }).populate('course');
+    const query = { role: 'student' };
+    if (req.query.courseId) {
+      query.course = req.query.courseId;
+    }
+
+    if (req.user?.role === 'teacher') {
+      const allowedCourseIds = (req.user.taughtCourses || []).map((course) => String(course._id || course));
+      if (req.query.courseId) {
+        ensureTeacherCanManageCourse(req.user, req.query.courseId);
+      } else {
+        query.course = { $in: allowedCourseIds };
+      }
+    }
+
+    const students = await User.find(query)
+      .select('name email role studentId course parentEmail parentPhone phone address studentPanelAllowed enrolledDate createdAt updatedAt')
+      .populate('course', 'title duration');
     res.json(students);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load students.');
   }
 };
 
@@ -81,7 +135,7 @@ const getInquiries = async (_req, res) => {
     const inquiries = await Inquiry.find({}).sort({ createdAt: -1 });
     res.json(inquiries);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load inquiries.');
   }
 };
 
@@ -104,7 +158,7 @@ const updateInquiryStatus = async (req, res) => {
 
     res.json(inquiry);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to update inquiry status.');
   }
 };
 
@@ -113,8 +167,8 @@ const updateInquiryStatus = async (req, res) => {
 // @access  Private/Admin
 const getDashboardSummary = async (_req, res) => {
   try {
-    const [students, courses, materials, payments, notifications, attendanceRecords, unpublishedResults] = await Promise.all([
-      User.find({ role: 'student' }).populate('course').sort({ createdAt: -1 }),
+    const [students, courses, materials, payments, notifications, attendanceAggregate, unpublishedResults] = await Promise.all([
+      User.find({ role: 'student' }).select('name email course studentPanelAllowed createdAt').populate('course').sort({ createdAt: -1 }),
       Course.find({}).sort({ createdAt: -1 }),
       CourseMaterial.find({}).sort({ createdAt: -1 }),
       Fee.find({})
@@ -125,7 +179,24 @@ const getDashboardSummary = async (_req, res) => {
         })
         .sort({ dueDate: -1, createdAt: -1 }),
       Notification.find({}).sort({ updatedAt: -1, createdAt: -1 }),
-      Attendance.find({}).sort({ date: -1 }),
+      Attendance.aggregate([
+        { $unwind: '$records' },
+        {
+          $group: {
+            _id: null,
+            attendanceEntries: { $sum: 1 },
+            attendancePresent: {
+              $sum: {
+                $cond: [
+                  { $in: ['$records.status', ['Present', 'Late']] },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ]),
       Result.countDocuments({ published: false }),
     ]);
 
@@ -136,17 +207,8 @@ const getDashboardSummary = async (_req, res) => {
     const pendingPayments = payments.filter((payment) => payment.status !== 'Paid').length;
     const studentsWithAccess = students.filter((student) => student.course || student.studentPanelAllowed).length;
 
-    let attendanceEntries = 0;
-    let attendancePresent = 0;
-
-    attendanceRecords.forEach((record) => {
-      (record.records || []).forEach((entry) => {
-        attendanceEntries += 1;
-        if (entry.status === 'Present' || entry.status === 'Late') {
-          attendancePresent += 1;
-        }
-      });
-    });
+    const attendanceEntries = attendanceAggregate[0]?.attendanceEntries || 0;
+    const attendancePresent = attendanceAggregate[0]?.attendancePresent || 0;
 
     const averageAttendance = attendanceEntries
       ? Math.round((attendancePresent / attendanceEntries) * 100)
@@ -194,7 +256,7 @@ const getDashboardSummary = async (_req, res) => {
       recentStudents,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load dashboard summary.');
   }
 };
 
@@ -225,7 +287,7 @@ const deleteStudent = async (req, res) => {
 
     res.json({ message: 'Student deleted successfully.' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to delete student.');
   }
 };
 
@@ -257,7 +319,59 @@ const registerStudent = async (req, res) => {
     const populatedUser = await user.populate('course');
     res.status(201).json(populatedUser);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to register student.');
+  }
+};
+
+const createManagedUser = async (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    role,
+    studentId,
+    parentEmail,
+    parentPhone,
+    phone,
+    address,
+    linkedStudents,
+    taughtCourses,
+  } = req.body;
+
+  try {
+    if (!['teacher', 'parent'].includes(role)) {
+      throw new AppError(400, 'Only teacher and parent accounts can be created from this endpoint.', {
+        code: 'MANAGED_USER_ROLE_INVALID',
+      });
+    }
+
+    const duplicateMessage = await getDuplicateStudentMessage({ name, email, phone, studentId });
+    if (duplicateMessage) {
+      throw new AppError(400, duplicateMessage, { code: 'MANAGED_USER_DUPLICATE' });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+      studentId: role === 'teacher' ? undefined : studentId,
+      parentEmail,
+      parentPhone,
+      phone,
+      address,
+      linkedStudents: role === 'parent' ? linkedStudents || [] : [],
+      taughtCourses: role === 'teacher' ? taughtCourses || [] : [],
+    });
+
+    const safeUser = await User.findById(user._id)
+      .select('name email role studentId course parentEmail parentPhone phone address linkedStudents taughtCourses createdAt updatedAt')
+      .populate('linkedStudents', 'name email studentId course')
+      .populate('taughtCourses', 'title duration');
+
+    res.status(201).json(safeUser);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to create managed user.');
   }
 };
 
@@ -273,7 +387,7 @@ const createCourse = async (req, res) => {
     });
     res.status(201).json(course);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to create course.');
   }
 };
 
@@ -282,10 +396,16 @@ const createCourse = async (req, res) => {
 // @access  Private/Admin
 const getCourses = async (req, res) => {
   try {
-    const courses = await Course.find({});
+    let courses;
+    if (req.user?.role === 'teacher') {
+      const allowedCourseIds = (req.user.taughtCourses || []).map((course) => course._id || course);
+      courses = await Course.find({ _id: { $in: allowedCourseIds } });
+    } else {
+      courses = await Course.find({});
+    }
     res.json(courses);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load courses.');
   }
 };
 
@@ -321,7 +441,75 @@ const assignStudentCourse = async (req, res) => {
     const updatedStudent = await student.populate('course');
     res.json(updatedStudent);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to assign course.');
+  }
+};
+
+const linkParentStudents = async (req, res) => {
+  const { id } = req.params;
+  const { studentIds } = req.body;
+
+  try {
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      throw new AppError(400, 'Student ids are required.', { code: 'PARENT_STUDENT_IDS_REQUIRED' });
+    }
+
+    const parent = await User.findOne({ _id: id, role: 'parent' });
+    if (!parent) {
+      throw new AppError(404, 'Parent not found.', { code: 'PARENT_NOT_FOUND' });
+    }
+
+    const students = await User.find({ _id: { $in: studentIds }, role: 'student' }).select('_id');
+    if (students.length !== studentIds.length) {
+      throw new AppError(400, 'One or more student ids are invalid.', { code: 'PARENT_STUDENT_IDS_INVALID' });
+    }
+
+    parent.linkedStudents = students.map((student) => student._id);
+    await parent.save();
+
+    const updatedParent = await User.findById(parent._id)
+      .select('name email role linkedStudents updatedAt')
+      .populate('linkedStudents', 'name email studentId course')
+      .populate({
+        path: 'linkedStudents',
+        populate: { path: 'course', select: 'title duration' },
+      });
+
+    res.json(updatedParent);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to link parent to students.');
+  }
+};
+
+const assignTeacherCourses = async (req, res) => {
+  const { id } = req.params;
+  const { courseIds } = req.body;
+
+  try {
+    if (!Array.isArray(courseIds) || courseIds.length === 0) {
+      throw new AppError(400, 'Course ids are required.', { code: 'TEACHER_COURSE_IDS_REQUIRED' });
+    }
+
+    const teacher = await User.findOne({ _id: id, role: 'teacher' });
+    if (!teacher) {
+      throw new AppError(404, 'Teacher not found.', { code: 'TEACHER_NOT_FOUND' });
+    }
+
+    const courses = await Course.find({ _id: { $in: courseIds } }).select('_id');
+    if (courses.length !== courseIds.length) {
+      throw new AppError(400, 'One or more course ids are invalid.', { code: 'TEACHER_COURSE_IDS_INVALID' });
+    }
+
+    teacher.taughtCourses = courses.map((course) => course._id);
+    await teacher.save();
+
+    const updatedTeacher = await User.findById(teacher._id)
+      .select('name email role taughtCourses updatedAt')
+      .populate('taughtCourses', 'title duration');
+
+    res.json(updatedTeacher);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to assign teacher courses.');
   }
 };
 
@@ -345,7 +533,7 @@ const toggleStudentPanel = async (req, res) => {
     const updatedStudent = await student.populate('course');
     res.json(updatedStudent);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to update panel access.');
   }
 };
 
@@ -376,7 +564,7 @@ const createMaterial = async (req, res) => {
     const populated = await material.populate('course', 'title duration');
     res.status(201).json(populated);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to create material.');
   }
 };
 
@@ -397,7 +585,7 @@ const deleteMaterial = async (req, res) => {
 
     res.json({ message: 'Material deleted successfully.' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to delete material.');
   }
 };
 
@@ -410,7 +598,7 @@ const getMaterials = async (req, res) => {
 
     res.json(materials);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load materials.');
   }
 };
 
@@ -426,7 +614,7 @@ const getPaymentRecords = async (req, res) => {
 
     res.json(payments);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load payment records.');
   }
 };
 
@@ -436,87 +624,293 @@ const getAttendanceRecord = async (req, res) => {
 
   try {
     if (!date) {
-      return res.status(400).json({ message: 'Attendance date is required.' });
+      throw new AppError(400, 'Attendance date is required.', { code: 'ATTENDANCE_DATE_REQUIRED' });
     }
 
-    const startOfDay = new Date(date);
-    if (Number.isNaN(startOfDay.getTime())) {
-      return res.status(400).json({ message: 'Invalid attendance date.' });
+    await ensureCourseExists(courseId);
+    ensureTeacherCanManageCourse(req.user, courseId);
+
+    const { attendanceDate, attendance } = await findAttendanceByCourseAndDate(courseId, date);
+    const roster = await getCourseRoster(courseId);
+
+    if (!attendance) {
+      return res.json(null);
     }
 
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
+    const rosterById = roster.reduce((map, student) => {
+      map[String(student._id)] = student;
+      return map;
+    }, {});
 
-    const attendance = await Attendance.findOne({
-      course: courseId,
-      date: {
-        $gte: startOfDay,
-        $lt: endOfDay,
-      },
+    const versionToken = `admin-attendance:${courseId}:${attendanceDate}:${attendance.updatedAt?.getTime?.() || 0}:${attendance.revision || 1}`;
+    if (applyRevalidationHeaders(req, res, versionToken)) {
+      return;
+    }
+
+    res.set('Last-Modified', new Date(attendance.updatedAt).toUTCString());
+    res.set('X-Attendance-Date', attendanceDate);
+    res.set('X-Attendance-Revision', String(attendance.revision || 1));
+
+    res.json({
+      ...attendance.toObject(),
+      roster,
+      records: (attendance.records || []).map((record) => ({
+        studentId: record.studentId,
+        status: record.status,
+        student: rosterById[String(record.studentId)] || null,
+      })),
     });
-
-    res.json(attendance || null);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load attendance record.');
+  }
+};
+
+const getAttendanceSummary = async (req, res) => {
+  const { courseId } = req.query;
+
+  try {
+    if (!courseId) {
+      throw new AppError(400, 'courseId is required.', { code: 'COURSE_ID_REQUIRED' });
+    }
+
+    await ensureCourseExists(courseId);
+    ensureTeacherCanManageCourse(req.user, courseId);
+
+    const rangeMatch = buildAttendanceRangeMatch(req);
+    const pipeline = [
+      { $match: { course: new mongoose.Types.ObjectId(courseId) } },
+    ];
+    if (rangeMatch) {
+      pipeline.push({ $match: rangeMatch });
+    }
+
+    pipeline.push(
+      { $unwind: '$records' },
+      {
+        $group: {
+          _id: { $substrBytes: ['$attendanceDate', 0, 7] },
+          total: { $sum: 1 },
+          present: {
+            $sum: {
+              $cond: [{ $in: ['$records.status', ['Present', 'Late']] }, 1, 0],
+            },
+          },
+          absent: {
+            $sum: {
+              $cond: [{ $eq: ['$records.status', 'Absent'] }, 1, 0],
+            },
+          },
+          late: {
+            $sum: {
+              $cond: [{ $eq: ['$records.status', 'Late'] }, 1, 0],
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } }
+    );
+
+    const summaryRows = await Attendance.aggregate(pipeline);
+    res.json({
+      courseId,
+      range: {
+        from: req.query.from || null,
+        to: req.query.to || null,
+      },
+      months: summaryRows.map((row) => ({
+        month: row._id,
+        totalEntries: row.total,
+        presentEntries: row.present,
+        absentEntries: row.absent,
+        lateEntries: row.late,
+        attendancePercentage: row.total ? Math.round((row.present / row.total) * 100) : 0,
+      })),
+    });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load attendance summary.');
+  }
+};
+
+const getAttendanceTrends = async (req, res) => {
+  const { courseId } = req.query;
+
+  try {
+    if (!courseId) {
+      throw new AppError(400, 'courseId is required.', { code: 'COURSE_ID_REQUIRED' });
+    }
+
+    await ensureCourseExists(courseId);
+    ensureTeacherCanManageCourse(req.user, courseId);
+
+    const rangeMatch = buildAttendanceRangeMatch(req);
+    const limit = Math.min(parsePositiveInteger(req.query.limit, 31), 120);
+    const pipeline = [
+      { $match: { course: new mongoose.Types.ObjectId(courseId) } },
+    ];
+
+    if (rangeMatch) {
+      pipeline.push({ $match: rangeMatch });
+    }
+
+    pipeline.push(
+      { $unwind: '$records' },
+      {
+        $group: {
+          _id: '$attendanceDate',
+          total: { $sum: 1 },
+          present: {
+            $sum: {
+              $cond: [{ $in: ['$records.status', ['Present', 'Late']] }, 1, 0],
+            },
+          },
+          absent: {
+            $sum: {
+              $cond: [{ $eq: ['$records.status', 'Absent'] }, 1, 0],
+            },
+          },
+          late: {
+            $sum: {
+              $cond: [{ $eq: ['$records.status', 'Late'] }, 1, 0],
+            },
+          },
+          updatedAt: { $max: '$updatedAt' },
+        },
+      },
+      { $sort: { _id: -1 } },
+      { $limit: limit },
+      { $sort: { _id: 1 } }
+    );
+
+    const trendRows = await Attendance.aggregate(pipeline);
+    res.json({
+      courseId,
+      range: {
+        from: req.query.from || null,
+        to: req.query.to || null,
+      },
+      points: trendRows.map((row) => ({
+        attendanceDate: row._id,
+        totalEntries: row.total,
+        presentEntries: row.present,
+        absentEntries: row.absent,
+        lateEntries: row.late,
+        attendancePercentage: row.total ? Math.round((row.present / row.total) * 100) : 0,
+        updatedAt: row.updatedAt,
+      })),
+    });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load attendance trends.');
   }
 };
 
 const saveAttendanceRecord = async (req, res) => {
   const { courseId } = req.params;
-  const { date, records } = req.body;
+  const { date, records, correctionReason } = req.body;
 
   try {
     if (!date) {
-      return res.status(400).json({ message: 'Attendance date is required.' });
+      throw new AppError(400, 'Attendance date is required.', { code: 'ATTENDANCE_DATE_REQUIRED' });
     }
 
-    if (!Array.isArray(records) || records.length === 0) {
-      return res.status(400).json({ message: 'Attendance records are required.' });
+    await ensureCourseExists(courseId);
+    ensureTeacherCanManageCourse(req.user, courseId);
+
+    const { attendanceDate, attendance: existingAttendance } = await findAttendanceByCourseAndDate(courseId, date);
+    const { normalizedRecords } = await validateAttendanceRecords({ courseId, records });
+    const payloadHash = buildAttendancePayloadHash(normalizedRecords);
+    const requestId = req.requestContext?.idempotencyKey || createRequestFingerprint({
+      courseId,
+      attendanceDate,
+      payloadHash,
+    });
+    const normalizedDate = attendanceDateToUtcDate(attendanceDate);
+
+    if (existingAttendance?.lastRequestId === requestId && existingAttendance?.lastPayloadHash === payloadHash) {
+      res.set('X-Idempotent-Replay', 'true');
+      return res.json(existingAttendance);
     }
 
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ message: 'Course not found.' });
+    const existingHash = existingAttendance ? buildAttendancePayloadHash(existingAttendance.records || []) : null;
+    const effectiveCorrectionReason = resolveCorrectionReason({
+      existingAttendance,
+      existingPayloadHash: existingHash,
+      nextPayloadHash: payloadHash,
+      correctionReason,
+    });
+
+    if (existingAttendance) {
+      res.set('X-Attendance-Correction-Reason', effectiveCorrectionReason || '');
     }
 
-    const startOfDay = new Date(date);
-    if (Number.isNaN(startOfDay.getTime())) {
-      return res.status(400).json({ message: 'Invalid attendance date.' });
-    }
-
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
-
-    const normalizedRecords = records.map((record) => ({
-      studentId: record.studentId,
-      status: record.status,
-    }));
-
+    const now = new Date();
     const attendance = await Attendance.findOneAndUpdate(
-      {
-        course: courseId,
-        date: {
-          $gte: startOfDay,
-          $lt: endOfDay,
+      { course: courseId, attendanceDate },
+      existingAttendance ? {
+        $set: {
+          attendanceDate,
+          date: normalizedDate,
+          records: normalizedRecords,
+          updatedBy: req.user._id,
+          correctionReason: effectiveCorrectionReason,
+          lastRequestId: requestId,
+          lastPayloadHash: payloadHash,
+          updatedAt: now,
+        },
+        $inc: { revision: 1 },
+        $push: {
+          auditLog: {
+            action: 'updated',
+            changedBy: req.user._id,
+            changedAt: now,
+            correctionReason: effectiveCorrectionReason,
+            requestId,
+            payloadHash,
+          },
+        },
+      } : {
+        $setOnInsert: {
+          course: courseId,
+          attendanceDate,
+          date: normalizedDate,
+          records: normalizedRecords,
+          markedBy: req.user._id,
+          updatedBy: req.user._id,
+          correctionReason: effectiveCorrectionReason,
+          lastRequestId: requestId,
+          lastPayloadHash: payloadHash,
+          auditLog: [{
+            action: 'created',
+            changedBy: req.user._id,
+            changedAt: now,
+            correctionReason: effectiveCorrectionReason,
+            requestId,
+            payloadHash,
+          }],
         },
       },
-      {
-        course: courseId,
-        date: startOfDay,
-        records: normalizedRecords,
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-      }
+      { new: true, upsert: true, runValidators: true }
     );
 
+    emitAttendanceEvent(existingAttendance ? 'attendance.updated' : 'attendance.marked', {
+      attendanceId: attendance._id,
+      courseId,
+      attendanceDate: attendance.attendanceDate,
+      actorUserId: req.user._id,
+      correctionReason: attendance.correctionReason || '',
+      revision: attendance.revision || 1,
+    });
+
+    res.set('X-Attendance-Date', attendance.attendanceDate);
+    res.set('X-Attendance-Revision', String(attendance.revision || 1));
     res.json(attendance);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error?.code === 11000) {
+      return sendErrorResponse(res, new AppError(409, 'Attendance already exists for this course and date.', {
+        code: 'ATTENDANCE_DUPLICATE_DATE',
+      }));
+    }
+
+    sendErrorResponse(res, error, 'Failed to save attendance.');
   }
 };
 
@@ -528,7 +922,7 @@ const getNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to load notifications.');
   }
 };
 
@@ -555,7 +949,7 @@ const createNotification = async (req, res) => {
     const populated = await notification.populate('studentId', 'name email studentId');
     res.status(201).json(populated);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to create notification.');
   }
 };
 
@@ -587,7 +981,7 @@ const updateNotification = async (req, res) => {
     const populated = await notification.populate('studentId', 'name email studentId');
     res.json(populated);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to update notification.');
   }
 };
 
@@ -679,7 +1073,7 @@ const uploadResults = async (req, res) => {
 
     return res.status(400).json({ message: 'Invalid mode for results upload.' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to upload results.');
   }
 };
 
@@ -712,7 +1106,7 @@ const createResultsFromRows = async (req, res) => {
 
     res.json({ message: `Created ${created.length} draft results.`, createdCount: created.length, createdIds: created.map(c => c._id) });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to create results.');
   }
 };
 
@@ -730,8 +1124,8 @@ const publishResults = async (req, res) => {
     const updated = await Result.updateMany({ _id: { $in: ids } }, { $set: { published: true } });
     res.json({ message: `Published ${updated.modifiedCount || updated.nModified || 0} results.` });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendErrorResponse(res, error, 'Failed to publish results.');
   }
 };
 
-module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };
+module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };
