@@ -14,7 +14,7 @@ const { serializeAttendanceForStudent } = require('../utils/attendance');
 const getStudentDashboard = async (req, res) => {
   try {
     const studentId = req.user._id;
-    const student = await User.findById(studentId).select('-password').populate('course');
+    const student = await User.findById(studentId).select('-password').populate('course').populate('enrolledCourses');
 
     const fees = await Fee.find({ studentId }).sort({ dueDate: -1 });
     const results = await Result.find({ studentId }).sort({ date: -1 });
@@ -30,6 +30,7 @@ const getStudentDashboard = async (req, res) => {
       results,
       materials,
       course: student?.course || null,
+      enrolledCourses: student?.enrolledCourses || [],
       user: student,
       attendanceRecords: attendanceSummary.attendanceRecords,
       attendancePercentage: attendanceSummary.attendancePercentage,

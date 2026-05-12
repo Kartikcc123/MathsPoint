@@ -9,6 +9,8 @@ import Faculties from './pages/Public/Faculties';
 import Contact from './pages/Public/Contact';
 import Login from './pages/Public/Login';
 import Register from './pages/Public/Register';
+import Checkout from './pages/Public/Checkout';
+import AdminLogin from './pages/Public/AdminLogin';
 
 // Private Pages
 import AdminDashboard from './pages/Admin/Dashboard';
@@ -17,6 +19,7 @@ import AdminCourses from './pages/Admin/AdminCourses';
 import AdminAttendance from './pages/Admin/AdminAttendance';
 import SimpleAttendance from './pages/Admin/SimpleAttendance';
 import AdminResults from './pages/Admin/AdminResults';
+import AdminSecurity from './pages/Admin/AdminSecurity';
 import AdminMaterials from './pages/Admin/AdminMaterials';
 import AdminPayments from './pages/Admin/AdminPayments';
 import AdminNotifications from './pages/Admin/AdminNotifications';
@@ -41,10 +44,12 @@ import TeacherStudents from './pages/Teacher/Students';
 import ParentDashboard from './pages/Parent/Dashboard';
 import ParentChildren from './pages/Parent/Children';
 import ParentAttendance from './pages/Parent/Attendance';
+import ScrollToTop from './components/Shared/ScrollToTop';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
@@ -52,9 +57,11 @@ function App() {
           <Route path="courses" element={<Courses />} />
           <Route path="faculties" element={<Faculties />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="checkout/:courseId" element={<Checkout />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/portal-8a9d3f2c" element={<AdminLogin />} />
         {/* Admin Panel Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -67,6 +74,7 @@ function App() {
           <Route path="attendance" element={<AdminAttendance />} />
           <Route path="attendance/simple" element={<SimpleAttendance />} />
           <Route path="results" element={<AdminResults />} />
+          <Route path="security" element={<AdminSecurity />} />
         </Route>
         
         {/* Student Panel Routes */}

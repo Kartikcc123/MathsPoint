@@ -132,7 +132,7 @@ const About = () => {
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-[25%_center] sm:object-center"
         />
         <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(15,23,42,0.88),rgba(15,23,42,0.55),rgba(2,132,199,0.3))]" />
         <div className="absolute -bottom-20 right-0 h-56 w-56 rounded-full bg-sky-400/20 blur-3xl" />

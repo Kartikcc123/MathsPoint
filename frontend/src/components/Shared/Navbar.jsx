@@ -124,7 +124,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={toggleExplore}
-                className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                className={`flex items-center whitespace-nowrap gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
                   isExploreOpen
                     ? 'border-sky-300 bg-sky-100 text-sky-800'
                     : 'border-sky-200 bg-sky-50/50 text-sky-700 hover:border-sky-300 hover:bg-sky-100'
@@ -227,8 +227,8 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden lg:flex flex-1 items-center justify-end gap-7 pl-6">
-            <div className="flex items-center gap-6 xl:gap-8">
+          <div className="hidden lg:flex flex-1 items-center justify-end gap-3 xl:gap-7 pl-4 xl:pl-6">
+            <div className="flex items-center gap-4 xl:gap-8">
               {navLinks.map((link) => (
                 <a
                   key={link.label}

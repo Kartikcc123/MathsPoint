@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 const { sendErrorResponse } = require('../utils/api');
 
 const getUiRole = (user) => {
@@ -34,6 +36,16 @@ const loginUser = async (req, res) => {
     }
 
     if (user && (await user.matchPassword(password))) {
+      // 2FA INTERCEPTION
+      if (user.twoFactorEnabled) {
+        return res.json({ 
+          require2FA: true, 
+          userId: user._id,
+          role: getUiRole(user),
+          actualRole: user.role
+        });
+      }
+
       user.lastLoginAt = new Date();
       await user.save();
 
@@ -58,9 +70,108 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Register a new admin (initial setup only or specific route)
+// @desc    Verify 2FA during Login
+// @route   POST /api/auth/verify-login-2fa
+// @access  Public (technically half-authenticated)
+const verifyLogin2FA = async (req, res) => {
+  const { userId, code } = req.body;
+
+  try {
+    const user = await User.findById(userId).populate('course');
+    if (!user || !user.twoFactorEnabled) {
+      return res.status(400).json({ message: '2FA verification failed or not enabled' });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code,
+      window: 1 // Allow 30 seconds clock drift
+    });
+
+    if (verified) {
+      user.lastLoginAt = new Date();
+      await user.save();
+
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: getUiRole(user),
+        actualRole: user.role,
+        studentId: user.studentId,
+        course: user.course,
+        studentPanelAllowed: !!user.studentPanelAllowed,
+        linkedStudents: user.linkedStudents || [],
+        taughtCourses: user.taughtCourses || [],
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid Authenticator Code' });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, '2FA Login failed.');
+  }
+};
+
+// @desc    Setup 2FA (Generates Secret and QR Code)
+// @route   POST /api/auth/setup-2fa
+// @access  Private
+const setup2FA = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    // Generate a secret
+    const secret = speakeasy.generateSecret({
+      name: `MathsPoint (${user.email})`
+    });
+
+    // Save secret temporarily to user (will be enabled upon verification)
+    user.twoFactorSecret = secret.base32;
+    await user.save();
+
+    // Generate QR Code URL
+    QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error generating QR Code' });
+      }
+      res.json({ secret: secret.base32, qrCodeUrl: data_url });
+    });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to setup 2FA.');
+  }
+};
+
+// @desc    Verify and Enable 2FA Setup
+// @route   POST /api/auth/verify-setup-2fa
+// @access  Private
+const verifySetup2FA = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const user = await User.findById(req.user._id);
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code,
+      window: 1
+    });
+
+    if (verified) {
+      user.twoFactorEnabled = true;
+      await user.save();
+      res.json({ success: true, message: '2FA Successfully Enabled' });
+    } else {
+      res.status(400).json({ message: 'Invalid Code. 2FA not enabled.' });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to verify 2FA setup.');
+  }
+};
+
+// @desc    Register a new admin
 // @route   POST /api/auth/register-admin
-// @access  Public (Should be secured in production)
+// @access  Public
 const registerAdmin = async (req, res) => {
   const { name, email, password } = req.body;
   const normalizedEmail = email?.trim().toLowerCase();
@@ -126,7 +237,6 @@ const registerStudent = async (req, res) => {
       email: normalizedEmail,
       password,
       role: 'student',
-      // student has no course initially; admin can enroll later
     });
 
     if (user) {
@@ -144,6 +254,7 @@ const registerStudent = async (req, res) => {
     sendErrorResponse(res, error, 'Student registration failed.');
   }
 };
+
 // @desc    Get user profile
 // @route   GET /api/auth/profile
 // @access  Private
@@ -179,6 +290,9 @@ const getUserProfile = async (req, res) => {
 module.exports = {
   getUserProfile,
   loginUser,
+  verifyLogin2FA,
+  setup2FA,
+  verifySetup2FA,
   registerAdmin,
   registerStudent,
 };

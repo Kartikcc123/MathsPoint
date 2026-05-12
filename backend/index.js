@@ -78,6 +78,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const parentRoutes = require('./routes/parentRoutes');
 const publicRoutes = require('./routes/publicRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Mount Routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -85,6 +86,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

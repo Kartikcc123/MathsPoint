@@ -86,7 +86,7 @@ const StudentLayout = () => {
             <Sparkles className="h-4 w-4" /> Learning Snapshot
           </div>
           <p className="text-sm leading-relaxed text-slate-300/90">
-            Stay on top of pharmacy modules, fees, results, and attendance from one organized portal.
+            Stay on top of your courses, fees, results, and attendance from one organized portal.
           </p>
         </div>
       </div>
@@ -132,13 +132,13 @@ const StudentLayout = () => {
             </button>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">Student Workspace</p>
-              <h1 className="text-xl font-bold tracking-tight text-slate-800">Pharmacy Student Portal</h1>
+              <h1 className="text-xl font-bold tracking-tight text-slate-800">Maths Point Portal</h1>
             </div>
           </div>
 
           <div className="relative flex items-center gap-4 sm:gap-6">
             <div className="hidden items-center gap-2 rounded-full border border-amber-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-800 sm:flex">
-              <PlayCircle className="h-4 w-4" /> Next pharmacy session at 4:00 PM
+              <Sparkles className="h-4 w-4" /> Welcome to Maths Point
             </div>
 
             <div className="relative">

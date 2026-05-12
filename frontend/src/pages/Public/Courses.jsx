@@ -233,16 +233,6 @@ const Courses = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Live Count</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">{categoryCountLabel}</p>
-                </div>
-                <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-left">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">Visible Now</p>
-                  <p className="mt-2 text-lg font-bold text-sky-900">{courseCountLabel}</p>
-                </div>
-              </div>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -373,10 +363,10 @@ const Courses = () => {
                           View Details <ArrowRight className="h-4 w-4" />
                         </button>
                         <Link
-                          to="/contact"
-                          className="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          to={`/checkout/${course._id}`}
+                          className="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100"
                         >
-                          Enquire
+                          Buy Now
                         </Link>
                       </div>
                     </div>
@@ -394,8 +384,8 @@ const Courses = () => {
 
       {selectedCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-5xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-2xl">
-            <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_minmax(0,1fr)]">
+          <div className="w-full max-w-5xl max-h-[95vh] overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-2xl flex flex-col">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_minmax(0,1fr)] overflow-y-auto">
               <div className="relative min-h-[320px] overflow-hidden bg-slate-950">
                 <img
                   src={normalizedCourses.find((course) => course._id === selectedCourse._id)?.visual || fallbackImages[0]}
@@ -489,10 +479,10 @@ const Courses = () => {
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Link
-                      to="/contact"
+                      to={`/checkout/${selectedCourse._id}`}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-3 font-bold text-zinc-950 transition hover:brightness-105"
                     >
-                      Enroll Now <ArrowRight className="h-4 w-4" />
+                      Buy Now <ArrowRight className="h-4 w-4" />
                     </Link>
                     <button
                       type="button"

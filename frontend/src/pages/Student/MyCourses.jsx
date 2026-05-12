@@ -5,64 +5,81 @@ import api from '../../services/api';
 import useRefreshOnFocus from '../../hooks/useRefreshOnFocus';
 
 const MyCourses = () => {
-  const [data, setData] = useState({ course: null, materials: [] });
+  const [data, setData] = useState({ course: null, enrolledCourses: [], materials: [] });
 
   useRefreshOnFocus(async () => {
     try {
       const res = await api.get('/student/dashboard');
-      setData({ course: res.data.course, materials: res.data.materials || [] });
+      setData({ 
+        course: res.data.course, 
+        enrolledCourses: res.data.enrolledCourses || [], 
+        materials: res.data.materials || [] 
+      });
     } catch (error) {
       console.error('Failed to load student courses', error);
     }
   });
 
-  const { course, materials } = data;
+  const { course, enrolledCourses, materials } = data;
+  
+  // Combine legacy single course and new array of courses, remove duplicates
+  const allCourses = [];
+  if (course) allCourses.push(course);
+  enrolledCourses.forEach(c => {
+    if (!allCourses.find(ext => ext._id === c._id)) {
+      allCourses.push(c);
+    }
+  });
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
       <header className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-800">My Enrolled Courses</h1>
-        <p className="mt-1 text-slate-500">Only the course assigned by the admin panel is shown here.</p>
+        <p className="mt-1 text-slate-500">Access the courses you've purchased or been assigned to.</p>
       </header>
 
-      {course ? (
-        <div className="rounded-[28px] border border-slate-200/80 bg-white p-8 shadow-sm">
-          <div className="flex flex-col gap-8 md:flex-row">
-            <Link to="/student/courses/active" className="group flex aspect-video w-full items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-900 via-sky-900 to-cyan-500 text-white md:w-1/3">
-              <div className="px-6 text-center">
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-100/80">{course.duration || 'Open batch'}</p>
-                <h2 className="mt-3 text-2xl font-bold">{course.title}</h2>
-              </div>
-            </Link>
-            <div className="flex w-full flex-col justify-center md:w-2/3">
-              <div className="mb-2 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-sky-600">
-                Assigned Course
-              </div>
-              <Link to="/student/courses/active" className="inline-block transition hover:text-sky-600">
-                <h2 className="mb-4 text-3xl font-bold text-slate-800">{course.title}</h2>
-              </Link>
-              <p className="mb-6 text-slate-600">{course.description}</p>
+      {allCourses.length > 0 ? (
+        <div className="grid gap-6">
+          {allCourses.map((c, idx) => (
+            <div key={c._id || idx} className="rounded-[28px] border border-slate-200/80 bg-white p-8 shadow-sm transition hover:shadow-md">
+              <div className="flex flex-col gap-8 md:flex-row">
+                <Link to="/student/courses/active" className="group flex aspect-video w-full items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-900 via-sky-900 to-cyan-500 text-white md:w-1/3">
+                  <div className="px-6 text-center">
+                    <p className="text-xs uppercase tracking-[0.3em] text-sky-100/80">{c.duration || 'Open batch'}</p>
+                    <h2 className="mt-3 text-2xl font-bold">{c.title}</h2>
+                  </div>
+                </Link>
+                <div className="flex w-full flex-col justify-center md:w-2/3">
+                  <div className="mb-2 flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-sky-600">
+                    Active Program
+                  </div>
+                  <Link to="/student/courses/active" className="inline-block transition hover:text-sky-600">
+                    <h2 className="mb-4 text-3xl font-bold text-slate-800">{c.title}</h2>
+                  </Link>
+                  <p className="mb-6 text-slate-600 line-clamp-2">{c.description}</p>
 
-              <div className="mb-6 flex flex-col gap-3 text-sm font-medium text-slate-500 sm:flex-row sm:items-center sm:gap-6">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-slate-400" /> {course.duration || 'Flexible duration'}
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-slate-400" /> {(course.subjects || []).length} subjects
-                </div>
-              </div>
+                  <div className="mb-6 flex flex-col gap-3 text-sm font-medium text-slate-500 sm:flex-row sm:items-center sm:gap-6">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-slate-400" /> {c.duration || 'Flexible duration'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-slate-400" /> {(c.subjects || []).length} subjects
+                    </div>
+                  </div>
 
-              <div className="flex flex-wrap gap-2">
-                {(course.subjects || []).map((subject) => (
-                  <span key={subject} className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{subject}</span>
-                ))}
+                  <div className="flex flex-wrap gap-2">
+                    {(c.subjects || []).map((subject) => (
+                      <span key={subject} className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{subject}</span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       ) : (
         <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 shadow-sm">
-          No course has been assigned to this student account yet.
+          No courses have been assigned to your account yet. You can explore and purchase courses from the public catalog.
         </div>
       )}
 

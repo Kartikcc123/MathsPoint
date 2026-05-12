@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -19,15 +20,16 @@ const Login = () => {
     
     try {
       const user = await login(email, password);
-      // Route based on role and enrollment / admin override
-      if (user.actualRole === 'teacher') {
-        navigate('/teacher/dashboard');
-      } else if (user.actualRole === 'parent') {
+      
+      // Prevent admins from using the public login page
+      if (user.role === 'admin' || user.actualRole === 'teacher') {
+         setError('Administrators must use the dedicated secure portal to log in.');
+         return;
+      }
+
+      if (user.actualRole === 'parent') {
         navigate('/parent/dashboard');
-      } else if (user.role === 'admin') {
-        navigate('/admin/dashboard');
       } else {
-        // student: only allow to student dashboard if enrolled or admin allowed
         if (user.course || user.studentPanelAllowed) {
           navigate('/student/dashboard');
         } else {
@@ -43,7 +45,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background blobs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-sky-500/20 blur-3xl opacity-50 mix-blend-screen"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-yellow-300/15 blur-3xl opacity-50 mix-blend-screen"></div>
 
@@ -87,7 +88,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-slate-600 bg-slate-800 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm text-white transition"
-                  placeholder="admin@academicplus.com"
+                  placeholder="student@academicplus.com"
                 />
               </div>
             </div>
@@ -128,9 +129,10 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition"
+                disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition disabled:opacity-50"
               >
-                Sign in
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
 

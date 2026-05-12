@@ -20,6 +20,9 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "qrcode": "^1.5.4",
+    "razorpay": "^2.9.6",
+    "speakeasy": "^2.0.0"
   }
 }

@@ -28,12 +28,29 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email: email.trim(), password });
+      
+      if (res.data.require2FA) {
+        return res.data;
+      }
+
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);
       return userData;
     } catch (error) {
       throw error.response?.data?.message || 'Login failed';
+    }
+  };
+
+  const verify2FA = async (userId, code) => {
+    try {
+      const res = await api.post('/auth/verify-login-2fa', { userId, code });
+      const { token, ...userData } = res.data;
+      localStorage.setItem('token', token);
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      throw error.response?.data?.message || 'Verification failed';
     }
   };
 
@@ -55,7 +72,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, verify2FA, register, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

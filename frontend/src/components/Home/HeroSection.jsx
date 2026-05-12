@@ -50,19 +50,18 @@ export default function HeroSection() {
     {
       title: "Empower Your Maths Preparation",
       subtitle: "Join the elite institute dedicated to forging future toppers.",
-      price: "Starting from ₹2,999/-",
       img: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop",
     },
     {
       title: "Learn with India's Best Educators",
       subtitle: "Expert faculty guidance and practical understanding.",
-      price: "Join Now 🚀",
+      
       img: "https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop",
     },
     {
       title: "Crack Exams with Confidence",
       subtitle: "Career-ready academic support and test series.",
-      price: "Enroll Today",
+      
       img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop",
     },
   ];

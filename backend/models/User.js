@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   // Student specific fields
   studentId: { type: String, unique: true, sparse: true, trim: true },
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', index: true },
+  enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   parentEmail: { type: String },
   parentPhone: { type: String },
   phone: { type: String, trim: true },
@@ -24,6 +25,8 @@ const userSchema = new mongoose.Schema({
   studentPanelAllowed: { type: Boolean, default: false },
   enrolledDate: { type: Date, default: Date.now },
   lastLoginAt: { type: Date },
+  twoFactorSecret: { type: String },
+  twoFactorEnabled: { type: Boolean, default: false },
 }, { timestamps: true });
 
 userSchema.pre('validate', function () {

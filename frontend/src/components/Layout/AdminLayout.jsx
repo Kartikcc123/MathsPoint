@@ -30,6 +30,7 @@ const navItems = [
   { path: '/admin/attendance', label: 'Master Attendance', icon: CheckCircle },
   { path: '/admin/attendance/simple', label: 'Fast Attendance', icon: Sparkles },
   { path: '/admin/results', label: 'Test Results', icon: FileText },
+  { path: '/admin/security', label: 'Security', icon: CheckCircle },
 ];
 
 const AdminLayout = () => {
@@ -47,7 +48,7 @@ const AdminLayout = () => {
   };
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (user.actualRole === 'teacher') {
@@ -59,7 +60,7 @@ const AdminLayout = () => {
   }
 
   if (user.role !== 'admin') {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   const loadNotifications = async () => {
@@ -99,7 +100,7 @@ const AdminLayout = () => {
             <Sparkles className="h-4 w-4" /> Operations Snapshot
           </div>
           <p className="text-sm leading-relaxed text-slate-300/90">
-            Keep pharmacy admissions, course delivery, attendance, and academic records aligned from one workspace.
+            Keep admissions, course delivery, attendance, and academic records aligned from one workspace.
           </p>
         </div>
       </div>

@@ -72,36 +72,7 @@ const StudentDashboard = () => {
 
   const firstName = user.name.split(' ')[0];
 
-  // Courses list for the card grid
-  const [courses, setCourses] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All');
-
-  useEffect(() => {
-    let mounted = true;
-    const fetchCourses = async () => {
-      try {
-        const res = await api.get('/courses');
-        if (!mounted) return;
-        setCourses(res.data || []);
-      } catch (err) {
-        // fallback mock data
-        if (!mounted) return;
-        setCourses([
-          { id: 1, title: 'NEET Crash Course', faculty: 'Sharma Sir', thumbnail: '/public/sample1.jpg', progress: 48, enrolled: true, category: 'Recorded' },
-          { id: 2, title: 'Organic Chemistry Live', faculty: 'Khan Madam', thumbnail: '/public/sample2.jpg', progress: 0, enrolled: false, category: 'Live' },
-          { id: 3, title: 'Maths Problem Series', faculty: 'Verma Sir', thumbnail: '/public/sample3.jpg', progress: 12, enrolled: true, category: 'Notes' },
-          { id: 4, title: 'Physics Tests Pack', faculty: 'Agarwal Sir', thumbnail: '/public/sample4.jpg', progress: 0, enrolled: false, category: 'Tests' },
-          { id: 5, title: 'Viva Preparation', faculty: 'Rao Maam', thumbnail: '/public/sample5.jpg', progress: 76, enrolled: true, category: 'Recorded' },
-        ]);
-      } finally {
-        if (mounted) setLoadingCourses(false);
-      }
-    };
-
-    fetchCourses();
-    return () => { mounted = false; };
-  }, []);
+  const enrolledCourses = data.enrolledCourses || [];
 
   return (
     <motion.div 
@@ -110,15 +81,7 @@ const StudentDashboard = () => {
       variants={containerVariant} 
       className="mx-auto w-full max-w-7xl space-y-10 px-4 pb-32 pt-8 sm:px-8"
     >
-      <Navbar onSearch={(q) => console.log('search', q)} />
 
-      <div className="mt-4">
-        <CategoryTabs
-          categories={[ 'All', 'Live', 'Recorded', 'Notes', 'Tests' ]}
-          active={activeCategory}
-          onChange={(c) => setActiveCategory(c)}
-        />
-      </div>
 
       {/* Hero Section */}
       <motion.section 
@@ -314,60 +277,20 @@ const StudentDashboard = () => {
       </motion.section>
 
       {/* Continue Learning Section */}
-      <motion.section variants={itemVariant}>
-        <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight text-slate-900">In Progress</h2>
-          <span className="text-sm font-semibold text-slate-500">Pick up where you left</span>
-        </div>
+      {enrolledCourses.length > 0 && (
+        <motion.section variants={itemVariant}>
+          <div className="mb-6 flex items-baseline justify-between">
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900">In Progress</h2>
+            <span className="text-sm font-semibold text-slate-500">Pick up where you left</span>
+          </div>
 
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {loadingCourses ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
-            courses.filter(c => c.enrolled).map((course) => (
-              <CourseCard key={course.id} course={course} onContinue={(c) => console.log('continue', c)} />
-            ))
-          )}
-        </div>
-      </motion.section>
-
-      {/* Popular Courses Section */}
-      <motion.section variants={itemVariant}>
-        <div className="mb-6 flex items-baseline justify-between">
-           <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Popular on Maths Point</h2>
-           <span className="text-sm font-semibold text-slate-500">Trending picks</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {loadingCourses ? (
-            Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
-            courses.map((course) => (
-              <CourseCard key={course.id} course={course} onContinue={(c) => console.log('open', c)} />
-            ))
-          )}
-        </div>
-      </motion.section>
-
-      {/* Recommended Section */}
-      <motion.section variants={itemVariant}>
-        <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Recommended for You</h2>
-          <span className="text-sm font-semibold text-slate-500">Based on your level</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {loadingCourses ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
-            courses.slice().reverse().map((course) => (
-              <CourseCard key={course.id} course={course} onContinue={(c) => console.log('open', c)} />
-            ))
-          )}
-        </div>
-      </motion.section>
-
-      <BottomNav />
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {enrolledCourses.map((course) => (
+              <CourseCard key={course._id || course.id} course={course} onContinue={(c) => console.log('continue', c)} />
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {/* Charts Section */}
       <motion.div variants={containerVariant} className="grid grid-cols-1 gap-8 lg:grid-cols-2">
