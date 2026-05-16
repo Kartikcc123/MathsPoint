@@ -6,6 +6,7 @@ const courseSchema = new mongoose.Schema({
   subjects: [{ type: String }],
   feeAmount: { type: Number, required: true },
   duration: { type: String }, // e.g., "1 Year", "6 Months"
+  thumbnail: { type: String },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Course', courseSchema);

@@ -11,6 +11,9 @@ import {
   Sparkles,
   Users,
   X,
+  ChevronRight,
+  BookText,
+  Circle,
 } from 'lucide-react';
 import api from '../../services/api';
 import { buildSrcSet } from '../../utils/image';
@@ -21,6 +24,27 @@ const fallbackImages = [
   'https://images.unsplash.com/photo-1596496050827-8299e0220de1?q=80&w=2070&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=2070&auto=format&fit=crop',
 ];
+
+const GRADIENTS = [
+  ['#ff6b6b', '#ee0979'],
+  ['#4776E6', '#8E54E9'],
+  ['#11998e', '#38ef7d'],
+  ['#F7971E', '#FFD200'],
+  ['#c94b4b', '#4b134f'],
+  ['#00b09b', '#96c93d'],
+];
+
+const fmtDate = (dateStr) => {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const day = d.getDate();
+  const suffix = ['th', 'st', 'nd', 'rd'][
+    day % 10 > 3 || Math.floor((day % 100) / 10) === 1 ? 0 : day % 10
+  ];
+  const mon = d.toLocaleString('en-IN', { month: 'short' });
+  const yr = String(d.getFullYear()).slice(2);
+  return `${day}${suffix} ${mon}'${yr}`;
+};
 
 const categoryConfig = [
   { id: 'all', label: 'All Programs' },
@@ -273,105 +297,136 @@ const Courses = () => {
               </div>
             ) : filteredCourses.length ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {filteredCourses.map((course, idx) => (
+                {filteredCourses.map((course, idx) => {
+                  const gradPair = GRADIENTS[idx % GRADIENTS.length] || ['#4776E6', '#8E54E9'];
+                  const subjects = course.subjects || [];
+                  const classLabel = course.classLabel || subjects[0] || 'Course';
+                  const language = course.language || 'ENGLISH';
+                  const purpose = subjects.length > 1
+                    ? subjects.slice(1).join(', ')
+                    : subjects[0] || 'Academic Preparation';
+                  const fee = course.feeAmount ?? 0;
+                  const mrp = course.mrp || 0;
+                  const discount = mrp > 0 && fee < mrp
+                    ? Math.round(((mrp - fee) / mrp) * 100)
+                    : null;
+                  const startDate = course.startedAt || course.createdAt;
+
+                  return (
                   <motion.article
                     key={course._id}
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.45, delay: idx * 0.05 }}
-                    className="group flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_20px_60px_-38px_rgba(15,23,42,0.32)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_32px_80px_-34px_rgba(14,165,233,0.3)]"
+                    className="group flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
                   >
-                    <div className="relative h-52 overflow-hidden">
-                      <img
-                        src={course.visual}
-                        srcSet={buildSrcSet(course.visual)}
-                        sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
-                        alt={course.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06),rgba(15,23,42,0.82))]" />
-                      <div className="absolute left-5 top-5 inline-flex items-center rounded-full border border-white/25 bg-white/12 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-white backdrop-blur-sm">
-                        {getAudienceLabel(course.inferredCategory)}
-                      </div>
-                      <div className="absolute right-5 top-5 rounded-full bg-rose-500 px-3 py-1 text-[11px] font-bold text-white shadow-sm">
-                        {formatFee(course.feeAmount)}
-                      </div>
-                      <div className="absolute bottom-5 left-5 right-5 text-white">
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-100/80">
-                          {course.duration || 'Flexible duration'}
-                        </p>
-                        <h3 className="mt-2 text-2xl font-bold leading-tight">{course.title}</h3>
-                      </div>
+                    {/* ── 1. Ad Banner / Thumbnail ──────────────────────── */}
+                    <div className="relative h-48 overflow-hidden">
+                      {course.thumbnail ? (
+                        <img
+                          src={course.thumbnail}
+                          srcSet={buildSrcSet(course.thumbnail)}
+                          sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
+                          alt={course.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div
+                          className="relative flex h-full w-full flex-col items-center justify-center px-6 text-center"
+                          style={{ background: `linear-gradient(135deg, ${gradPair[0]}, ${gradPair[1]})` }}
+                        >
+                          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_60%)]" />
+                          <p className="relative z-10 text-2xl font-extrabold uppercase tracking-wide text-white drop-shadow-md">
+                            {course.title}
+                          </p>
+                          {course.duration && (
+                            <p className="relative z-10 mt-1 text-xs font-semibold uppercase tracking-widest text-white/70">
+                              {course.duration}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex flex-1 flex-col p-6">
-                      <div className="flex flex-wrap gap-2">
-                        {(course.subjects || []).slice(0, 3).map((subject) => (
-                          <span
-                            key={subject}
-                            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600"
-                          >
-                            {subject}
-                          </span>
-                        ))}
-                        {!(course.subjects || []).length && (
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-500">
-                            Subjects updated by admin
-                          </span>
+                    {/* ── 2. Card Body ─────────────────────────────────── */}
+                    <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+                      {/* Row A: class label (orange) + language pill */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-orange-500">{classLabel}</span>
+                        <span className="rounded border border-slate-300 px-2 py-0.5 text-[11px] font-bold tracking-wider text-slate-600">
+                          {language}
+                        </span>
+                      </div>
+
+                      {/* Row B: course title */}
+                      <h3 className="mt-1.5 text-lg font-extrabold leading-snug text-slate-900">
+                        {course.title}
+                      </h3>
+
+                      {/* Row C: purpose / category */}
+                      <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
+                        <BookText className="h-4 w-4 shrink-0" />
+                        <span>{purpose}</span>
+                      </div>
+
+                      {/* Row D: ongoing + start date */}
+                      <div className="mt-2 flex items-center gap-2 text-sm">
+                        <span className="flex items-center gap-1.5 font-semibold text-red-500">
+                          <Circle className="h-2.5 w-2.5 fill-red-500" />
+                          Ongoing
+                        </span>
+                        {startDate && (
+                          <>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-slate-500">Started on {fmtDate(startDate)}</span>
+                          </>
                         )}
                       </div>
 
-                      <p className="mt-5 line-clamp-3 text-sm leading-7 text-slate-600">
-                        {course.description || 'A structured program with guided mathematics preparation and consistent support.'}
-                      </p>
+                      {/* Spacer to push pricing and button to bottom */}
+                      <div className="flex-1" />
 
-                      <div className="mt-6 grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Subjects</p>
-                          <p className="mt-2 text-sm font-bold text-slate-900">
-                            {(course.subjects || []).length || 'N/A'}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Duration</p>
-                          <p className="mt-2 text-sm font-bold text-slate-900 line-clamp-1">
-                            {course.duration || 'Flexible'}
-                          </p>
-                        </div>
+                      {/* Divider */}
+                      <div className="my-4 border-t border-slate-100" />
+
+                      {/* Row E: price row */}
+                      <div className="flex items-end gap-2">
+                        <span className="text-2xl font-extrabold text-slate-900">
+                          {fee === 0 ? 'Free' : `₹${fee.toLocaleString('en-IN')}`}
+                        </span>
+                        {mrp > 0 && mrp !== fee && (
+                          <span className="pb-1 text-sm font-medium text-slate-400 line-through">
+                            ₹{mrp.toLocaleString('en-IN')}
+                          </span>
+                        )}
                       </div>
+                      {discount && (
+                        <p className="mt-0.5 text-sm font-bold text-green-600">{discount}% OFF</p>
+                      )}
 
-                      <div className="mt-6 space-y-3 rounded-[24px] border border-sky-100 bg-sky-50/80 p-4">
-                        <div className="flex items-center gap-3 text-sm text-slate-700">
-                          <BookOpen className="h-4 w-4 text-sky-700" />
-                          <span>Curriculum published from admin panel</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-700">
-                          <Layers3 className="h-4 w-4 text-sky-700" />
-                          <span>Live course card that updates with admin changes</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-auto flex items-center gap-3 pt-6">
-                        <button
-                          type="button"
-                          onClick={() => openCourseDetails(course)}
-                          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-sky-700"
-                        >
-                          View Details <ArrowRight className="h-4 w-4" />
-                        </button>
+                      {/* Row F: Buy Now + Arrow */}
+                      <div className="mt-4 flex items-center gap-2">
                         <Link
                           to={`/checkout/${course._id}`}
-                          className="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100"
+                          className="flex-1 rounded-2xl bg-slate-900 py-3.5 text-center text-sm font-bold text-white transition hover:bg-sky-700 active:scale-95"
                         >
                           Buy Now
                         </Link>
+                        <button
+                          onClick={() => openCourseDetails(course)}
+                          className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                          aria-label="View Details"
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </button>
                       </div>
                     </div>
                   </motion.article>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-12 text-center text-slate-500 shadow-sm">

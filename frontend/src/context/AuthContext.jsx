@@ -1,11 +1,26 @@
 import React, { createContext, useEffect, useState } from 'react';
 import api from '../services/api';
+import { generateDeviceId, getDeviceInfo } from '../utils/DeviceFingerprint';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Register device session after login
+  const registerDeviceSession = async () => {
+    try {
+      const deviceId = await generateDeviceId();
+      const deviceInfo = getDeviceInfo();
+      const res = await api.post('/session/register', { deviceId, deviceInfo });
+      if (res.data.sessionToken) {
+        localStorage.setItem('mp_session_token', res.data.sessionToken);
+      }
+    } catch (error) {
+      console.error('Device registration failed:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -16,6 +31,7 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
         } catch (_error) {
           localStorage.removeItem('token');
+          localStorage.removeItem('mp_session_token');
         }
       }
 
@@ -36,6 +52,10 @@ export const AuthProvider = ({ children }) => {
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);
+
+      // Register device after successful login
+      await registerDeviceSession();
+
       return userData;
     } catch (error) {
       throw error.response?.data?.message || 'Login failed';
@@ -48,6 +68,10 @@ export const AuthProvider = ({ children }) => {
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);
+
+      // Register device after 2FA verification
+      await registerDeviceSession();
+
       return userData;
     } catch (error) {
       throw error.response?.data?.message || 'Verification failed';
@@ -60,6 +84,10 @@ export const AuthProvider = ({ children }) => {
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);
+
+      // Register device after registration
+      await registerDeviceSession();
+
       return userData;
     } catch (error) {
       throw error.response?.data?.message || 'Registration failed';
@@ -68,6 +96,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('mp_session_token');
     setUser(null);
   };
 

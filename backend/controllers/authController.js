@@ -60,6 +60,13 @@ const loginUser = async (req, res) => {
         studentPanelAllowed: !!user.studentPanelAllowed,
         linkedStudents: user.linkedStudents || [],
         taughtCourses: user.taughtCourses || [],
+        phone: user.phone,
+        city: user.city,
+        academicClass: user.academicClass,
+        board: user.board,
+        exams: user.exams,
+        language: user.language,
+        avatar: user.avatar,
         token: generateToken(user._id),
       });
     } else {
@@ -104,6 +111,13 @@ const verifyLogin2FA = async (req, res) => {
         studentPanelAllowed: !!user.studentPanelAllowed,
         linkedStudents: user.linkedStudents || [],
         taughtCourses: user.taughtCourses || [],
+        phone: user.phone,
+        city: user.city,
+        academicClass: user.academicClass,
+        board: user.board,
+        exams: user.exams,
+        language: user.language,
+        avatar: user.avatar,
         token: generateToken(user._id),
       });
     } else {
@@ -281,6 +295,13 @@ const getUserProfile = async (req, res) => {
       studentPanelAllowed: !!user.studentPanelAllowed,
       linkedStudents: user.linkedStudents || [],
       taughtCourses: user.taughtCourses || [],
+      phone: user.phone,
+      city: user.city,
+      academicClass: user.academicClass,
+      board: user.board,
+      exams: user.exams,
+      language: user.language,
+      avatar: user.avatar,
     });
   } else {
     return res.status(404).json({ message: 'User not found', code: 'AUTH_PROFILE_NOT_FOUND' });

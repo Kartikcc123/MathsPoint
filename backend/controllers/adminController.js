@@ -379,11 +379,17 @@ const createManagedUser = async (req, res) => {
 // @route   POST /api/admin/course
 // @access  Private/Admin
 const createCourse = async (req, res) => {
-  const { title, description, subjects, feeAmount, duration } = req.body;
+  const { title, description, subjects, feeAmount, duration, thumbnail } = req.body;
 
   try {
+    let finalThumbnail = thumbnail;
+    if (!finalThumbnail && title) {
+      const { generateSvgThumbnail } = require('../utils/thumbnailGenerator');
+      finalThumbnail = generateSvgThumbnail(title, { feeAmount });
+    }
+
     const course = await Course.create({
-      title, description, subjects, feeAmount, duration
+      title, description, subjects, feeAmount, duration, thumbnail: finalThumbnail
     });
     res.status(201).json(course);
   } catch (error) {

@@ -17,12 +17,13 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import AdminStudents from './pages/Admin/AdminStudents';
 import AdminCourses from './pages/Admin/AdminCourses';
 import AdminAttendance from './pages/Admin/AdminAttendance';
-import SimpleAttendance from './pages/Admin/SimpleAttendance';
 import AdminResults from './pages/Admin/AdminResults';
 import AdminSecurity from './pages/Admin/AdminSecurity';
 import AdminMaterials from './pages/Admin/AdminMaterials';
+import AdminCourseDetail from './pages/Admin/AdminCourseDetail';
 import AdminPayments from './pages/Admin/AdminPayments';
 import AdminNotifications from './pages/Admin/AdminNotifications';
+import AdminLessons from './pages/Admin/AdminLessons';
 import StudentDashboard from './pages/Student/Dashboard';
 
 // Layouts
@@ -35,9 +36,12 @@ import ParentLayout from './components/Layout/ParentLayout';
 // Student Pages
 import MyCourses from './pages/Student/MyCourses';
 import CourseViewer from './pages/Student/CourseViewer';
-import Fees from './pages/Student/Fees';
 import Results from './pages/Student/Results';
+import TestSeries from './pages/Student/TestSeries';
 import Attendance from './pages/Student/Attendance';
+import LessonPlayer from './pages/Student/LessonPlayer';
+import Profile from './pages/Student/Profile';
+import Purchases from './pages/Student/Purchases';
 import TeacherDashboard from './pages/Teacher/Dashboard';
 import TeacherCourses from './pages/Teacher/Courses';
 import TeacherStudents from './pages/Teacher/Students';
@@ -68,13 +72,14 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="courses/:courseId" element={<AdminCourseDetail />} />
           <Route path="materials" element={<AdminMaterials />} />
           <Route path="payments" element={<AdminPayments />} />
           <Route path="notifications" element={<AdminNotifications />} />
           <Route path="attendance" element={<AdminAttendance />} />
-          <Route path="attendance/simple" element={<SimpleAttendance />} />
           <Route path="results" element={<AdminResults />} />
           <Route path="security" element={<AdminSecurity />} />
+          <Route path="lessons" element={<AdminLessons />} />
         </Route>
         
         {/* Student Panel Routes */}
@@ -83,9 +88,12 @@ function App() {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="courses" element={<MyCourses />} />
           <Route path="courses/active" element={<CourseViewer />} />
-          <Route path="fees" element={<Fees />} />
           <Route path="results" element={<Results />} />
+          <Route path="test-series" element={<TestSeries />} />
           <Route path="attendance" element={<Attendance />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="purchases" element={<Purchases />} />
+          <Route path="lesson/:lessonId" element={<LessonPlayer />} />
         </Route>
 
         <Route path="/teacher" element={<TeacherLayout />}>

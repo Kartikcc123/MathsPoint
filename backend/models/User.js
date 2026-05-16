@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, trim: true },
   normalizedPhone: { type: String, unique: true, sparse: true },
   address: { type: String },
+  city: { type: String, trim: true },
+  academicClass: { type: String, trim: true },
+  board: { type: String, trim: true },
+  exams: { type: String, trim: true },
+  language: { type: String, trim: true },
+  avatar: { type: String, trim: true },
   linkedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   taughtCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   // Allow admin to grant student panel access even without enrollment

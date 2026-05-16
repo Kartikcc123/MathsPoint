@@ -159,4 +159,34 @@ const getStudentNotifications = async (req, res) => {
   }
 };
 
-module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications };
+const updateStudentProfile = async (req, res) => {
+  try {
+    const student = await User.findById(req.user._id);
+
+    if (!student) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Allow updating specific fields
+    const { name, phone, city, academicClass, board, exams, language } = req.body;
+
+    if (name !== undefined) student.name = name;
+    if (phone !== undefined) student.phone = phone;
+    if (city !== undefined) student.city = city;
+    if (academicClass !== undefined) student.academicClass = academicClass;
+    if (board !== undefined) student.board = board;
+    if (exams !== undefined) student.exams = exams;
+    if (language !== undefined) student.language = language;
+
+    await student.save();
+
+    // Do not return password
+    student.password = undefined;
+
+    res.json(student);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to update profile.');
+  }
+};
+
+module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile };

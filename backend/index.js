@@ -56,7 +56,23 @@ const authLimiter = rateLimit({
 
 // Middleware
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.youtube.com", "https://s.ytimg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://i.ytimg.com", "https://img.youtube.com", "https://*.googleusercontent.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
+      childSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
+      connectSrc: ["'self'", "https://www.youtube.com", "https://*.googleapis.com"],
+      mediaSrc: ["'self'", "https://www.youtube.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(cors(corsOptions));
 // Handle preflight (OPTIONS) requests via middleware to avoid registering
 // a route with the literal '*' path which some path parsers reject.
@@ -79,6 +95,8 @@ const studentRoutes = require('./routes/studentRoutes');
 const parentRoutes = require('./routes/parentRoutes');
 const publicRoutes = require('./routes/publicRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const lessonRoutes = require('./routes/lessonRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
 
 // Mount Routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -87,6 +105,8 @@ app.use('/api/student', studentRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api', lessonRoutes);
+app.use('/api/session', sessionRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -104,6 +124,10 @@ if (!MONGO_URI) {
 if (!process.env.JWT_SECRET) {
   console.error('Missing JWT_SECRET in environment variables.');
   process.exit(1);
+}
+
+if (!process.env.VIDEO_ENCRYPTION_KEY || process.env.VIDEO_ENCRYPTION_KEY.length !== 64) {
+  console.warn('WARNING: VIDEO_ENCRYPTION_KEY is missing or invalid (must be 64 hex chars). Video lessons will not work.');
 }
 
 mongoose.connect(MONGO_URI)
