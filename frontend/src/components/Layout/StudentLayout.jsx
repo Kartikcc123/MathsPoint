@@ -20,7 +20,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 
-const sidebarSections = [
+const fullAccessSections = [
   {
     title: 'LEARN ONLINE',
     items: [
@@ -50,6 +50,24 @@ const sidebarSections = [
   }
 ];
 
+const limitedAccessSections = [
+  {
+    title: 'STUDY PACKS',
+    items: [
+      { path: '/student/courses', label: 'Batches', icon: MonitorPlay },
+    ]
+  },
+  {
+    title: 'MORE',
+    items: [
+      { path: '/student/purchases', label: 'My Purchases', icon: ShoppingBag },
+      { path: '/student/profile', label: 'My Profile', icon: UserCircle },
+      { path: '/contact', label: 'Contact Us', icon: Phone },
+      { path: '/about', label: 'About us', icon: Info },
+    ]
+  }
+];
+
 const StudentLayout = () => {
   const { user, logout } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -66,10 +84,14 @@ const StudentLayout = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Only allow access if student is enrolled in a course OR admin granted access
-  if (!user.course && !user.studentPanelAllowed) {
-    return <Navigate to="/" replace />;
+  const hasOngoingCourse = Boolean(user.course || (user.enrolledCourses && user.enrolledCourses.length > 0));
+  const limitedAccessAllowedPaths = ['/student/courses', '/student/purchases', '/student/profile'];
+
+  if (!hasOngoingCourse && !limitedAccessAllowedPaths.includes(location.pathname)) {
+    return <Navigate to="/student/courses" replace />;
   }
+
+  const sidebarSections = hasOngoingCourse ? fullAccessSections : limitedAccessSections;
 
   const getLinkClasses = (path) => {
     const isActive = location.pathname === path || (path === '/student/dashboard' && location.pathname === '/student');

@@ -49,6 +49,7 @@ const MyCourses = () => {
       allCourses.push(c);
     }
   });
+  const hasOngoingCourse = allCourses.length > 0;
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
@@ -57,11 +58,11 @@ const MyCourses = () => {
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#5a4bda] mb-4"></div>
           <p>Loading your dashboard...</p>
         </div>
-      ) : allCourses.length > 0 ? (
+      ) : hasOngoingCourse ? (
         <>
           <header className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-800">My Enrolled Courses</h1>
-            <p className="mt-1 text-slate-500">Access the courses you've purchased or been assigned to.</p>
+            <h1 className="text-2xl font-bold text-slate-800">My Current Batch</h1>
+            <p className="mt-1 text-slate-500">These are your ongoing purchased or assigned batches available for study.</p>
           </header>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -73,16 +74,16 @@ const MyCourses = () => {
                     <h2 className="text-[17px] font-bold text-slate-800 leading-tight line-clamp-2">
                       {c.title}
                     </h2>
-                    <button className="text-slate-600 hover:text-green-600 transition-colors shrink-0">
+                    {/* <button className="text-slate-600 hover:text-green-600 transition-colors shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" /><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" /></svg>
-                    </button>
+                    </button> */}
                   </div>
                   
                   {/* Thumbnail Banner */}
                   <div className="w-full h-36 bg-[#efeef9] rounded-xl mb-5 relative overflow-hidden flex flex-col justify-center p-4">
                      <h3 className="text-[15px] font-black text-[#4b3088] uppercase leading-tight w-3/4 line-clamp-2">{c.title}</h3>
                      <div className="mt-2 inline-block bg-[#8b6b9e] text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase max-w-fit shadow-sm">
-                       ACTIVE BATCH
+                       ONGOING BATCH
                      </div>
                      <div className="mt-auto pt-2 z-10">
                        <span className="bg-white text-slate-800 px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm border border-slate-100">Hinglish</span>
@@ -107,8 +108,6 @@ const MyCourses = () => {
               </div>
             ))}
           </div>
-
-
         </>
       ) : (
         /* Empty State - Popular Batches */
@@ -124,6 +123,10 @@ const MyCourses = () => {
                 className="w-full sm:w-80 rounded-md border border-slate-300 pl-9 pr-4 py-2 text-sm focus:border-slate-400 focus:outline-none placeholder:text-slate-400"
               />
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
+            You do not have any ongoing batch right now. Buy a batch below to unlock the full student study panel.
           </div>
 
           {/* Ad Banner */}

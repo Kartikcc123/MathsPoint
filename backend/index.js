@@ -65,11 +65,13 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https://i.ytimg.com", "https://img.youtube.com", "https://*.googleusercontent.com"],
       frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
+      frameAncestors: ["'self'", ...effectiveOrigins],
       childSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
       connectSrc: ["'self'", "https://www.youtube.com", "https://*.googleapis.com"],
       mediaSrc: ["'self'", "https://www.youtube.com"],
     },
   },
+  frameguard: false,
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
@@ -140,3 +142,5 @@ mongoose.connect(MONGO_URI)
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err.message);
   });
+
+// Rate limit memory cleared on last restart

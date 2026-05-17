@@ -397,6 +397,109 @@ const createCourse = async (req, res) => {
   }
 };
 
+// @desc    Update a course
+const updateCourse = async (req, res) => {
+  const { id } = req.params;
+  const { subjects, chapters } = req.body;
+
+  try {
+    const course = await Course.findById(id);
+    if (!course) {
+      throw new AppError(404, 'Course not found.', { code: 'COURSE_NOT_FOUND' });
+    }
+
+    if (subjects !== undefined) {
+      course.subjects = Array.isArray(subjects)
+        ? [...new Set(subjects.map((subject) => String(subject).trim()).filter(Boolean))]
+        : course.subjects;
+    }
+    
+    if (chapters !== undefined) {
+      const normalizedChapters = Object.entries(chapters || {}).reduce((acc, [subject, subjectChapters]) => {
+        const normalizedSubject = String(subject).trim();
+        if (!normalizedSubject) return acc;
+
+        acc[normalizedSubject] = Array.isArray(subjectChapters)
+          ? [...new Set(subjectChapters.map((chapter) => String(chapter).trim()).filter(Boolean))]
+          : [];
+
+        return acc;
+      }, {});
+
+      course.chapters = normalizedChapters;
+    }
+
+    await course.save();
+    const refreshedCourse = await Course.findById(id);
+    const response = refreshedCourse.toObject({ flattenMaps: true });
+    res.status(200).json(response);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to update course.');
+  }
+};
+
+// @desc    Delete a subject from a course (moves materials to uncategorized)
+const deleteSubject = async (req, res) => {
+  const { id } = req.params;
+  const { subject } = req.body;
+  
+  try {
+    const course = await Course.findById(id);
+    if (!course) throw new AppError(404, 'Course not found.');
+
+    // Remove from subjects array
+    course.subjects = course.subjects.filter(s => s !== subject);
+    
+    // Remove from chapters map
+    if (course.chapters && course.chapters.has(subject)) {
+      course.chapters.delete(subject);
+    }
+    await course.save();
+
+    // Move materials/lessons to uncategorized
+    const CourseMaterial = require('../models/CourseMaterial');
+    const Lesson = require('../models/Lesson');
+    
+    await CourseMaterial.updateMany({ course: id, subject }, { $set: { subject: '' } });
+    await Lesson.updateMany({ courseId: id, subject }, { $set: { subject: '' } });
+
+    // Convert Map to plain object for JSON serialization
+    const response = { ...course.toObject(), chapters: Object.fromEntries(course.chapters) };
+    res.json(response);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to delete subject.');
+  }
+};
+
+// @desc    Delete a chapter from a subject (moves materials to uncategorized chapter)
+const deleteChapter = async (req, res) => {
+  const { id } = req.params;
+  const { subject, chapter } = req.body;
+  
+  try {
+    const course = await Course.findById(id);
+    if (!course) throw new AppError(404, 'Course not found.');
+
+    if (course.chapters && course.chapters.has(subject)) {
+      const chaps = course.chapters.get(subject).filter(c => c !== chapter);
+      course.chapters.set(subject, chaps);
+      await course.save();
+    }
+
+    const CourseMaterial = require('../models/CourseMaterial');
+    const Lesson = require('../models/Lesson');
+    
+    await CourseMaterial.updateMany({ course: id, subject, moduleName: chapter }, { $set: { moduleName: '' } });
+    await Lesson.updateMany({ courseId: id, subject, moduleTitle: chapter }, { $set: { moduleTitle: '' } });
+
+    // Convert Map to plain object for JSON serialization
+    const response = { ...course.toObject(), chapters: Object.fromEntries(course.chapters) };
+    res.json(response);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to delete chapter.');
+  }
+};
+
 // @desc    Get all courses
 // @route   GET /api/admin/courses
 // @access  Private/Admin
@@ -409,7 +512,13 @@ const getCourses = async (req, res) => {
     } else {
       courses = await Course.find({});
     }
-    res.json(courses);
+    // Convert chapters Map to plain object for each course
+    const coursesWithPlainChapters = courses.map(course => {
+      const obj = course.toObject();
+      obj.chapters = Object.fromEntries(course.chapters);
+      return obj;
+    });
+    res.json(coursesWithPlainChapters);
   } catch (error) {
     sendErrorResponse(res, error, 'Failed to load courses.');
   }
@@ -544,26 +653,25 @@ const toggleStudentPanel = async (req, res) => {
 };
 
 const createMaterial = async (req, res) => {
-  const { course, title, description, type, moduleName, fileUrl } = req.body;
+  const { course, subject, title, description, type, moduleName } = req.body;
 
   try {
-    const normalizedType = type || 'Notes';
-    const uploadedFileUrl = req.file
-      ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-      : '';
-    const resolvedFileUrl = uploadedFileUrl || fileUrl;
-
-    if (!resolvedFileUrl) {
-      return res.status(400).json({ message: 'Please provide a file upload or direct link.' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file (PDF, image, or Word document).' });
     }
+
+    const normalizedType = type || 'Notes';
+    // Store relative path — will be resolved at stream time
+    const fileUrl = `local:uploads/materials/${req.file.filename}`;
 
     const material = await CourseMaterial.create({
       course,
+      subject,
       title,
       description,
       type: normalizedType,
       moduleName,
-      fileUrl: resolvedFileUrl,
+      fileUrl,
       publishedBy: req.user._id,
     });
 
@@ -1134,4 +1242,4 @@ const publishResults = async (req, res) => {
   }
 };
 
-module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };
+module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, updateCourse, deleteSubject, deleteChapter, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };

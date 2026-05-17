@@ -7,7 +7,10 @@ const { protect, admin, attendanceManager } = require('../middleware/authMiddlew
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, path.join(__dirname, '..', 'uploads'));
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'materials');
+    const fs = require('fs');
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
   },
   filename: (_req, file, cb) => {
     const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -15,7 +18,17 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const fileFilter = (_req, file, cb) => {
+  const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only PDF, images, and Word documents are allowed.'), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
 
 router.route('/students')
   .get(protect, attendanceManager, getStudents);
@@ -55,6 +68,15 @@ router.route('/courses')
 
 router.route('/course')
   .post(protect, admin, createCourse);
+
+router.route('/course/:id')
+  .put(protect, admin, require('../controllers/adminController').updateCourse);
+
+router.route('/course/:id/delete-subject')
+  .patch(protect, admin, require('../controllers/adminController').deleteSubject);
+
+router.route('/course/:id/delete-chapter')
+  .patch(protect, admin, require('../controllers/adminController').deleteChapter);
 
 router.route('/materials')
   .get(protect, admin, getMaterials);

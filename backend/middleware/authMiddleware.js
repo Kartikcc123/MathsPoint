@@ -4,9 +4,19 @@ const { AppError } = require('../utils/api');
 
 const protect = async (req, res, next) => {
   let token;
+
+  // 1. Bearer token from Authorization header (normal API calls)
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // 2. Token from query param (for embed/stream endpoints where headers can't be sent)
+  if (!token && req.query.token) {
+    token = req.query.token;
+  }
+
+  if (token) {
     try {
-      token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-password').populate('course linkedStudents taughtCourses');
 
@@ -20,9 +30,7 @@ const protect = async (req, res, next) => {
     }
   }
 
-  if (!token) {
-    return next(new AppError(401, 'Not authorized, no token.', { code: 'AUTH_TOKEN_MISSING' }));
-  }
+  return next(new AppError(401, 'Not authorized, no token.', { code: 'AUTH_TOKEN_MISSING' }));
 };
 
 const authorizeRoles = (...roles) => (req, _res, next) => {

@@ -20,6 +20,29 @@ const StudentDashboard = () => {
 
   if (!user || user.role !== 'student') return null;
 
+  const hasOngoingCourse = Boolean(user.course || (user.enrolledCourses && user.enrolledCourses.length > 0));
+
+  if (!hasOngoingCourse) {
+    return (
+      <div className="mx-auto w-full max-w-5xl space-y-8 pb-20">
+        <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
+          <h1 className="text-2xl font-bold text-slate-800">No Ongoing Batch Yet</h1>
+          <p className="mt-3 max-w-2xl text-slate-500">
+            Your student account is active, but you do not have any ongoing purchased batch right now. Explore available batches and buy one to unlock the full study panel.
+          </p>
+          <div className="mt-6">
+            <Link
+              to="/student/courses"
+              className="inline-flex items-center rounded-2xl bg-[#5a4bda] px-5 py-3 font-semibold text-white transition hover:bg-[#4b3ec2]"
+            >
+              Explore Batches
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-[1200px] mx-auto pb-20">
       

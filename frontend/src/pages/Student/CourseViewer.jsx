@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useContext, useCallback } from 'react';
-import { PlayCircle, CheckCircle, FileText, ExternalLink, ChevronLeft, ChevronRight, Clock, Lock, BookOpen } from 'lucide-react';
+import { PlayCircle, CheckCircle, FileText, ExternalLink, ChevronLeft, ChevronRight, Clock, Lock, BookOpen, X, Video } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../services/api';
 import useRefreshOnFocus from '../../hooks/useRefreshOnFocus';
+import SecureVideoPlayer from '../../components/Dashboard/SecureVideoPlayer';
+import SecureDocumentViewer from '../../components/Dashboard/SecureDocumentViewer';
 
 const CourseViewer = () => {
   const { user } = useContext(AuthContext);
@@ -11,13 +13,14 @@ const CourseViewer = () => {
   const [activeTab, setActiveTab] = useState('subjects');
   const [activeSubject, setActiveSubject] = useState(null);
   const [activeChapter, setActiveChapter] = useState(null);
-  const [chapterTab, setChapterTab] = useState('All');
+  const [chapterTab, setChapterTab] = useState('Videos');
   const [course, setCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [courseProgress, setCourseProgress] = useState(null);
   const [loadingMaterials, setLoadingMaterials] = useState(true);
   const [loadingLessons, setLoadingLessons] = useState(true);
+  const [playingVideoMaterial, setPlayingVideoMaterial] = useState(null);
 
   useRefreshOnFocus(async () => {
     try {
@@ -84,17 +87,10 @@ const CourseViewer = () => {
           <div className="flex border-b border-slate-100 mb-8 gap-8">
             <button
               onClick={() => { setActiveTab('subjects'); setActiveSubject(null); }}
-              className={`py-3 font-semibold text-[15px] transition relative ${activeTab === 'subjects' ? 'text-[#5a4bda]' : 'text-slate-500 hover:text-slate-800'}`}
+              className={`py-3 font-semibold text-[15px] transition relative text-[#5a4bda]`}
             >
               Subjects
-              {activeTab === 'subjects' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5a4bda] rounded-t-full" />}
-            </button>
-            <button
-              onClick={() => setActiveTab('resources')}
-              className={`py-3 font-semibold text-[15px] transition relative ${activeTab === 'resources' ? 'text-[#5a4bda]' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              Resources
-              {activeTab === 'resources' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5a4bda] rounded-t-full" />}
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5a4bda] rounded-t-full" />
             </button>
           </div>
 
@@ -163,21 +159,27 @@ const CourseViewer = () => {
                
                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                  {(() => {
-                    let subjectChapters = modules.filter(m => m.title.toLowerCase().includes(activeSubject.toLowerCase()));
-                    if (subjectChapters.length === 0) subjectChapters = modules; // fallback
+                    const subjectLessons = lessons.filter(l => l.subject === activeSubject || !l.subject);
+                    const subjectMaterials = materials.filter(m => m.subject === activeSubject || !m.subject);
+
+                    const uniqueChapterNames = [...new Set([
+                      ...subjectLessons.map(l => l.moduleTitle),
+                      ...subjectMaterials.map(m => m.moduleName)
+                    ])].filter(Boolean);
                     
-                    if (subjectChapters.length === 0) return <div className="col-span-full rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-500">No chapters available for this subject yet.</div>;
+                    if (uniqueChapterNames.length === 0) return <div className="col-span-full rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-500">No chapters available for this subject yet.</div>;
                     
-                    return subjectChapters.map((chapter, idx) => {
-                      const match = chapter.title.match(/^(CH\s*-\s*\d+)\s*(.*)/i);
+                    return uniqueChapterNames.map((chapterName, idx) => {
+                      const match = chapterName.match(/^(CH\s*-\s*\d+)\s*(.*)/i);
                       const tag = match ? match[1].toUpperCase() : 'CH';
-                      const name = match ? (match[2] || chapter.title) : chapter.title;
-                      const chapterLessons = chapter.lessons;
+                      const name = match ? (match[2] || chapterName) : chapterName;
+                      
+                      const chapterLessonCount = subjectLessons.filter(l => l.moduleTitle === chapterName).length;
 
                       return (
                         <button
                           key={idx}
-                          onClick={() => { setActiveChapter(chapter.title); setChapterTab('All'); }}
+                          onClick={() => { setActiveChapter(chapterName); setChapterTab('Videos'); }}
                           className="flex flex-col p-5 rounded-2xl border border-slate-200 bg-white hover:border-[#5a4bda] hover:shadow-md transition-all text-left group"
                         >
                           <div className="bg-[#f0f4ff] text-[#5a4bda] text-[11px] font-bold px-2.5 py-1 rounded w-fit mb-3">
@@ -185,7 +187,7 @@ const CourseViewer = () => {
                           </div>
                           <h3 className="text-[17px] font-bold text-slate-800 mb-4 line-clamp-2">{name}</h3>
                           <div className="flex items-center justify-between mt-auto w-full">
-                            <span className="text-sm text-slate-500">Lecture: <span className="font-bold text-slate-800">0/{chapterLessons.length}</span></span>
+                            <span className="text-sm text-slate-500">Lecture: <span className="font-bold text-slate-800">0/{chapterLessonCount}</span></span>
                             <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#5a4bda]" />
                           </div>
                         </button>
@@ -212,19 +214,25 @@ const CourseViewer = () => {
                 <h3 className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">ALL CHAPTERS</h3>
                 <div className="space-y-1 max-h-64 lg:max-h-none overflow-y-auto pr-2 no-scrollbar">
                   {(() => {
-                    let subjectChapters = modules.filter(m => m.title.toLowerCase().includes(activeSubject.toLowerCase()));
-                    if (subjectChapters.length === 0) subjectChapters = modules;
-                    return subjectChapters.map((chapter, idx) => {
-                      const isActive = chapter.title === activeChapter;
+                    const subjectLessons = lessons.filter(l => l.subject === activeSubject || !l.subject);
+                    const subjectMaterials = materials.filter(m => m.subject === activeSubject || !m.subject);
+
+                    const uniqueChapterNames = [...new Set([
+                      ...subjectLessons.map(l => l.moduleTitle),
+                      ...subjectMaterials.map(m => m.moduleName)
+                    ])].filter(Boolean);
+
+                    return uniqueChapterNames.map((chapterName, idx) => {
+                      const isActive = chapterName === activeChapter;
                       return (
                         <button
                           key={idx}
-                          onClick={() => { setActiveChapter(chapter.title); setChapterTab('All'); }}
+                          onClick={() => { setActiveChapter(chapterName); setChapterTab('Videos'); }}
                           className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                             isActive ? 'bg-[#f0f4ff] text-[#5a4bda] border-l-[3px] border-[#5a4bda] shadow-sm' : 'text-slate-600 hover:bg-slate-50'
                           }`}
                         >
-                          {chapter.title}
+                          {chapterName}
                         </button>
                       );
                     });
@@ -236,7 +244,7 @@ const CourseViewer = () => {
               <div className="flex-1 min-w-0">
                 {/* Inner Tabs */}
                 <div className="flex border-b border-slate-200 mb-6 overflow-x-auto no-scrollbar">
-                  {['All', 'Lectures', 'DPPs', 'Notes', 'DPP PDFs', 'DPP Videos'].map(tab => (
+                  {['Videos', 'Notes', 'PYQs', 'Assignments'].map(tab => (
                     <button
                       key={tab}
                       onClick={() => setChapterTab(tab)}
@@ -256,16 +264,17 @@ const CourseViewer = () => {
 
                     let itemsToRender = [];
                     
-                    if (chapterTab === 'All') {
-                      itemsToRender = [...chapterLessons.map(l => ({...l, _type: 'lesson'})), ...chapterMaterials.map(m => ({...m, _type: 'material'}))];
-                    } else if (chapterTab === 'Lectures') {
-                      itemsToRender = chapterLessons.map(l => ({...l, _type: 'lesson'}));
+                    if (chapterTab === 'Videos') {
+                      itemsToRender = [
+                        ...chapterLessons.map(l => ({...l, _type: 'lesson'})),
+                        ...chapterMaterials.filter(m => m.type === 'Video').map(m => ({...m, _type: 'material'}))
+                      ];
                     } else if (chapterTab === 'Notes') {
                       itemsToRender = chapterMaterials.filter(m => m.type === 'Notes').map(m => ({...m, _type: 'material'}));
-                    } else if (chapterTab === 'DPPs' || chapterTab === 'DPP PDFs') {
+                    } else if (chapterTab === 'PYQs') {
+                      itemsToRender = chapterMaterials.filter(m => m.type === 'PYQ').map(m => ({...m, _type: 'material'}));
+                    } else if (chapterTab === 'Assignments') {
                       itemsToRender = chapterMaterials.filter(m => m.type === 'Assignment' || m.type === 'Practice Set').map(m => ({...m, _type: 'material'}));
-                    } else if (chapterTab === 'DPP Videos') {
-                      itemsToRender = chapterMaterials.filter(m => m.type === 'Video').map(m => ({...m, _type: 'material'}));
                     }
                     
                     if (itemsToRender.length === 0) {
@@ -319,8 +328,8 @@ const CourseViewer = () => {
                       } else {
                         return (
                           <div key={`material-${item._id}`} className="flex items-center gap-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-[#5a4bda] transition-colors group">
-                            <div className="flex items-center justify-center w-12 h-12 bg-rose-50 text-rose-500 rounded-lg shrink-0">
-                              <FileText className="h-6 w-6" />
+                            <div className={`flex items-center justify-center w-12 h-12 rounded-lg shrink-0 ${item.type === 'Video' ? 'bg-red-50 text-red-500' : 'bg-rose-50 text-rose-500'}`}>
+                              {item.type === 'Video' ? <Video className="h-6 w-6" /> : <FileText className="h-6 w-6" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
@@ -329,14 +338,21 @@ const CourseViewer = () => {
                               <h4 className="font-semibold text-slate-800 text-[15px] truncate">{item.title}</h4>
                             </div>
                             <div className="shrink-0 pl-2">
-                              <a 
-                                href={item.fileUrl} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors"
-                              >
-                                View <ExternalLink className="h-3 w-3" />
-                              </a>
+                              {item.type === 'Video' ? (
+                                <button 
+                                  onClick={() => setPlayingVideoMaterial(item)}
+                                  className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors"
+                                >
+                                  <PlayCircle className="h-3 w-3" /> Play Video
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={() => navigate(`/student/material/${item._id}`)}
+                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors"
+                                >
+                                  View <FileText className="h-3 w-3" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         );
@@ -348,85 +364,31 @@ const CourseViewer = () => {
             </div>
           )}
 
-          {/* Resources Tab */}
-          {activeTab === 'resources' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <h2 className="mb-6 text-xl font-bold text-slate-800">Published Materials</h2>
-              {loadingMaterials ? (
-                <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-slate-500">
-                  Loading materials...
-                </div>
-              ) : materials.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-slate-500">
-                  No published materials yet.
-                </div>
-              ) : (
-                <div className="max-w-3xl space-y-8">
-                  {(() => {
-                    const grouped = materials.reduce((acc, m) => {
-                      const key = m.moduleName || m.type || 'General';
-                      if (!acc[key]) acc[key] = [];
-                      acc[key].push(m);
-                      return acc;
-                    }, {});
 
-                    const typeColors = {
-                      'Notes': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
-                      'Assignment': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
-                      'Video': { bg: 'bg-red-50', text: 'text-red-500', border: 'border-red-200' },
-                      'Link': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-                      'Practice Set': { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200' },
-                    };
-
-                    return Object.entries(grouped).map(([groupName, items]) => {
-                      const colors = typeColors[items[0]?.type] || { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' };
-                      return (
-                        <div key={groupName}>
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <BookOpen className={`h-4 w-4 ${colors.text}`} />
-                              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                                {groupName}
-                              </h3>
-                            </div>
-                            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
-                              {items.length} {items.length === 1 ? 'item' : 'items'}
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            {items.map((material) => {
-                              const mColors = typeColors[material.type] || colors;
-                              return (
-                                <div key={material._id} className={`flex items-center justify-between rounded-xl border ${mColors.border} p-4 transition hover:shadow-sm bg-white`}>
-                                  <div className="flex items-center gap-4">
-                                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${mColors.bg} ${mColors.text}`}>
-                                      <FileText className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                      <p className="font-semibold text-slate-800">{material.title}</p>
-                                      <p className="text-xs text-slate-500">
-                                        {material.type}
-                                        {material.moduleName ? ` • ${material.moduleName}` : ''}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <a href={material.fileUrl} target="_blank" rel="noreferrer" className={`rounded-lg border ${mColors.border} p-2 ${mColors.text} transition hover:opacity-80`}>
-                                    <ExternalLink className="h-5 w-5" />
-                                  </a>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Video Modal Overlay */}
+      {playingVideoMaterial && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl animate-in fade-in zoom-in duration-300">
+            <div className="absolute -top-12 right-0">
+              <button 
+                onClick={() => setPlayingVideoMaterial(null)}
+                className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
+              >
+                Close <X className="h-4 w-4" />
+              </button>
+            </div>
+            <SecureVideoPlayer 
+              embedUrl={playingVideoMaterial.fileUrl} 
+              lessonTitle={playingVideoMaterial.title}
+              isLoading={false}
+              onProgress={() => {}} // Not tracking progress for material videos currently
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -33,7 +33,7 @@ const TeacherLayout = () => {
   };
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/teacher-portal-7f4b2k1m" replace />;
   }
 
   if (user.actualRole !== 'teacher') {
@@ -43,7 +43,7 @@ const TeacherLayout = () => {
     if (user.actualRole === 'parent') {
       return <Navigate to="/parent/dashboard" replace />;
     }
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/teacher-portal-7f4b2k1m" replace />;
   }
 
   const getLinkClasses = (path) => {

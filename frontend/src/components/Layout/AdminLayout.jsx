@@ -6,6 +6,7 @@ import BrandLogo from '../Shared/BrandLogo';
 import {
   BookOpen,
   Users,
+  UserRoundPlus,
   LogOut,
   CheckCircle,
   Bell,
@@ -17,11 +18,14 @@ import {
   Receipt,
   Megaphone,
   LoaderCircle,
+  GraduationCap,
 } from 'lucide-react';
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/students', label: 'Manage Students', icon: Users },
+  { path: '/admin/parents', label: 'Parent Accounts', icon: UserRoundPlus },
+  { path: '/admin/teachers', label: 'Teacher Accounts', icon: GraduationCap },
   { path: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
   { path: '/admin/payments', label: 'Payment Records', icon: Receipt },
   { path: '/admin/notifications', label: 'Notifications', icon: Megaphone },

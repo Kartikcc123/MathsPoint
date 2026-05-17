@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Search, Filter, UserPlus, ShieldCheck, X, BookOpenCheck, LoaderCircle, Trash2, MailPlus, Clock3, CheckCircle2 } from 'lucide-react';
+import { Users, Search, Filter, UserPlus, ShieldCheck, X, BookOpenCheck, LoaderCircle, Trash2, MailPlus, Clock3, CheckCircle2, UserRoundPlus, GraduationCap } from 'lucide-react';
 import api from '../../services/api';
 
 const initialForm = {
@@ -13,13 +13,35 @@ const initialForm = {
   address: '',
 };
 
+const initialParentForm = {
+  name: '',
+  email: '',
+  password: '',
+  phone: '',
+  address: '',
+  linkedStudents: [],
+};
+
+const initialTeacherForm = {
+  name: '',
+  email: '',
+  password: '',
+  phone: '',
+  address: '',
+  taughtCourses: [],
+};
+
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showParentModal, setShowParentModal] = useState(false);
+  const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [parentForm, setParentForm] = useState(initialParentForm);
+  const [teacherForm, setTeacherForm] = useState(initialTeacherForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -94,9 +116,61 @@ const AdminStudents = () => {
     setForm(initialForm);
   };
 
+  const openParentModal = () => {
+    setError('');
+    setSuccess('');
+    setParentForm(initialParentForm);
+    setShowParentModal(true);
+  };
+
+  const closeParentModal = () => {
+    setShowParentModal(false);
+    setParentForm(initialParentForm);
+  };
+
+  const openTeacherModal = () => {
+    setError('');
+    setSuccess('');
+    setTeacherForm(initialTeacherForm);
+    setShowTeacherModal(true);
+  };
+
+  const closeTeacherModal = () => {
+    setShowTeacherModal(false);
+    setTeacherForm(initialTeacherForm);
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleParentChange = (event) => {
+    const { name, value } = event.target;
+    setParentForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleTeacherChange = (event) => {
+    const { name, value } = event.target;
+    setTeacherForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleParentStudentToggle = (studentId) => {
+    setParentForm((current) => ({
+      ...current,
+      linkedStudents: current.linkedStudents.includes(studentId)
+        ? current.linkedStudents.filter((id) => id !== studentId)
+        : [...current.linkedStudents, studentId],
+    }));
+  };
+
+  const handleTeacherCourseToggle = (courseId) => {
+    setTeacherForm((current) => ({
+      ...current,
+      taughtCourses: current.taughtCourses.includes(courseId)
+        ? current.taughtCourses.filter((id) => id !== courseId)
+        : [...current.taughtCourses, courseId],
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -126,6 +200,60 @@ const AdminStudents = () => {
       closeModal();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create student.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleParentSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const payload = {
+        name: parentForm.name.trim(),
+        email: parentForm.email.trim(),
+        password: parentForm.password,
+        phone: parentForm.phone.trim(),
+        address: parentForm.address.trim(),
+        role: 'parent',
+        linkedStudents: parentForm.linkedStudents,
+      };
+
+      await api.post('/admin/user', payload);
+      setSuccess('Parent account created successfully. It can now log in through the dedicated parent portal.');
+      closeParentModal();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create parent account.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTeacherSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const payload = {
+        name: teacherForm.name.trim(),
+        email: teacherForm.email.trim(),
+        password: teacherForm.password,
+        phone: teacherForm.phone.trim(),
+        address: teacherForm.address.trim(),
+        role: 'teacher',
+        taughtCourses: teacherForm.taughtCourses,
+      };
+
+      await api.post('/admin/user', payload);
+      setSuccess('Teacher account created successfully. It can now log in through the secure staff portal.');
+      closeTeacherModal();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create teacher account.');
     } finally {
       setSaving(false);
     }
@@ -471,6 +599,134 @@ const AdminStudents = () => {
                 </button>
                 <button type="submit" disabled={saving} className="rounded-2xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
                   {saving ? 'Creating...' : 'Create Student'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showParentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">Create Parent Account</h3>
+                <p className="text-sm text-slate-500">Parents will use the dedicated parent portal to monitor linked student records.</p>
+              </div>
+              <button onClick={closeParentModal} className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleParentSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                <input name="name" value={parentForm.name} onChange={handleParentChange} placeholder="Parent name" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input name="email" type="email" value={parentForm.email} onChange={handleParentChange} placeholder="Parent email" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input name="password" type="password" value={parentForm.password} onChange={handleParentChange} placeholder="Temporary password" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input name="phone" value={parentForm.phone} onChange={handleParentChange} placeholder="Parent mobile number" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+
+                <textarea name="address" value={parentForm.address} onChange={handleParentChange} placeholder="Address" rows="3" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                  <p className="mb-3 text-sm font-semibold text-emerald-800">Link Students</p>
+                  <div className="max-h-56 space-y-2 overflow-y-auto pr-2">
+                    {students.length > 0 ? students.map((student) => (
+                      <label key={student._id} className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={parentForm.linkedStudents.includes(student._id)}
+                          onChange={() => handleParentStudentToggle(student._id)}
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span>
+                          <span className="block font-semibold text-slate-800">{student.name}</span>
+                          <span className="block text-xs text-slate-500">{student.email} {student.studentId ? `• ${student.studentId}` : ''}</span>
+                        </span>
+                      </label>
+                    )) : (
+                      <p className="text-sm text-slate-500">No student records available to link yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  This parent will log in from the dedicated portal at <span className="font-semibold">`/parent-login`</span>.
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4">
+                <button type="button" onClick={closeParentModal} className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 transition hover:bg-slate-50">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70">
+                  {saving ? 'Creating...' : 'Create Parent'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showTeacherModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">Create Teacher Account</h3>
+                <p className="text-sm text-slate-500">Teachers will use the secure staff portal and see only the courses assigned here.</p>
+              </div>
+              <button onClick={closeTeacherModal} className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTeacherSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input name="name" value={teacherForm.name} onChange={handleTeacherChange} placeholder="Teacher name" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <input name="email" type="email" value={teacherForm.email} onChange={handleTeacherChange} placeholder="Teacher email" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <input name="password" type="password" value={teacherForm.password} onChange={handleTeacherChange} placeholder="Temporary password" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <input name="phone" value={teacherForm.phone} onChange={handleTeacherChange} placeholder="Teacher mobile number" required className="rounded-2xl border border-slate-200 px-4 py-3 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                </div>
+
+                <textarea name="address" value={teacherForm.address} onChange={handleTeacherChange} placeholder="Address" rows="3" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+
+                <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                  <p className="mb-3 text-sm font-semibold text-violet-800">Assign Courses</p>
+                  <div className="max-h-56 space-y-2 overflow-y-auto pr-2">
+                    {courses.length > 0 ? courses.map((course) => (
+                      <label key={course._id} className="flex items-start gap-3 rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={teacherForm.taughtCourses.includes(course._id)}
+                          onChange={() => handleTeacherCourseToggle(course._id)}
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                        />
+                        <span>
+                          <span className="block font-semibold text-slate-800">{course.title}</span>
+                          <span className="block text-xs text-slate-500">{course.duration || 'Duration pending'} {course.feeAmount !== undefined ? `• Rs ${course.feeAmount}` : ''}</span>
+                        </span>
+                      </label>
+                    )) : (
+                      <p className="text-sm text-slate-500">No course records available to assign yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-700">
+                  This teacher will log in from the secure staff portal at <span className="font-semibold">`/portal-8a9d3f2c`</span>.
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4">
+                <button type="button" onClick={closeTeacherModal} className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 transition hover:bg-slate-50">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="rounded-2xl bg-violet-600 px-5 py-3 font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-70">
+                  {saving ? 'Creating...' : 'Create Teacher'}
                 </button>
               </div>
             </form>

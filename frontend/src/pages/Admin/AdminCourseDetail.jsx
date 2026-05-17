@@ -16,15 +16,14 @@ import {
   Tag,
   Clock,
   IndianRupee,
+  Plus,
 } from 'lucide-react';
 import api from '../../services/api';
 
 const TYPE_OPTIONS = [
   { value: 'Notes', label: 'Notes', icon: FileText },
-  { value: 'Assignment', label: 'DPP / Assignment', icon: ClipboardList },
-  { value: 'Practice Set', label: 'Practice Set', icon: ClipboardList },
-  { value: 'Video', label: 'DPP Video', icon: Video },
   { value: 'PYQ', label: 'PYQ', icon: BookMarked },
+  { value: 'Assignment', label: 'Assignment / DPP', icon: ClipboardList },
 ];
 
 const TYPE_COLORS = {
@@ -36,11 +35,25 @@ const TYPE_COLORS = {
 };
 
 const initialForm = {
+  subject: '',
   title: '',
   description: '',
   type: 'Notes',
   moduleName: '',
-  fileUrl: '',
+};
+
+const normalizeCourseData = (courseData) => {
+  if (!courseData) return null;
+
+  const normalizedChapters =
+    courseData.chapters instanceof Map
+      ? Object.fromEntries(courseData.chapters)
+      : (courseData.chapters || {});
+
+  return {
+    ...courseData,
+    chapters: normalizedChapters,
+  };
 };
 
 const AdminCourseDetail = () => {
@@ -53,10 +66,18 @@ const AdminCourseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [addingSubject, setAddingSubject] = useState(false);
+  const [activeCurriculumSubject, setActiveCurriculumSubject] = useState(null);
+  const [newChapterName, setNewChapterName] = useState('');
+  const [addingChapter, setAddingChapter] = useState(false);
 
   // ─── Fetch course + materials ────────────────────────────────────────────────
   const loadData = useCallback(async () => {
@@ -68,7 +89,7 @@ const AdminCourseDetail = () => {
         api.get(`/admin/lessons/${courseId}`).catch(() => ({ data: [] })),
       ]);
       const found = (coursesRes.data || []).find((c) => c._id === courseId);
-      setCourse(found || null);
+      setCourse(normalizeCourseData(found));
       const filtered = (materialsRes.data || []).filter(
         (m) => (m.course?._id || m.course) === courseId
       );
@@ -90,87 +111,57 @@ const AdminCourseDetail = () => {
     setError('');
     setSuccess('');
     setForm(initialForm);
+    setSelectedFile(null);
+    setDragOver(false);
+    setUploadProgress(0);
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
     setForm(initialForm);
+    setSelectedFile(null);
+    setDragOver(false);
+    setUploadProgress(0);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'subject' ? { moduleName: '' } : {}),
+    }));
   };
 
-  const handleAutoCategorize = () => {
-    if (!form.title) {
-      setError('Please enter a title first for AI to categorize.');
-      return;
-    }
-    const t = form.title.toLowerCase();
-    let newType = form.type;
-    
-    // Guess type based on keywords
-    if (t.includes('dpp') || t.includes('assignment')) newType = 'Assignment';
-    else if (t.includes('note')) newType = 'Notes';
-    else if (t.includes('video') || t.includes('solution') || t.includes('lecture')) newType = 'Video';
-    else if (t.includes('pyq')) newType = 'PYQ';
-    else if (t.includes('practice')) newType = 'Practice Set';
-
-    // Try to guess module
-    let newModule = form.moduleName;
-    const uniqueModules = [...new Set(lessons.map(l => l.moduleTitle).filter(Boolean))];
-    
-    // Sort modules by length descending so "CH-1 Number System" matches before "CH-1"
-    const sortedModules = [...uniqueModules].sort((a, b) => b.length - a.length);
-    let moduleFound = false;
-    for (const mod of sortedModules) {
-      if (t.includes(mod.toLowerCase())) {
-        newModule = mod;
-        moduleFound = true;
-        break;
-      }
-    }
-    
-    // If not found by full name, try to match CH-x pattern
-    if (!moduleFound) {
-      const match = t.match(/(ch\s*-?\s*\d+)/i);
-      if (match) {
-        const chStr = match[1].toLowerCase().replace(/\s/g, ''); // e.g. ch-1
-        // look for module containing this pattern
-        const found = uniqueModules.find(m => m.toLowerCase().replace(/\s/g, '').includes(chStr));
-        if (found) newModule = found;
-      }
-    }
-
-    setForm(prev => ({ ...prev, type: newType, moduleName: newModule }));
-    setError('');
-    setSuccess('AI categorization applied successfully!');
-    setTimeout(() => setSuccess(''), 3000);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.fileUrl.trim()) {
-      setError('Please provide a Google Drive or direct material link.');
+    if (!selectedFile) {
+      setError('Please select a file to upload.');
       return;
     }
     setSaving(true);
     setError('');
     setSuccess('');
+    setUploadProgress(0);
 
     try {
       const payload = new FormData();
-      payload.append('course', courseId);          // auto-fixed, not from form
+      payload.append('course', courseId);
+      payload.append('subject', form.subject);
       payload.append('title', form.title);
       payload.append('description', form.description);
       payload.append('type', form.type);
       payload.append('moduleName', form.moduleName);
-      payload.append('fileUrl', form.fileUrl.trim());
+      payload.append('file', selectedFile);
 
       const res = await api.post('/admin/material', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(pct);
+        },
       });
 
       setMaterials((prev) => [res.data, ...prev]);
@@ -198,6 +189,149 @@ const AdminCourseDetail = () => {
     }
   };
 
+  // ─── Add/Delete Subject & Chapter ──────────────────────────────────────────────
+  const handleAddSubject = async (event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (!newSubjectName.trim()) {
+      setError('Please enter a subject name.');
+      setSuccess('');
+      return;
+    }
+
+    if (!course) {
+      setError('Course data is not loaded yet.');
+      setSuccess('');
+      return;
+    }
+
+    const subjectName = newSubjectName.trim();
+    setAddingSubject(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const currentSubjects = course.subjects || [];
+      if (currentSubjects.includes(subjectName)) {
+        setError('Subject already exists in this course.');
+        setAddingSubject(false);
+        return;
+      }
+      const currentChaptersObj = course.chapters || {};
+      const updatedSubjects = [...currentSubjects, subjectName];
+      const updatedChapters = {
+        ...currentChaptersObj,
+        [subjectName]: currentChaptersObj[subjectName] || [],
+      };
+      
+      const optimisticCourse = {
+        ...course,
+        subjects: updatedSubjects,
+        chapters: updatedChapters,
+      };
+      setCourse(optimisticCourse);
+
+      const res = await api.put(`/admin/course/${courseId}`, {
+        subjects: updatedSubjects,
+        chapters: updatedChapters,
+      });
+      setCourse(normalizeCourseData(res.data));
+      await loadData();
+      setNewSubjectName('');
+      setSuccess('Subject added successfully.');
+    } catch (err) {
+      setCourse(normalizeCourseData(course));
+      const errMsg = err.response?.data?.message || 'Failed to add subject.';
+      setError(errMsg);
+    } finally {
+      setAddingSubject(false);
+    }
+  };
+
+  const handleAddChapter = async (subjectName, event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (!newChapterName.trim()) {
+      setError('Please enter a chapter name.');
+      setSuccess('');
+      return;
+    }
+
+    if (!course) {
+      setError('Course data is not loaded yet.');
+      setSuccess('');
+      return;
+    }
+
+    const chapterName = newChapterName.trim();
+    setAddingChapter(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const currentChaptersObj = course.chapters || {};
+      const subjectChapters = currentChaptersObj[subjectName] || [];
+      if (subjectChapters.includes(chapterName)) {
+        setError('Chapter already exists in this subject.');
+        setAddingChapter(false);
+        return;
+      }
+      
+      const newChaptersMap = {
+        ...currentChaptersObj,
+        [subjectName]: [...subjectChapters, chapterName],
+      };
+      const optimisticCourse = {
+        ...course,
+        chapters: newChaptersMap,
+      };
+      setCourse(optimisticCourse);
+      
+      const res = await api.put(`/admin/course/${courseId}`, {
+        subjects: course.subjects || [],
+        chapters: newChaptersMap,
+      });
+      setCourse(normalizeCourseData(res.data));
+      await loadData();
+      setNewChapterName('');
+      setSuccess('Chapter added successfully.');
+    } catch (err) {
+      setCourse(normalizeCourseData(course));
+      const errMsg = err.response?.data?.message || 'Failed to add chapter.';
+      setError(errMsg);
+    } finally {
+      setAddingChapter(false);
+    }
+  };
+
+  const handleDeleteSubject = async (subjectName) => {
+    if (!window.confirm(`Are you sure you want to delete "${subjectName}"? All its videos and materials will be moved to Uncategorized.`)) return;
+    try {
+      const res = await api.patch(`/admin/course/${courseId}/delete-subject`, { subject: subjectName });
+      setCourse(res.data);
+      // Reload materials to reflect uncategorized status
+      loadData();
+      setSuccess(`Subject "${subjectName}" deleted.`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete subject.');
+    }
+  };
+
+  const handleDeleteChapter = async (subjectName, chapterName) => {
+    if (!window.confirm(`Are you sure you want to delete "${chapterName}"? All its videos and materials will be moved to Uncategorized.`)) return;
+    try {
+      const res = await api.patch(`/admin/course/${courseId}/delete-chapter`, { subject: subjectName, chapter: chapterName });
+      setCourse(res.data);
+      // Reload materials to reflect uncategorized status
+      loadData();
+      setSuccess(`Chapter "${chapterName}" deleted.`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete chapter.');
+    }
+  };
+
   // ─── Render ──────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -221,6 +355,12 @@ const AdminCourseDetail = () => {
       </div>
     );
   }
+
+  const availableChapters = Array.from(new Set([
+    ...(course.chapters?.[form.subject] || []),
+    ...materials.filter((m) => !form.subject || m.subject === form.subject).map((m) => m.moduleName),
+    ...lessons.filter((l) => !form.subject || l.subject === form.subject).map((l) => l.moduleTitle),
+  ])).filter(Boolean);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
@@ -315,6 +455,138 @@ const AdminCourseDetail = () => {
         </div>
       )}
 
+      {/* ── Curriculum Management (Subjects & Chapters) ───────────────────────── */}
+      <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+          <h3 className="text-lg font-bold text-slate-800">Curriculum Structure</h3>
+        </div>
+        
+        <div className="p-6 md:p-8 space-y-8">
+          {/* Add Subject Form */}
+          <form onSubmit={handleAddSubject} className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 w-full">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Add New Subject</label>
+              <input
+                type="text"
+                value={newSubjectName}
+                onChange={(e) => setNewSubjectName(e.target.value)}
+                placeholder="e.g. Computer Science"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={addingSubject}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <Plus className="h-4 w-4" />
+              {addingSubject ? 'Adding...' : 'Add Subject'}
+            </button>
+          </form>
+
+          {/* Subjects Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(course.subjects || []).map(subject => {
+              const subjectLessons = lessons.filter(l => l.subject === subject);
+              const subjectMaterials = materials.filter(m => m.subject === subject);
+              const uniqueChapters = [...new Set([
+                ...(course.chapters?.[subject] || []),
+                ...subjectLessons.map(l => l.moduleTitle),
+                ...subjectMaterials.map(m => m.moduleName)
+              ])].filter(Boolean);
+
+              const isActive = activeCurriculumSubject === subject;
+
+              return (
+                <div key={subject} className={`border rounded-2xl transition-all duration-300 ${isActive ? 'border-sky-500 shadow-md ring-1 ring-sky-500' : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'}`}>
+                  <div 
+                    onClick={() => setActiveCurriculumSubject(isActive ? null : subject)}
+                    className="p-5 cursor-pointer"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sky-600 font-bold text-lg border border-slate-100">
+                        {subject.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-white border border-slate-200 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">
+                          {uniqueChapters.length} Chapters
+                        </span>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteSubject(subject); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-lg">{subject}</h4>
+                    <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
+                      <span>{subjectLessons.length} Videos</span>
+                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                      <span>{subjectMaterials.length} Materials</span>
+                    </p>
+                  </div>
+                  
+                  {/* Expanded Chapters View */}
+                  {isActive && (
+                    <div className="border-t border-slate-200 bg-white p-4 rounded-b-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                      
+                      <form
+                        onSubmit={(event) => handleAddChapter(subject, event)}
+                        className="flex items-center gap-2 mb-4"
+                      >
+                        <input
+                          type="text"
+                          value={newChapterName}
+                          onChange={(e) => setNewChapterName(e.target.value)}
+                          placeholder="Add new chapter..."
+                          className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                        <button
+                           type="submit"
+                           disabled={addingChapter}
+                           className="inline-flex items-center gap-1 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-70"
+                         >
+                          <Plus className="h-4 w-4" />
+                          <span>{addingChapter ? 'Adding...' : 'Add'}</span>
+                        </button>
+                      </form>
+
+                      <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                        {uniqueChapters.length === 0 ? (
+                          <p className="text-sm text-slate-500 text-center py-4 italic border border-dashed border-slate-200 rounded-xl">No chapters created yet</p>
+                        ) : (
+                          uniqueChapters.map(chapter => {
+                            const chVids = subjectLessons.filter(l => l.moduleTitle === chapter).length;
+                            const chMats = subjectMaterials.filter(m => m.moduleName === chapter).length;
+                            return (
+                              <div key={chapter} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:border-slate-200 transition">
+                                <span className="font-semibold text-slate-700 text-sm">{chapter}</span>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex gap-2 text-xs font-medium text-slate-500">
+                                    {chVids > 0 && <span className="flex items-center gap-1"><Video className="h-3 w-3" /> {chVids}</span>}
+                                    {chMats > 0 && <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> {chMats}</span>}
+                                  </div>
+                                  <button onClick={() => handleDeleteChapter(subject, chapter)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {(course.subjects || []).length === 0 && (
+            <div className="text-center py-8 text-slate-500 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
+              No subjects added to this course yet.
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ── Published Materials Table ────────────────────────────── */}
       <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
@@ -352,14 +624,20 @@ const AdminCourseDetail = () => {
                     </td>
                     <td className="px-6 py-4 text-slate-600">{m.moduleName || 'General'}</td>
                     <td className="px-6 py-4">
-                      <a
-                        href={m.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sky-600 hover:text-sky-800"
-                      >
-                        <LinkIcon className="h-4 w-4" /> Open
-                      </a>
+                      {m.fileUrl?.startsWith('local:') ? (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-600 font-medium">
+                          <FileText className="h-4 w-4" /> Native Upload
+                        </span>
+                      ) : (
+                        <a
+                          href={m.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sky-600 hover:text-sky-800"
+                        >
+                          <LinkIcon className="h-4 w-4" /> Open
+                        </a>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <button
@@ -451,58 +729,129 @@ const AdminCourseDetail = () => {
                 </div>
               </div>
 
-              {/* Title + Module */}
+              {/* Subject + Module */}
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="relative">
-                  <input
-                    name="title"
-                    value={form.title}
+                {/* Subject Dropdown */}
+                <div className="flex flex-col">
+                  <select
+                    name="subject"
+                    value={form.subject}
                     onChange={handleChange}
-                    placeholder="Material title *"
                     required
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAutoCategorize}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-purple-100 p-1.5 text-purple-600 transition hover:bg-purple-200 hover:text-purple-700"
-                    title="AI Auto Categorize"
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 bg-white"
                   >
-                    <Tag className="h-4 w-4" />
-                  </button>
+                    <option value="" disabled>Select Subject *</option>
+                    {(course?.subjects || []).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
-                <input
-                  name="moduleName"
-                  value={form.moduleName}
-                  onChange={handleChange}
-                  placeholder="Module / chapter name"
-                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-                />
+
+                {/* Chapter Dropdown */}
+                <div className="flex flex-col">
+                  <select
+                    name="moduleName"
+                    value={form.moduleName}
+                    onChange={handleChange}
+                    required
+                    disabled={!form.subject || availableChapters.length === 0}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    <option value="" disabled>
+                      {!form.subject
+                        ? 'Select Subject First *'
+                        : availableChapters.length === 0
+                          ? 'No Chapters Available *'
+                          : 'Select Chapter *'}
+                    </option>
+                    {availableChapters.map((chapter) => (
+                      <option key={chapter} value={chapter}>{chapter}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-xl">
-                <span>Tip: Use <strong>AI Auto Categorize</strong> to set Type and Module automatically from the title.</span>
-              </div>
-
-              {/* Google Drive Link */}
-              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 space-y-3">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <LinkIcon className="h-5 w-5 text-sky-500" />
-                  <p className="font-semibold text-sm">Google Drive or Direct URL</p>
-                </div>
+              {/* Title Input */}
+              <div>
                 <input
-                  name="fileUrl"
-                  type="url"
-                  value={form.fileUrl}
+                  name="title"
+                  value={form.title}
                   onChange={handleChange}
-                  placeholder="https://drive.google.com/..."
+                  placeholder="Material Title *"
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                 />
-                <p className="text-xs text-slate-500">
-                  Paste the shareable link where notes, assessments, PYQs or other study materials are stored.
-                </p>
               </div>
+
+              {/* Drag & Drop File Upload */}
+              <div
+                className={`rounded-[24px] border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
+                  dragOver
+                    ? 'border-sky-400 bg-sky-50'
+                    : selectedFile
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : 'border-slate-200 bg-slate-50 hover:border-sky-300 hover:bg-sky-50/50'
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file) setSelectedFile(file);
+                }}
+                onClick={() => document.getElementById('material-file-input').click()}
+              >
+                <input
+                  id="material-file-input"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={(e) => setSelectedFile(e.target.files[0] || null)}
+                />
+                {selectedFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
+                      <FileText className="h-7 w-7 text-emerald-600" />
+                    </div>
+                    <p className="font-semibold text-emerald-700 text-sm">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-400">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
+                      className="mt-1 text-xs text-red-500 hover:text-red-700 font-medium"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                      <UploadCloud className="h-7 w-7 text-slate-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-700 text-sm">Drag &amp; drop your file here</p>
+                      <p className="text-xs text-slate-400 mt-1">or click to browse — PDF, Word, Images up to 50MB</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload progress bar */}
+              {saving && uploadProgress > 0 && (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full bg-cyan-500 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <textarea
@@ -535,7 +884,7 @@ const AdminCourseDetail = () => {
             </form>
           </div>
         </div>
-      )}
+    )}
     </div>
   );
 };

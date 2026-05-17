@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
@@ -8,6 +8,10 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [parentName, setParentName] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
+  const [parentPhone, setParentPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,8 +23,15 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const user = await register(name, email, password);
-      // After registration redirect to home
+      await register({
+        name,
+        email,
+        password,
+        phone,
+        parentName,
+        parentEmail,
+        parentPhone,
+      });
       navigate('/');
     } catch (err) {
       setError(err || 'Failed to register');
@@ -30,8 +41,11 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
+    <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-slate-900 py-12 sm:px-6 lg:px-8">
+      <div className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-sky-500/20 blur-3xl opacity-50 mix-blend-screen"></div>
+      <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-yellow-300/15 blur-3xl opacity-50 mix-blend-screen"></div>
+
+      <div className="relative z-10 text-center sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="mb-6 flex justify-center">
           <BrandLogo
             className="inline-flex items-center justify-center gap-3"
@@ -41,50 +55,93 @@ const Register = () => {
             textClassName=""
           />
         </div>
-        <h2 className="mt-2 text-center text-3xl font-extrabold text-white">Create an account</h2>
+        <h2 className="mt-2 text-center text-3xl font-extrabold text-white">Create Student Account</h2>
         <p className="mt-2 text-center text-sm text-gray-400">
-          After registering you'll be redirected to home.
+          Student and parent details are both required. Parent portal is created automatically and linked to this student.
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="glass py-8 px-4 sm:rounded-2xl sm:px-10 border border-slate-700/50 shadow-2xl">
-
+      <div className="relative z-10 mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+        <div className="glass border border-slate-700/50 px-4 py-8 shadow-2xl sm:rounded-2xl sm:px-10">
           {error && (
-            <div className="mb-4 bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded flex items-center gap-2 text-sm">
-              <AlertCircle className="w-4 h-4" /> {error}
+            <div className="mb-4 flex items-center gap-2 rounded border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4" /> {error}
             </div>
           )}
 
           <form className="space-y-6" onSubmit={handleRegister}>
+            <div className="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
+              Parent portal password will be set to the parent mobile number.
+            </div>
+
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300">Full name</label>
-              <div className="mt-1">
-                <input id="name" name="name" type="text" required value={name} onChange={(e) => setName(e.target.value)} className="appearance-none block w-full px-3 py-2 border border-slate-600 bg-slate-800 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm text-white transition" placeholder="Your name" />
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300">Student Details</h3>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-300">Student name</label>
+                <div className="mt-1">
+                  <input id="name" name="name" type="text" required value={name} onChange={(e) => setName(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm" placeholder="Student full name" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-300">Student mobile number</label>
+                <div className="mt-1">
+                  <input id="phone" name="phone" type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm" placeholder="Student mobile number" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300">Student email address</label>
+                <div className="mt-1">
+                  <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm" placeholder="student@example.com" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300">Student password</label>
+                <div className="mt-1">
+                  <input id="password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm" placeholder="........" />
+                </div>
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email address</label>
-              <div className="mt-1">
-                <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="appearance-none block w-full px-3 py-2 border border-slate-600 bg-slate-800 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm text-white transition" placeholder="you@example.com" />
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-300">Parent Portal Details</h3>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="parentName" className="block text-sm font-medium text-gray-300">Parent name</label>
+                <div className="mt-1">
+                  <input id="parentName" name="parentName" type="text" required value={parentName} onChange={(e) => setParentName(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm" placeholder="Parent full name" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="parentPhone" className="block text-sm font-medium text-gray-300">Parent mobile number</label>
+                <div className="mt-1">
+                  <input id="parentPhone" name="parentPhone" type="tel" required value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm" placeholder="Used as parent portal password" />
+                </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="parentEmail" className="block text-sm font-medium text-gray-300">Parent email address</label>
+                <div className="mt-1">
+                  <input id="parentEmail" name="parentEmail" type="email" required value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} className="block w-full appearance-none rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white shadow-sm placeholder-gray-400 transition focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm" placeholder="parent@example.com" />
+                </div>
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password</label>
-              <div className="mt-1">
-                <input id="password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="appearance-none block w-full px-3 py-2 border border-slate-600 bg-slate-800 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm text-white transition" placeholder="••••••••" />
-              </div>
-            </div>
-
-            <div>
-              <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-zinc-950 bg-gradient-to-r from-sky-500 to-cyan-400 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-slate-900 transition">
-                Create account
+              <button type="submit" disabled={loading} className="flex w-full justify-center rounded-md border border-transparent bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-zinc-950 shadow-sm transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50">
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
 
-            <p className="text-sm text-gray-400 text-center">
+            <p className="text-center text-sm text-gray-400">
               Already have an account? <Link to="/login" className="text-sky-400">Sign in</Link>
             </p>
           </form>

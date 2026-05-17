@@ -75,6 +75,10 @@ const Navbar = () => {
   }, []);
 
   const activePrograms = groupedPrograms[activeCategory] || [];
+  const studentPortalPath =
+    user?.role === 'student' && !(user.course || (user.enrolledCourses && user.enrolledCourses.length > 0))
+      ? '/student/courses'
+      : '/student/dashboard';
 
   const openExplore = () => {
     if (closeTimerRef.current) {
@@ -245,7 +249,7 @@ const Navbar = () => {
               {user && user.role !== 'admin' ? (
                 <div className="flex shrink-0 items-center gap-4">
                   <Link
-                    to={user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'}
+                    to={user.role === 'admin' ? '/admin/dashboard' : studentPortalPath}
                     className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-semibold text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-slate-50"
                   >
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-sky-600 to-sky-600 text-xs font-bold text-white shadow-inner">
@@ -357,7 +361,7 @@ const Navbar = () => {
 
               {user && user.role !== 'admin' ? (
               <div className="mt-4 space-y-3 border-t border-slate-100 pt-5">
-                <Link to={user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} onClick={closeMenu} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-bold text-slate-700 hover:bg-slate-50">
+                <Link to={user.role === 'admin' ? '/admin/dashboard' : studentPortalPath} onClick={closeMenu} className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-bold text-slate-700 hover:bg-slate-50">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-600 to-sky-600 text-sm font-extrabold text-white">
                     {user.name?.charAt(0)}
                   </div>

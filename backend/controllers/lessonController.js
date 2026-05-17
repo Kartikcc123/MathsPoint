@@ -64,7 +64,7 @@ const extractYouTubeId = (input) => {
 // @access  Private (Admin)
 const createLesson = async (req, res) => {
   try {
-    const { courseId, title, description, moduleTitle, youtubeVideoId, duration, thumbnail, isPublished, isFree } = req.body;
+    const { courseId, subject, title, description, moduleTitle, youtubeVideoId, duration, thumbnail, isPublished, isFree } = req.body;
 
     if (!courseId || !title || !youtubeVideoId) {
       throw new AppError(400, 'Course ID, title, and YouTube Video ID are required.', { code: 'LESSON_MISSING_FIELDS' });
@@ -85,6 +85,7 @@ const createLesson = async (req, res) => {
 
     const lesson = await Lesson.create({
       course: courseId,
+      subject: subject || '',
       title: title.trim(),
       description: description?.trim() || '',
       moduleTitle: moduleTitle?.trim() || '',
@@ -126,8 +127,9 @@ const updateLesson = async (req, res) => {
       throw new AppError(404, 'Lesson not found.', { code: 'LESSON_NOT_FOUND' });
     }
 
-    const { title, description, moduleTitle, youtubeVideoId, duration, thumbnail, isPublished, isFree, order } = req.body;
+    const { subject, title, description, moduleTitle, youtubeVideoId, duration, thumbnail, isPublished, isFree, order } = req.body;
 
+    if (subject !== undefined) lesson.subject = subject.trim();
     if (title !== undefined) lesson.title = title.trim();
     if (description !== undefined) lesson.description = description.trim();
     if (moduleTitle !== undefined) lesson.moduleTitle = moduleTitle.trim();

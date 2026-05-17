@@ -45,7 +45,49 @@ body {
   min-height: 100vh;
 }
 
+/* Custom Scrollbar (PW & Classplus style) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark mode scrollbar variants */
+.dark ::-webkit-scrollbar-thumb,
+[class*="bg-slate-9"],
+[class*="bg-slate-8"] {
+  scrollbar-color: #334155 transparent;
+}
+
+[class*="bg-slate-9"]::-webkit-scrollbar-thumb,
+[class*="bg-slate-8"]::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+[class*="bg-slate-9"]::-webkit-scrollbar-thumb:hover,
+[class*="bg-slate-8"]::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 ::selection {
   background-color: rgba(0, 147, 221, 0.18);
   color: #0f172a;
+}
+
+/* Smooth Momentum Scrolling for iOS */
+* {
+  -webkit-overflow-scrolling: touch;
 }

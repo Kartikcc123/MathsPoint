@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile } = require('../controllers/studentController');
+const { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile } = require('../controllers/studentController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 
 router.route('/dashboard').get(protect, authorizeRoles('student'), getStudentDashboard);
 router.route('/profile').put(protect, authorizeRoles('student'), updateStudentProfile);
 router.route('/attendance').get(protect, authorizeRoles('student'), getStudentAttendance);
 router.route('/materials').get(protect, authorizeRoles('student'), getStudentMaterials);
+router.route('/material/:materialId').get(protect, authorizeRoles('student'), getStudentMaterialById);
+router.route('/material/:materialId/stream').get(protect, authorizeRoles('student'), streamMaterialFile);
 router.route('/payments').get(protect, authorizeRoles('student'), getStudentPayments);
 router.route('/payments/:feeId/pay').post(protect, authorizeRoles('student'), payStudentFee);
 router.route('/notifications').get(protect, authorizeRoles('student'), getStudentNotifications);

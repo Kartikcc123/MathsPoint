@@ -20,6 +20,7 @@ const Login = () => {
     
     try {
       const user = await login(email, password);
+      const hasOngoingCourse = Boolean(user.course || (user.enrolledCourses && user.enrolledCourses.length > 0));
       
       // Prevent admins from using the public login page
       if (user.role === 'admin' || user.actualRole === 'teacher') {
@@ -28,12 +29,12 @@ const Login = () => {
       }
 
       if (user.actualRole === 'parent') {
-        navigate('/parent/dashboard');
+        setError('Parents must use the dedicated parent portal to log in.');
       } else {
-        if (user.course || user.studentPanelAllowed) {
+        if (hasOngoingCourse) {
           navigate('/student/dashboard');
         } else {
-          navigate('/');
+          navigate('/student/courses');
         }
       }
     } catch (err) {
@@ -58,7 +59,7 @@ const Login = () => {
             textClassName=""
           />
         </div>
-        <h2 className="mt-2 text-center text-3xl font-extrabold text-white">Sign in to your account</h2>
+        <h2 className="mt-2 text-center text-3xl font-extrabold text-white">Student Sign In</h2>
         <p className="mt-2 text-center text-sm text-gray-400">
           Or <Link to="/" className="font-medium text-sky-400 hover:text-sky-300">return to home page</Link>
         </p>
@@ -135,6 +136,13 @@ const Login = () => {
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
+
+            <p className="text-sm text-center text-gray-400">
+              Parent account?{' '}
+              <Link to="/parent-login" className="font-medium text-emerald-400 hover:text-emerald-300">
+                Open parent portal
+              </Link>
+            </p>
 
             <p className="text-sm text-center text-gray-400">
               Don't have an account?{' '}

@@ -98,6 +98,132 @@ const getStudentMaterials = async (req, res) => {
   }
 };
 
+const getStudentMaterialById = async (req, res) => {
+  try {
+    const { materialId } = req.params;
+    const student = await User.findById(req.user._id).select('course');
+
+    if (!student?.course) {
+      throw new AppError(403, 'You are not enrolled in any course.');
+    }
+
+    const material = await CourseMaterial.findById(materialId).populate('course', 'title');
+
+    if (!material) {
+      throw new AppError(404, 'Material not found.');
+    }
+
+    // Check if material belongs to student's course
+    if (material.course._id.toString() !== student.course.toString()) {
+      throw new AppError(403, 'You do not have access to this material.');
+    }
+
+    res.json(material);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load material.');
+  }
+};
+
+const streamMaterialFile = async (req, res) => {
+  try {
+    const { materialId } = req.params;
+    const student = await User.findById(req.user._id).select('course');
+
+    if (!student?.course) {
+      throw new AppError(403, 'You are not enrolled in any course.');
+    }
+
+    const material = await CourseMaterial.findById(materialId).populate('course', 'title');
+
+    if (!material) {
+      throw new AppError(404, 'Material not found.');
+    }
+
+    if (material.course._id.toString() !== student.course.toString()) {
+      throw new AppError(403, 'You do not have access to this material.');
+    }
+
+    const fileUrl = material.fileUrl || '';
+
+    // ── LOCAL FILE (uploaded via drag-and-drop) ──────────────────────────────
+    if (fileUrl.startsWith('local:')) {
+      const fs = require('fs');
+      const path = require('path');
+      const relativePath = fileUrl.replace('local:', '');
+      const absPath = path.join(__dirname, '..', relativePath);
+
+      if (!fs.existsSync(absPath)) {
+        throw new AppError(404, 'File not found on server.');
+      }
+
+      const stat = fs.statSync(absPath);
+      const ext = path.extname(absPath).toLowerCase();
+      const mimeTypes = {
+        '.pdf': 'application/pdf',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      };
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Content-Length', stat.size);
+      res.setHeader('Cache-Control', 'private, max-age=3600');
+
+      fs.createReadStream(absPath).pipe(res);
+      return;
+    }
+
+    // ── LEGACY: GOOGLE DRIVE URL (fallback for old records) ──────────────────
+    let fileId = null;
+    try {
+      const parsed = new URL(fileUrl);
+      if (parsed.hostname.includes('drive.google.com')) {
+        const match = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        fileId = match ? match[1] : parsed.searchParams.get('id');
+      }
+    } catch (_) {}
+
+    if (!fileId) {
+      throw new AppError(400, 'This material was stored as a Google Drive link. Please re-upload it as a file.');
+    }
+
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}&confirm=t`;
+    const fetchOptions = {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/pdf,*/*' },
+      redirect: 'follow',
+    };
+
+    let response = await fetch(downloadUrl, fetchOptions);
+    const ct = response.headers.get('content-type') || '';
+
+    if (ct.includes('text/html')) {
+      const html = await response.text();
+      const confirmMatch = html.match(/confirm=([0-9A-Za-z_-]+)/);
+      if (confirmMatch) {
+        const retryUrl = `https://drive.google.com/uc?export=download&id=${fileId}&confirm=${confirmMatch[1]}`;
+        response = await fetch(retryUrl, fetchOptions);
+      }
+    }
+
+    if (!response.ok) throw new AppError(502, 'Failed to fetch from Google Drive.');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    const { Readable } = require('stream');
+    Readable.fromWeb(response.body).pipe(res);
+
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to stream material.');
+  }
+};
+
 const getStudentPayments = async (req, res) => {
   try {
     const payments = await Fee.find({ studentId: req.user._id }).sort({ dueDate: -1, createdAt: -1 });
@@ -189,4 +315,4 @@ const updateStudentProfile = async (req, res) => {
   }
 };
 
-module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile };
+module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile };

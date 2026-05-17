@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   studentId: { type: String, unique: true, sparse: true, trim: true },
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', index: true },
   enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  parentName: { type: String, trim: true },
   parentEmail: { type: String },
   parentPhone: { type: String },
   phone: { type: String, trim: true },
@@ -52,6 +53,10 @@ userSchema.pre('validate', function () {
 
   if (this.isModified('studentId') || this.isNew) {
     this.studentId = this.studentId?.trim() || undefined;
+  }
+
+  if (this.isModified('parentName') || this.isNew) {
+    this.parentName = this.parentName?.trim() || undefined;
   }
 
   if (this.isModified('parentEmail') || this.isNew) {

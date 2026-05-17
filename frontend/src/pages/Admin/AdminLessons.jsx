@@ -24,6 +24,7 @@ const AdminLessons = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(location.state?.courseId || '');
   const [lessons, setLessons] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
@@ -31,6 +32,7 @@ const AdminLessons = () => {
   const [deletingId, setDeletingId] = useState(null);
 
   const [form, setForm] = useState({
+    subject: '',
     title: '',
     description: '',
     moduleTitle: '',
@@ -57,26 +59,33 @@ const AdminLessons = () => {
     fetchCourses();
   }, []);
 
-  // Fetch lessons for selected course
-  const fetchLessons = useCallback(async () => {
+  // Fetch lessons & materials for selected course
+  const fetchData = useCallback(async () => {
     if (!selectedCourse) return;
     try {
       setLoading(true);
-      const res = await api.get(`/admin/lessons/${selectedCourse}`);
-      setLessons(res.data);
+      const [lessonsRes, materialsRes] = await Promise.all([
+        api.get(`/admin/lessons/${selectedCourse}`),
+        api.get(`/admin/materials?course=${selectedCourse}`)
+      ]);
+      setLessons(lessonsRes.data);
+      // Backend might not support ?course filter on /materials, so let's fallback to filtering if needed.
+      // Wait, getMaterials in adminController usually returns all or filters by course.
+      setMaterials(materialsRes.data); 
     } catch (err) {
-      console.error('Failed to load lessons', err);
+      console.error('Failed to load course data', err);
     } finally {
       setLoading(false);
     }
   }, [selectedCourse]);
 
   useEffect(() => {
-    fetchLessons();
-  }, [fetchLessons]);
+    fetchData();
+  }, [fetchData]);
 
   const resetForm = () => {
     setForm({
+      subject: '',
       title: '',
       description: '',
       moduleTitle: '',
@@ -97,6 +106,7 @@ const AdminLessons = () => {
   const openEditModal = (lesson) => {
     setEditingLesson(lesson);
     setForm({
+      subject: lesson.subject || '',
       title: lesson.title || '',
       description: lesson.description || '',
       moduleTitle: lesson.moduleTitle || '',
@@ -118,6 +128,7 @@ const AdminLessons = () => {
       setSaving(true);
 
       const payload = {
+        subject: form.subject.trim(),
         title: form.title.trim(),
         description: form.description.trim(),
         moduleTitle: form.moduleTitle.trim(),
@@ -140,7 +151,7 @@ const AdminLessons = () => {
 
       setShowModal(false);
       resetForm();
-      fetchLessons();
+      fetchData();
     } catch (err) {
       console.error('Failed to save lesson', err);
       alert(err.response?.data?.message || 'Failed to save lesson');
@@ -154,7 +165,7 @@ const AdminLessons = () => {
     try {
       setDeletingId(lessonId);
       await api.delete(`/admin/lesson/${lessonId}`);
-      fetchLessons();
+      fetchData();
     } catch (err) {
       console.error('Failed to delete lesson', err);
     } finally {
@@ -165,7 +176,7 @@ const AdminLessons = () => {
   const handleTogglePublish = async (lesson) => {
     try {
       await api.put(`/admin/lesson/${lesson._id}`, { isPublished: !lesson.isPublished });
-      fetchLessons();
+      fetchData();
     } catch (err) {
       console.error('Failed to toggle publish', err);
     }
@@ -178,9 +189,9 @@ const AdminLessons = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Group by module
+  // Group by subject and module
   const groupedLessons = lessons.reduce((acc, l) => {
-    const mod = l.moduleTitle || 'Ungrouped';
+    const mod = (l.subject ? `${l.subject} - ` : '') + (l.moduleTitle || 'Ungrouped');
     if (!acc[mod]) acc[mod] = [];
     acc[mod].push(l);
     return acc;
@@ -404,31 +415,66 @@ const AdminLessons = () => {
 
               {/* Module & Duration */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* Subject Dropdown */}
+                <div className="flex flex-col">
                   <label className="block text-sm font-semibold text-slate-700 mb-1">
-                    Module Name
+                    Subject <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    name="subject"
+                    value={form.subject}
+                    onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                    required
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 bg-white"
+                  >
+                    <option value="" disabled>Select Subject</option>
+                    {(courses.find(c => c._id === selectedCourse)?.subjects || []).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Chapter Combobox */}
+                <div className="flex flex-col">
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    Module / Chapter Name <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
+                    name="moduleTitle"
                     value={form.moduleTitle}
                     onChange={(e) => setForm({ ...form, moduleTitle: e.target.value })}
                     placeholder="e.g. Module 1: Basics"
+                    required
+                    list="lesson-chapter-list"
+                    autoComplete="off"
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                   />
+                  <datalist id="lesson-chapter-list">
+                    {Array.from(new Set([
+                      ...((courses.find(c => c._id === selectedCourse)?.chapters?.[form.subject]) || []),
+                      ...materials.filter(m => (!form.subject || m.subject === form.subject) && (m.course === selectedCourse || m.course?._id === selectedCourse)).map(m => m.moduleName),
+                      ...lessons.filter(l => !form.subject || l.subject === form.subject).map(l => l.moduleTitle)
+                    ])).filter(Boolean).map(chapter => (
+                      <option key={chapter} value={chapter} />
+                    ))}
+                  </datalist>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">
-                    Duration (seconds)
-                  </label>
-                  <input
-                    type="number"
-                    value={form.duration}
-                    onChange={(e) => setForm({ ...form, duration: e.target.value })}
-                    placeholder="e.g. 600"
-                    min="0"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-                  />
-                </div>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Duration (seconds)
+                </label>
+                <input
+                  type="number"
+                  value={form.duration}
+                  onChange={(e) => setForm({ ...form, duration: e.target.value })}
+                  placeholder="e.g. 600"
+                  min="0"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                />
               </div>
 
               {/* Description */}

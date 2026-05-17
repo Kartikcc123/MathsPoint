@@ -31,7 +31,7 @@ const ParentLayout = () => {
   };
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/parent-login" replace />;
   }
 
   if (user.actualRole !== 'parent') {
@@ -41,7 +41,7 @@ const ParentLayout = () => {
     if (user.actualRole === 'teacher') {
       return <Navigate to="/teacher/dashboard" replace />;
     }
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/parent-login" replace />;
   }
 
   const getLinkClasses = (path) => {

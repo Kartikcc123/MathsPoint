@@ -8,6 +8,8 @@ import Courses from './pages/Public/Courses';
 import Faculties from './pages/Public/Faculties';
 import Contact from './pages/Public/Contact';
 import Login from './pages/Public/Login';
+import ParentLogin from './pages/Public/ParentLogin';
+import TeacherLogin from './pages/Public/TeacherLogin';
 import Register from './pages/Public/Register';
 import Checkout from './pages/Public/Checkout';
 import AdminLogin from './pages/Public/AdminLogin';
@@ -15,6 +17,8 @@ import AdminLogin from './pages/Public/AdminLogin';
 // Private Pages
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminStudents from './pages/Admin/AdminStudents';
+import AdminParents from './pages/Admin/AdminParents';
+import AdminTeachers from './pages/Admin/AdminTeachers';
 import AdminCourses from './pages/Admin/AdminCourses';
 import AdminAttendance from './pages/Admin/AdminAttendance';
 import AdminResults from './pages/Admin/AdminResults';
@@ -42,6 +46,7 @@ import Attendance from './pages/Student/Attendance';
 import LessonPlayer from './pages/Student/LessonPlayer';
 import Profile from './pages/Student/Profile';
 import Purchases from './pages/Student/Purchases';
+import MaterialPlayer from './pages/Student/MaterialPlayer';
 import TeacherDashboard from './pages/Teacher/Dashboard';
 import TeacherCourses from './pages/Teacher/Courses';
 import TeacherStudents from './pages/Teacher/Students';
@@ -64,6 +69,8 @@ function App() {
           <Route path="checkout/:courseId" element={<Checkout />} />
         </Route>
         <Route path="/login" element={<Login />} />
+        <Route path="/parent-login" element={<ParentLogin />} />
+        <Route path="/teacher-portal-7f4b2k1m" element={<TeacherLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/portal-8a9d3f2c" element={<AdminLogin />} />
         {/* Admin Panel Routes */}
@@ -71,6 +78,8 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="students" element={<AdminStudents />} />
+          <Route path="parents" element={<AdminParents />} />
+          <Route path="teachers" element={<AdminTeachers />} />
           <Route path="courses" element={<AdminCourses />} />
           <Route path="courses/:courseId" element={<AdminCourseDetail />} />
           <Route path="materials" element={<AdminMaterials />} />
@@ -94,6 +103,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="purchases" element={<Purchases />} />
           <Route path="lesson/:lessonId" element={<LessonPlayer />} />
+          <Route path="material/:materialId" element={<MaterialPlayer />} />
         </Route>
 
         <Route path="/teacher" element={<TeacherLayout />}>

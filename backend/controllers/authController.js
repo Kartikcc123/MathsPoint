@@ -4,6 +4,8 @@ const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const { sendErrorResponse } = require('../utils/api');
 
+const normalizePhone = (value = '') => value.replace(/\D/g, '');
+
 const getUiRole = (user) => {
   if (user.role === 'teacher') {
     return 'admin';
@@ -29,10 +31,10 @@ const loginUser = async (req, res) => {
     let user;
     if (identifier.includes('@')) {
       const normalizedEmail = identifier.toLowerCase();
-      user = await User.findOne({ email: normalizedEmail }).populate('course');
+      user = await User.findOne({ email: normalizedEmail }).populate('course').populate('enrolledCourses');
     } else {
       // allow login by studentId as well
-      user = await User.findOne({ studentId: identifier }).populate('course');
+      user = await User.findOne({ studentId: identifier }).populate('course').populate('enrolledCourses');
     }
 
     if (user && (await user.matchPassword(password))) {
@@ -58,6 +60,7 @@ const loginUser = async (req, res) => {
         studentId: user.studentId,
         course: user.course,
         studentPanelAllowed: !!user.studentPanelAllowed,
+        enrolledCourses: user.enrolledCourses || [],
         linkedStudents: user.linkedStudents || [],
         taughtCourses: user.taughtCourses || [],
         phone: user.phone,
@@ -84,7 +87,7 @@ const verifyLogin2FA = async (req, res) => {
   const { userId, code } = req.body;
 
   try {
-    const user = await User.findById(userId).populate('course');
+    const user = await User.findById(userId).populate('course').populate('enrolledCourses');
     if (!user || !user.twoFactorEnabled) {
       return res.status(400).json({ message: '2FA verification failed or not enabled' });
     }
@@ -109,6 +112,7 @@ const verifyLogin2FA = async (req, res) => {
         studentId: user.studentId,
         course: user.course,
         studentPanelAllowed: !!user.studentPanelAllowed,
+        enrolledCourses: user.enrolledCourses || [],
         linkedStudents: user.linkedStudents || [],
         taughtCourses: user.taughtCourses || [],
         phone: user.phone,
@@ -236,14 +240,57 @@ const registerAdmin = async (req, res) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerStudent = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone, parentName, parentEmail, parentPhone } = req.body;
   const normalizedEmail = email?.trim().toLowerCase();
+  const normalizedPhone = phone?.trim();
+  const normalizedParentEmail = parentEmail?.trim().toLowerCase();
+  const normalizedParentPhone = parentPhone?.trim();
+  const normalizedParentName = parentName?.trim();
 
   try {
-    const userExists = await User.findOne({ email: normalizedEmail });
+    if (!normalizedPhone || !normalizedParentName || !normalizedParentEmail || !normalizedParentPhone) {
+      return res.status(400).json({
+        message: 'Student phone, parent name, parent email, and parent phone are required.',
+        code: 'STUDENT_PARENT_DETAILS_REQUIRED',
+      });
+    }
+
+    const userExists = await User.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { normalizedPhone: normalizePhone(normalizedPhone) },
+      ],
+    });
 
     if (userExists) {
-      return res.status(400).json({ message: 'This email is already registered.', code: 'STUDENT_ALREADY_EXISTS' });
+      return res.status(400).json({
+        message: userExists.email === normalizedEmail ? 'This email is already registered.' : 'This mobile number is already registered.',
+        code: 'STUDENT_ALREADY_EXISTS',
+      });
+    }
+
+    let parentUser = await User.findOne({
+      role: 'parent',
+      $or: [
+        { email: normalizedParentEmail },
+        { normalizedPhone: normalizePhone(normalizedParentPhone) },
+      ],
+    });
+
+    if (!parentUser) {
+      const conflictingParentIdentity = await User.findOne({
+        $or: [
+          { email: normalizedParentEmail },
+          { normalizedPhone: normalizePhone(normalizedParentPhone) },
+        ],
+      });
+
+      if (conflictingParentIdentity) {
+        return res.status(400).json({
+          message: 'Parent email or phone is already being used by another account.',
+          code: 'PARENT_IDENTITY_CONFLICT',
+        });
+      }
     }
 
     const user = await User.create({
@@ -251,7 +298,25 @@ const registerStudent = async (req, res) => {
       email: normalizedEmail,
       password,
       role: 'student',
+      phone: normalizedPhone,
+      parentName: normalizedParentName,
+      parentEmail: normalizedParentEmail,
+      parentPhone: normalizedParentPhone,
     });
+
+    if (!parentUser) {
+      parentUser = await User.create({
+        name: normalizedParentName,
+        email: normalizedParentEmail,
+        password: normalizedParentPhone,
+        role: 'parent',
+        phone: normalizedParentPhone,
+        linkedStudents: [user._id],
+      });
+    } else if (!parentUser.linkedStudents.some((studentId) => String(studentId) === String(user._id))) {
+      parentUser.linkedStudents = [...parentUser.linkedStudents, user._id];
+      await parentUser.save();
+    }
 
     if (user) {
       res.status(201).json({
@@ -259,6 +324,11 @@ const registerStudent = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        actualRole: user.role,
+        phone: user.phone,
+        enrolledCourses: user.enrolledCourses || [],
+        parentEmail: user.parentEmail,
+        parentPhone: user.parentPhone,
         token: generateToken(user._id),
       });
     } else {
@@ -280,6 +350,7 @@ const getUserProfile = async (req, res) => {
   const user = await User.findById(req.user._id)
     .select('-password')
     .populate('course')
+    .populate('enrolledCourses')
     .populate('linkedStudents', 'name email studentId course')
     .populate('taughtCourses', 'title duration');
 
@@ -293,6 +364,7 @@ const getUserProfile = async (req, res) => {
       studentId: user.studentId,
       course: user.course,
       studentPanelAllowed: !!user.studentPanelAllowed,
+      enrolledCourses: user.enrolledCourses || [],
       linkedStudents: user.linkedStudents || [],
       taughtCourses: user.taughtCourses || [],
       phone: user.phone,
