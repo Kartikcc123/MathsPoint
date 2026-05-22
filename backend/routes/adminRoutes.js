@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
+const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, deleteCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, createFreeStudyMaterial, getFreeStudyMaterials, deleteFreeStudyMaterial, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
 const { protect, admin, attendanceManager } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -29,6 +29,25 @@ const fileFilter = (_req, file, cb) => {
 };
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
+
+const freeMaterialStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'free-materials');
+    const fs = require('fs');
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${Date.now()}-${safeName}`);
+  },
+});
+
+const freeMaterialUpload = multer({
+  storage: freeMaterialStorage,
+  fileFilter,
+  limits: { fileSize: 50 * 1024 * 1024 },
+});
 
 router.route('/students')
   .get(protect, attendanceManager, getStudents);
@@ -70,6 +89,7 @@ router.route('/course')
   .post(protect, admin, createCourse);
 
 router.route('/course/:id')
+  .delete(protect, admin, deleteCourse)
   .put(protect, admin, require('../controllers/adminController').updateCourse);
 
 router.route('/course/:id/delete-subject')
@@ -80,6 +100,10 @@ router.route('/course/:id/delete-chapter')
 
 router.route('/materials')
   .get(protect, admin, getMaterials);
+
+router.route('/free-materials')
+  .get(protect, admin, getFreeStudyMaterials)
+  .post(protect, admin, freeMaterialUpload.single('file'), createFreeStudyMaterial);
 
 router.route('/payments')
   .get(protect, admin, getPaymentRecords);
@@ -106,6 +130,9 @@ router.route('/material')
 
 router.route('/material/:id')
   .delete(protect, admin, deleteMaterial);
+
+router.route('/free-materials/:id')
+  .delete(protect, admin, deleteFreeStudyMaterial);
 
 // CSV results upload
 router.route('/results/upload')

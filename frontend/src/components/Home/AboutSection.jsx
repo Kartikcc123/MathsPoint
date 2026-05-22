@@ -20,13 +20,19 @@ const AboutSection = () => {
             viewport={{ once: true }}
             className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left pt-10"
           >
-            <h2 className="text-[38px] md:text-[46px] lg:text-[52px] font-extrabold text-slate-900 leading-[1.15] tracking-tight mb-6">
-              India's <span className="text-indigo-600">Premiere &</span> <br className="hidden md:block" />
-              <span className="text-indigo-600">Dedicated</span> <br className="hidden md:block" />
-              Mathematics Platform
+            <span className="mb-5 inline-flex items-center rounded-full border border-indigo-100 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-indigo-700 shadow-sm">
+              Trusted Maths Excellence
+            </span>
+            <h2 className="max-w-2xl text-[36px] md:text-[46px] lg:text-[54px] font-extrabold text-slate-900 leading-[1.05] tracking-tight mb-6">
+              Turning Students
+              <br className="hidden md:block" />
+              Into <span className="text-indigo-600">Toppers</span>
+              <span className="mt-4 block text-[18px] md:text-[24px] lg:text-[28px] font-semibold leading-[1.35] text-slate-600">
+                India's trusted platform for smart learning and academic excellence
+              </span>
             </h2>
-            <p className="text-[17px] md:text-[19px] text-slate-600 mb-10 max-w-xl font-medium">
-              Unlock your true potential by learning with Maths Point- The most structured and reliable 9th-12th mathematics solution.
+            <p className="text-[16px] md:text-[19px] text-slate-600 mb-10 max-w-xl font-medium leading-relaxed">
+              Learn with expert mentorship, structured practice, and result-focused guidance designed to help every student build confidence and achieve top scores in mathematics.
             </p>
             <Link 
               to="/courses" 
@@ -95,7 +101,7 @@ const AboutSection = () => {
       </div>
       
       {/* Overlapping Stats Bar at Bottom */}
-      <div className="relative max-w-[90%] sm:max-w-6xl mx-auto -mb-16 mt-10 md:mt-0 z-40">
+      <div className="relative max-w-[90%] sm:max-w-6xl mx-auto -mb-16 mt-16 md:mt-8 z-40">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

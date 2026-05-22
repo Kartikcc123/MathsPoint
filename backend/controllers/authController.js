@@ -87,7 +87,14 @@ const verifyLogin2FA = async (req, res) => {
   const { userId, code } = req.body;
 
   try {
-    const user = await User.findById(userId).populate('course').populate('enrolledCourses');
+    const normalizedUserId = String(userId || '').trim();
+    const normalizedCode = String(code || '').replace(/\D/g, '');
+
+    if (!normalizedUserId || normalizedCode.length !== 6) {
+      return res.status(400).json({ message: 'A valid 6-digit authenticator code is required.' });
+    }
+
+    const user = await User.findById(normalizedUserId).populate('course').populate('enrolledCourses');
     if (!user || !user.twoFactorEnabled) {
       return res.status(400).json({ message: '2FA verification failed or not enabled' });
     }
@@ -95,8 +102,8 @@ const verifyLogin2FA = async (req, res) => {
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
-      token: code,
-      window: 1 // Allow 30 seconds clock drift
+      token: normalizedCode,
+      window: 2 // Allow up to 60 seconds clock drift
     });
 
     if (verified) {

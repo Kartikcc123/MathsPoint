@@ -9,6 +9,7 @@ import {
   ChevronRight,
   BookText,
   Circle,
+  Trash2,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -48,7 +49,7 @@ const fmtDate = (dateStr) => {
 };
 
 /* ─── PW-Style Course Card ─── */
-const PWCourseCard = ({ course, index, onClick }) => {
+const PWCourseCard = ({ course, index, onClick, onDelete, deleting }) => {
   const [grad] = GRADIENTS[index % GRADIENTS.length]
     ? [GRADIENTS[index % GRADIENTS.length]]
     : [['#4776E6', '#8E54E9']];
@@ -162,6 +163,15 @@ const PWCourseCard = ({ course, index, onClick }) => {
             Manage Course
           </button>
           <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            className="inline-flex h-11 items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-3 text-sm font-bold text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Delete course"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+          <button
             onClick={onClick}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
           >
@@ -220,6 +230,7 @@ const AdminCourses = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [deletingCourseId, setDeletingCourseId] = useState('');
 
   const loadCourses = async () => {
     try {
@@ -274,6 +285,30 @@ const AdminCourses = () => {
       setError(err.response?.data?.message || 'Failed to create course.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteCourse = async (course) => {
+    const confirmed = window.confirm(
+      `Delete "${course.title}"? This will also remove its lessons, materials, attendance, and linked course access.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingCourseId(course._id);
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.delete(`/admin/course/${course._id}`);
+      setCourses((current) => current.filter((item) => item._id !== course._id));
+      setSuccess(`Course "${course.title}" deleted successfully.`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete course.');
+    } finally {
+      setDeletingCourseId('');
     }
   };
 
@@ -339,6 +374,8 @@ const AdminCourses = () => {
               course={course}
               index={idx}
               onClick={() => navigate(`/admin/courses/${course._id}`)}
+              onDelete={() => handleDeleteCourse(course)}
+              deleting={deletingCourseId === course._id}
             />
           ))}
 

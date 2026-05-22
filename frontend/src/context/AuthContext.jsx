@@ -64,7 +64,13 @@ export const AuthProvider = ({ children }) => {
 
   const verify2FA = async (userId, code) => {
     try {
-      const res = await api.post('/auth/verify-login-2fa', { userId, code });
+      const normalizedUserId = String(userId || '').trim();
+      const normalizedCode = String(code || '').replace(/\D/g, '');
+
+      const res = await api.post('/auth/verify-login-2fa', {
+        userId: normalizedUserId,
+        code: normalizedCode,
+      });
       const { token, ...userData } = res.data;
       localStorage.setItem('token', token);
       setUser(userData);

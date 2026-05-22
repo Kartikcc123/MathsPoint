@@ -1,5 +1,5 @@
 const generateSvgThumbnail = (title, options = {}) => {
-  const { feeAmount = null } = options;
+  const { feeAmount = null, description = '', subject = '', subjects = [] } = options;
 
   const themes = [
     { bg1: '#4F46E5', bg2: '#7C3AED', accent: '#A78BFA', text: '#FFFFFF', badge: '#EEF2FF' },  // Indigo-Purple
@@ -12,9 +12,24 @@ const generateSvgThumbnail = (title, options = {}) => {
     { bg1: '#059669', bg2: '#047857', accent: '#6EE7B7', text: '#FFFFFF', badge: '#D1FAE5' },  // Green
   ];
 
+  const normalizedTitle = String(title || '').trim();
   let hash = 0;
-  for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
-  const theme = themes[Math.abs(hash) % themes.length];
+  for (let i = 0; i < normalizedTitle.length; i++) hash = normalizedTitle.charCodeAt(i) + ((hash << 5) - hash);
+
+  const classMatchers = [
+    { label: 'Class 5-8', regex: /class\s*5|class\s*6|class\s*7|class\s*8|5th|6th|7th|8th|junior/i, themeIndex: 0 },
+    { label: 'Class 9', regex: /class\s*9|9th|ix/i, themeIndex: 2 },
+    { label: 'Class 10', regex: /class\s*10|10th|x\b/i, themeIndex: 3 },
+    { label: 'Class 11', regex: /class\s*11|11th|xi/i, themeIndex: 4 },
+    { label: 'Class 12', regex: /class\s*12|12th|xii/i, themeIndex: 5 },
+    { label: 'IIT-JEE', regex: /iit\s*-?jee|jee|advanced|mains|engineering/i, themeIndex: 1 },
+    { label: 'Boards', regex: /board|cbse|icse|state\s*board|school/i, themeIndex: 7 },
+  ];
+
+  const haystack = [normalizedTitle, description, subject, ...(subjects || [])].filter(Boolean).join(' ').toLowerCase();
+  const matchedClass = classMatchers.find((entry) => entry.regex.test(haystack));
+  const topLabel = matchedClass?.label || (subject ? String(subject).trim() : (subjects[0] || 'Maths Program'));
+  const theme = themes[matchedClass?.themeIndex ?? (Math.abs(hash) % themes.length)];
 
   // Word wrapping
   const words = title.toUpperCase().split(' ');
@@ -45,6 +60,10 @@ const generateSvgThumbnail = (title, options = {}) => {
     return '<text x="40" y="' + y + '" font-family="\'Segoe UI\', system-ui, sans-serif" font-size="38" font-weight="800" fill="' + theme.text + '" letter-spacing="1">' + escapeXml(line) + '</text>';
   }).join('\n      ');
 
+  const descriptionSnippet = description
+    ? String(description).trim().replace(/\s+/g, ' ').slice(0, 80)
+    : '';
+  const subtitle = descriptionSnippet ? escapeXml(descriptionSnippet) : '';
   const isFree = feeAmount === 0;
 
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360">'
@@ -89,10 +108,21 @@ const generateSvgThumbnail = (title, options = {}) => {
     // Shine overlay
     + '<rect width="600" height="360" rx="20" ry="20" fill="url(#shine)" />'
 
+    // Program label
+    + '<g>'
+    + '<rect x="36" y="28" width="180" height="30" rx="14" ry="14" fill="' + theme.badge + '" />'
+    + '<text x="40" y="48" font-family="\'Segoe UI\', system-ui, sans-serif" font-size="12" font-weight="700" fill="' + theme.bg1 + '" letter-spacing="1">' + escapeXml(String(topLabel).toUpperCase()) + '</text>'
+    + '</g>'
+
     // Main title text
     + '<g>'
     + textLines
     + '</g>'
+
+    // Description snippet
+    + (subtitle
+      ? '<text x="40" y="330" font-family="\'Segoe UI\', system-ui, sans-serif" font-size="14" fill="' + theme.text + '" opacity="0.85">' + subtitle + '</text>'
+      : '')
 
     // Badge
     + (isFree

@@ -7,16 +7,17 @@ import shruutiImg from '../../assets/Shruuti.jpeg';
 import akankshaImg from '../../assets/Akanksha.jpeg';
 import deepakImg from '../../assets/Deepak.jpeg';
 import mansiImg from '../../assets/Mansi.jpeg';
+import samdaniImg from '../../assets/Samdani.png';
 
 const director = {
   name: 'Ashish Upadhyay',
   role: 'Director & Senior Faculty',
   expertise: 'B.Tech',
-  experience: '21 Years Experience',
+  experience: '12 Years Experience',
   image: directorImage,
   transparentImage: true,
   description:
-    'With 21 years of experience and a B.Tech background, Ashish leads Maths Point with a strong focus on disciplined academic planning, student-first mentoring, and meaningful long-term results.',
+    'With 12 years of experience and a B.Tech background, Ashish is known for simplifying mathematics through smart techniques, conceptual clarity, and result-oriented teaching for school and competitive exam students.',
   highlights: ['Academic leadership', 'Student-centered approach', 'Result-driven vision'],
 };
 
@@ -36,7 +37,7 @@ const teachers = [
     expertise: 'Physics',
     experience: '10 Years Experience',
     image: deepakImg,
-    description: 'Master of Physics concepts, dedicated to simplifying complex theories and numericals for exam readiness.',
+    description: 'Dedicated to making Physics simple, conceptual, and interesting through practical understanding and result-oriented teaching methods.',
     bullets: ['Physics theories', 'Problem-solving', 'Board & competitive preparation'],
   },
   {
@@ -46,7 +47,7 @@ const teachers = [
     experience: '18 yrs Experience',
     image: shruutiImg,
     imagePosition: 'object-center scale-110',
-    description: 'Highly experienced Business Studies coach providing comprehensive guidance and practical corporate insights.',
+    description: 'Dedicated to making Business Studies easy, practical, and concept-oriented through interactive and student-friendly teaching methods.',
     bullets: ['Business Studies coaching', 'Concept clarity', 'Practical approach'],
   },
   {
@@ -57,18 +58,17 @@ const teachers = [
     image: akankshaImg,
     description: 'Specialized in Biology, helping students build strong foundational knowledge and clear medical entrance exams.',
     bullets: ['Biology fundamentals', 'Exam readiness', 'Conceptual depth'],
-  }
-];
-
-const administration = [
-  {
-    name: 'Rijju Prajapat',
-    role: 'Administration',
-    image:
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1974&auto=format&fit=crop',
-    description:
-      'Handles institute coordination, communication flow, and administrative support to keep academic operations organized and efficient.',
   },
+  {
+    name: 'Sandeep Samdani',
+    role: 'Accountancy Expert',
+    expertise: 'Accountancy (CA)',
+    experience: 'Experienced Professional',
+    image: samdaniImg,
+    imagePosition: 'object-center',
+    description: 'Dedicated to building strong fundamentals in Accountancy through practical learning, conceptual clarity, and result-oriented teaching.',
+    bullets: ['Accountancy mastery', 'Practical approach', 'CA exam preparation'],
+  }
 ];
 
 const heroFaculty = [
@@ -103,15 +103,15 @@ const heroFaculty = [
 ];
 
 const facultyHeroHighlights = [
-  'School to competitive exam mentoring',
+  'Class 5-8 to senior secondary mentoring',
   'Concept-first teaching with practice discipline',
-  'Guidance across academics, careers, and performance',
+  'Guidance across IIT-JEE, boards, and other programs',
 ];
 
 const facultyHeroStats = [
   { value: '6+', label: 'Faculty mentors' },
   { value: '5th-12th', label: 'Academic coverage' },
-  { value: 'Exam Ready', label: 'Structured preparation' },
+  { value: 'IIT-JEE + More', label: 'Program coverage' },
 ];
 
 const fadeUp = {
@@ -209,8 +209,7 @@ const Faculties = () => {
               Faculty That Teaches With Structure, Care, and Consistency
             </h1>
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-600 md:text-lg">
-              Meet the mentors guiding Maths Point students across school academics, competitive preparation, and long-term academic confidence.
-            </p>
+Learn from experienced mentors dedicated to turning students into confident achievers and future toppers.            </p>
 
             <div className="mt-8 space-y-3">
               {facultyHeroHighlights.map((item) => (
@@ -300,33 +299,13 @@ const Faculties = () => {
             </div>
             <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-900">Experienced & Dedicated Teachers</h2>
             <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-              Our faculty supports school academics, higher secondary programs, olympiads, scholarship exams, career entrance exams, and professional tracks with student-focused guidance.
+              Our faculty supports junior classes, school academics, higher secondary programs, IIT-JEE preparation, boards, and other specialized courses with student-focused guidance.
             </p>
           </motion.div>
 
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {teachers.map((faculty) => (
               <FacultyCard key={faculty.name} faculty={faculty} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-50 py-18 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center">
-            <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
-              <BriefcaseBusiness className="h-7 w-7" />
-            </div>
-            <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-900">Administration</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-              Strong administrative coordination helps the institute maintain communication, scheduling, and operational consistency.
-            </p>
-          </motion.div>
-
-          <div className="mt-10 flex flex-wrap justify-center gap-6">
-            {administration.map((member) => (
-              <FacultyCard key={member.name} faculty={member} compact />
             ))}
           </div>
         </div>
@@ -343,7 +322,7 @@ const Faculties = () => {
             </div>
             <h2 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-900">A Team That Supports The Whole Journey</h2>
             <p className="mx-auto mt-4 max-w-3xl text-sm leading-8 text-slate-600">
-              From junior academics to competitive exams and professional preparation, the Maths Point faculty ecosystem is designed to guide students with clarity, structure, and genuine academic care.
+              From Class 5-8 foundation learning to IIT-JEE, boards, and other course categories, the Maths Point faculty ecosystem is designed to guide students with clarity, structure, and genuine academic care.
             </p>
           </motion.div>
         </div>

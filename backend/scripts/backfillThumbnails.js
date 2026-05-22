@@ -14,7 +14,13 @@ async function backfill() {
   console.log('Found ' + courses.length + ' courses. Regenerating all thumbnails...');
 
   for (const course of courses) {
-    course.thumbnail = generateSvgThumbnail(course.title, { feeAmount: course.feeAmount });
+    const primarySubject = Array.isArray(course.subjects) && course.subjects.length ? course.subjects[0] : '';
+    course.thumbnail = generateSvgThumbnail(course.title, {
+      feeAmount: course.feeAmount,
+      description: course.description,
+      subject: primarySubject,
+      subjects: course.subjects,
+    });
     await course.save();
     console.log('  ✓ ' + course.title);
   }

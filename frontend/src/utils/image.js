@@ -1,5 +1,5 @@
 export function buildSrcSet(url, widths = [480, 768, 1024, 1600, 2070]) {
-  if (!url) return '';
+  if (!url || url.startsWith('data:') || url.startsWith('blob:')) return '';
 
   const addWidth = (u, w) => {
     try {

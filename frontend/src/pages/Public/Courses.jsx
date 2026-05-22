@@ -48,22 +48,36 @@ const fmtDate = (dateStr) => {
 
 const categoryConfig = [
   { id: 'all', label: 'All Programs' },
+  { id: 'class-5-8', label: 'Class 5-8th' },
   { id: 'class-9', label: 'Class 9th' },
   { id: 'class-10', label: 'Class 10th' },
   { id: 'class-11', label: 'Class 11th' },
   { id: 'class-12', label: 'Class 12th' },
-  { id: 'jee', label: 'IIT JEE' },
+  { id: 'iit-jee', label: 'IIT-JEE' },
   { id: 'boards', label: 'Boards' },
+  { id: 'other', label: 'Other' },
 ];
 
 const categoryMatchers = {
+  'class-5-8': ['class 5', 'class 6', 'class 7', 'class 8', '5th', '6th', '7th', '8th', 'junior division'],
   'class-9': ['class 9', '9th', 'ix'],
   'class-10': ['class 10', '10th', 'x'],
   'class-11': ['class 11', '11th', 'xi'],
   'class-12': ['class 12', '12th', 'xii'],
-  jee: ['jee', 'iit', 'engineering entrance', 'dropper'],
+  'iit-jee': ['iit jee', 'jee', 'jee mains', 'jee advanced', 'engineering entrance', 'dropper'],
   boards: ['board', 'cbse', 'icse', 'state board', 'school'],
 };
+
+const buildCourseHaystack = (course) =>
+  [
+    course.title,
+    course.description,
+    course.classLabel,
+    ...(course.subjects || []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 
 const buildCourseSummary = (course) => {
   const subjects = (course.subjects || []).filter(Boolean);
@@ -78,24 +92,28 @@ const buildCourseSummary = (course) => {
 };
 
 const inferCourseCategory = (course) => {
-  const haystack = [
-    course.title,
-    course.description,
-    ...(course.subjects || []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+  const haystack = buildCourseHaystack(course);
 
   const matchedCategory = Object.entries(categoryMatchers).find(([, terms]) =>
     terms.some((term) => haystack.includes(term))
   );
 
-  return matchedCategory?.[0] || 'all';
+  return matchedCategory?.[0] || 'other';
+};
+
+const isBoardsCourse = (course) => {
+  const haystack = buildCourseHaystack(course);
+  const isBoardTagged = categoryMatchers.boards.some((term) => haystack.includes(term));
+  const isClass10 = categoryMatchers['class-10'].some((term) => haystack.includes(term));
+  const isClass12 = categoryMatchers['class-12'].some((term) => haystack.includes(term));
+
+  return isBoardTagged && (isClass10 || isClass12);
 };
 
 const getAudienceLabel = (category) => {
   switch (category) {
+    case 'class-5-8':
+      return 'Junior Division';
     case 'class-9':
       return 'Foundation Batch';
     case 'class-10':
@@ -104,10 +122,12 @@ const getAudienceLabel = (category) => {
       return 'Senior Secondary';
     case 'class-12':
       return 'Exam Finisher';
-    case 'jee':
+    case 'iit-jee':
       return 'Competitive Track';
     case 'boards':
       return 'School Success';
+    case 'other':
+      return 'Special Program';
     default:
       return 'Featured Program';
   }
@@ -119,6 +139,14 @@ const formatFee = (feeAmount) => {
   }
 
   return `Rs ${feeAmount.toLocaleString('en-IN')}`;
+};
+
+const resolveImageUrl = (url) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  const apiRoot = (api?.defaults?.baseURL || '').replace(/\/api$/, '');
+  if (!apiRoot) return url;
+  return `${apiRoot}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
 const Courses = () => {
@@ -157,7 +185,7 @@ const Courses = () => {
       courses.map((course, index) => ({
         ...course,
         inferredCategory: inferCourseCategory(course),
-        visual: fallbackImages[index % fallbackImages.length],
+        visual: course.thumbnail ? resolveImageUrl(course.thumbnail) : fallbackImages[index % fallbackImages.length],
       })),
     [courses]
   );
@@ -165,6 +193,10 @@ const Courses = () => {
   const filteredCourses = useMemo(() => {
     if (activeCategory === 'all') {
       return normalizedCourses;
+    }
+
+    if (activeCategory === 'boards') {
+      return normalizedCourses.filter((course) => isBoardsCourse(course));
     }
 
     return normalizedCourses.filter(
@@ -321,12 +353,12 @@ const Courses = () => {
                     transition={{ duration: 0.45, delay: idx * 0.05 }}
                     className="group flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
                   >
-                    {/* ── 1. Ad Banner / Thumbnail ──────────────────────── */}
+                    {/* â”€â”€ 1. Ad Banner / Thumbnail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                     <div className="relative h-48 overflow-hidden">
                       {course.thumbnail ? (
                         <img
-                          src={course.thumbnail}
-                          srcSet={buildSrcSet(course.thumbnail)}
+                          src={resolveImageUrl(course.thumbnail)}
+                          srcSet={buildSrcSet(resolveImageUrl(course.thumbnail))}
                           sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1600px"
                           alt={course.title}
                           loading="lazy"
@@ -351,7 +383,7 @@ const Courses = () => {
                       )}
                     </div>
 
-                    {/* ── 2. Card Body ─────────────────────────────────── */}
+                    {/* â”€â”€ 2. Card Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                     <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
                       {/* Row A: class label (orange) + language pill */}
                       <div className="flex items-center justify-between">

@@ -74,7 +74,7 @@ const StudentDashboard = () => {
           </Link>
 
           {/* My Doubts Card */}
-          <Link to="/student/doubts" className="group flex flex-col p-5 rounded-xl bg-[#e6fcf5] border border-transparent hover:border-emerald-100 hover:shadow-md transition-all duration-300">
+          <Link to="/contact" className="group flex flex-col p-5 rounded-xl bg-[#e6fcf5] border border-transparent hover:border-emerald-100 hover:shadow-md transition-all duration-300">
             <div className="bg-white w-10 h-10 rounded-lg flex items-center justify-center mb-4 shadow-sm border border-slate-100 text-slate-700 group-hover:text-emerald-600 transition-colors">
               <MessageCircleQuestion className="h-5 w-5" />
             </div>
@@ -92,7 +92,7 @@ const StudentDashboard = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Bookmarks Card */}
-          <Link to="/student/bookmarks" className="group flex flex-col p-5 rounded-xl bg-white border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-300">
+          <Link to="/student/profile" className="group flex flex-col p-5 rounded-xl bg-white border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all duration-300">
             <div className="bg-[#f0f4ff] w-10 h-10 rounded-lg flex items-center justify-center mb-4 text-indigo-600">
               <Bookmark className="h-5 w-5" />
             </div>

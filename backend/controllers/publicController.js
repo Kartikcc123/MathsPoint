@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const FreeStudyMaterial = require('../models/FreeStudyMaterial');
 const Inquiry = require('../models/Inquiry');
 const { sendErrorResponse } = require('../utils/api');
 
@@ -37,4 +38,19 @@ const createPublicInquiry = async (req, res) => {
   }
 };
 
-module.exports = { getPublicCourses, createPublicInquiry };
+const getPublicFreeStudyMaterials = async (req, res) => {
+  try {
+    const section = req.query.section?.trim();
+    const filter = section ? { section } : {};
+
+    const materials = await FreeStudyMaterial.find(filter)
+      .populate('publishedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(materials);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load free study materials.');
+  }
+};
+
+module.exports = { getPublicCourses, createPublicInquiry, getPublicFreeStudyMaterials };

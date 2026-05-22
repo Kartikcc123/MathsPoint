@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const CourseMaterial = require('../models/CourseMaterial');
+const Lesson = require('../models/Lesson');
+const Order = require('../models/Order');
+const WatchProgress = require('../models/WatchProgress');
+const FreeStudyMaterial = require('../models/FreeStudyMaterial');
 const Fee = require('../models/Fee');
 const Attendance = require('../models/Attendance');
 const Notification = require('../models/Notification');
@@ -385,7 +389,13 @@ const createCourse = async (req, res) => {
     let finalThumbnail = thumbnail;
     if (!finalThumbnail && title) {
       const { generateSvgThumbnail } = require('../utils/thumbnailGenerator');
-      finalThumbnail = generateSvgThumbnail(title, { feeAmount });
+      const primarySubject = Array.isArray(subjects) && subjects.length ? subjects[0] : '';
+      finalThumbnail = generateSvgThumbnail(title, {
+        feeAmount,
+        description,
+        subject: primarySubject,
+        subjects,
+      });
     }
 
     const course = await Course.create({
@@ -394,6 +404,42 @@ const createCourse = async (req, res) => {
     res.status(201).json(course);
   } catch (error) {
     sendErrorResponse(res, error, 'Failed to create course.');
+  }
+};
+
+// @desc    Delete a course and clean related records
+// @route   DELETE /api/admin/course/:id
+// @access  Private/Admin
+const deleteCourse = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const course = await Course.findById(id).select('_id title');
+
+    if (!course) {
+      throw new AppError(404, 'Course not found.', { code: 'COURSE_NOT_FOUND' });
+    }
+
+    await Promise.all([
+      User.updateMany({ course: id }, { $set: { course: null } }),
+      User.updateMany({ enrolledCourses: id }, { $pull: { enrolledCourses: id } }),
+      User.updateMany({ taughtCourses: id }, { $pull: { taughtCourses: id } }),
+      CourseMaterial.deleteMany({ course: id }),
+      Lesson.deleteMany({ course: id }),
+      Attendance.deleteMany({ course: id }),
+      Order.deleteMany({ courseId: id }),
+      WatchProgress.deleteMany({ course: id }),
+    ]);
+
+    await course.deleteOne();
+
+    res.json({
+      message: 'Course deleted successfully.',
+      deletedCourseId: id,
+      deletedCourseTitle: course.title,
+    });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to delete course.');
   }
 };
 
@@ -713,6 +759,65 @@ const getMaterials = async (req, res) => {
     res.json(materials);
   } catch (error) {
     sendErrorResponse(res, error, 'Failed to load materials.');
+  }
+};
+
+const createFreeStudyMaterial = async (req, res) => {
+  const { title, description, section, classLabel } = req.body;
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file for the free study material.' });
+    }
+
+    if (!title?.trim() || !section?.trim()) {
+      return res.status(400).json({ message: 'Title and section are required.' });
+    }
+
+    const material = await FreeStudyMaterial.create({
+      title: title.trim(),
+      description: description?.trim() || '',
+      section: section.trim(),
+      classLabel: classLabel?.trim() || '',
+      fileUrl: `/uploads/free-materials/${req.file.filename}`,
+      fileName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      publishedBy: req.user._id,
+    });
+
+    const populated = await material.populate('publishedBy', 'name');
+    res.status(201).json(populated);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to publish free study material.');
+  }
+};
+
+const getFreeStudyMaterials = async (_req, res) => {
+  try {
+    const materials = await FreeStudyMaterial.find({})
+      .populate('publishedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(materials);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load free study materials.');
+  }
+};
+
+const deleteFreeStudyMaterial = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const material = await FreeStudyMaterial.findById(id);
+
+    if (!material) {
+      return res.status(404).json({ message: 'Free study material not found.' });
+    }
+
+    await material.deleteOne();
+    res.json({ message: 'Free study material deleted successfully.' });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to delete free study material.');
   }
 };
 
@@ -1242,4 +1347,4 @@ const publishResults = async (req, res) => {
   }
 };
 
-module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, updateCourse, deleteSubject, deleteChapter, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };
+module.exports = { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, deleteCourse, updateCourse, deleteSubject, deleteChapter, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, createFreeStudyMaterial, getFreeStudyMaterials, deleteFreeStudyMaterial, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification, toggleStudentPanel, uploadResults, createResultsFromRows, publishResults };

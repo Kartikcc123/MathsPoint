@@ -8,6 +8,7 @@ import Courses from './pages/Public/Courses';
 import Faculties from './pages/Public/Faculties';
 import Contact from './pages/Public/Contact';
 import Login from './pages/Public/Login';
+import FreeStudyMaterials from './pages/Public/FreeStudyMaterials';
 import ParentLogin from './pages/Public/ParentLogin';
 import TeacherLogin from './pages/Public/TeacherLogin';
 import Register from './pages/Public/Register';
@@ -28,6 +29,7 @@ import AdminCourseDetail from './pages/Admin/AdminCourseDetail';
 import AdminPayments from './pages/Admin/AdminPayments';
 import AdminNotifications from './pages/Admin/AdminNotifications';
 import AdminLessons from './pages/Admin/AdminLessons';
+import AdminFreeMaterials from './pages/Admin/AdminFreeMaterials';
 import StudentDashboard from './pages/Student/Dashboard';
 
 // Layouts
@@ -66,6 +68,7 @@ function App() {
           <Route path="courses" element={<Courses />} />
           <Route path="faculties" element={<Faculties />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="free-study-materials" element={<FreeStudyMaterials />} />
           <Route path="checkout/:courseId" element={<Checkout />} />
         </Route>
         <Route path="/login" element={<Login />} />
@@ -81,6 +84,7 @@ function App() {
           <Route path="parents" element={<AdminParents />} />
           <Route path="teachers" element={<AdminTeachers />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="free-materials" element={<AdminFreeMaterials />} />
           <Route path="courses/:courseId" element={<AdminCourseDetail />} />
           <Route path="materials" element={<AdminMaterials />} />
           <Route path="payments" element={<AdminPayments />} />

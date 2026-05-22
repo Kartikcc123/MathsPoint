@@ -1,9 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calculator, GraduationCap, LineChart, Target, Building, BookOpen } from 'lucide-react';
+import { ArrowRight, Calculator, GraduationCap, LineChart, Target, BookOpen, School } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const examCategories = [
+  {
+    title: "Class 5-8th",
+    tags: ["Junior Division", "Concept Building", "School Support"],
+    path: "/courses?category=class-5-8",
+    colorClass: "bg-lime-50",
+    icon: <School className="w-12 h-12 text-lime-500 drop-shadow-sm" />
+  },
   {
     title: "Class 9th",
     tags: ["CBSE", "ICSE", "State Boards"],
@@ -33,18 +40,11 @@ const examCategories = [
     icon: <GraduationCap className="w-12 h-12 text-indigo-500 drop-shadow-sm" />
   },
   {
-    title: "IIT JEE",
+    title: "IIT-JEE",
     tags: ["class 11", "class 12", "Dropper"],
-    path: "/courses?category=jee",
+    path: "/courses?category=iit-jee",
     colorClass: "bg-orange-50",
     icon: <Target className="w-12 h-12 text-orange-500 drop-shadow-sm" />
-  },
-  {
-    title: "School Boards",
-    tags: ["CBSE", "UP Board", "MP Board", "Bihar Board"],
-    path: "/courses?category=boards",
-    colorClass: "bg-purple-50",
-    icon: <Building className="w-12 h-12 text-purple-500 drop-shadow-sm" />
   }
 ];
 

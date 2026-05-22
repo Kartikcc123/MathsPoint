@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, BookOpen, ExternalLink, FileText, IndianRupee, Search, ChevronRight, Calendar } from 'lucide-react';
+import { BookOpen, Calendar, ChevronRight, Clock, Search } from 'lucide-react';
 import api from '../../services/api';
 import useRefreshOnFocus from '../../hooks/useRefreshOnFocus';
+
+const formatPrice = (value) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`;
 
 const MyCourses = () => {
   const [data, setData] = useState({ course: null, enrolledCourses: [], materials: [] });
@@ -14,10 +16,10 @@ const MyCourses = () => {
     try {
       setLoading(true);
       const res = await api.get('/student/dashboard');
-      setData({ 
-        course: res.data.course, 
-        enrolledCourses: res.data.enrolledCourses || [], 
-        materials: res.data.materials || [] 
+      setData({
+        course: res.data.course,
+        enrolledCourses: res.data.enrolledCourses || [],
+        materials: res.data.materials || [],
       });
     } catch (error) {
       console.error('Failed to load student courses', error);
@@ -26,36 +28,41 @@ const MyCourses = () => {
     }
   });
 
-  // Fetch public courses for the "empty" state
   useEffect(() => {
     const fetchPublic = async () => {
       try {
         const res = await api.get('/public/courses');
-        setPublicCourses(res.data.data || []);
+        setPublicCourses(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('Failed to fetch public courses', err);
       }
     };
+
     fetchPublic();
   }, []);
 
-  const { course, enrolledCourses, materials } = data;
-  
-  // Combine legacy single course and new array of courses, remove duplicates
-  const allCourses = [];
-  if (course) allCourses.push(course);
-  enrolledCourses.forEach(c => {
-    if (!allCourses.find(ext => ext._id === c._id)) {
-      allCourses.push(c);
+  const allCourses = useMemo(() => {
+    const items = [];
+    if (data.course) {
+      items.push(data.course);
     }
-  });
+
+    (data.enrolledCourses || []).forEach((course) => {
+      if (!items.find((existing) => existing._id === course._id)) {
+        items.push(course);
+      }
+    });
+
+    return items;
+  }, [data.course, data.enrolledCourses]);
+
   const hasOngoingCourse = allCourses.length > 0;
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 pb-20 pt-8 sm:px-8">
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#5a4bda] mb-4"></div>
+        <div className="flex h-64 flex-col items-center justify-center text-slate-500">
+          <div className="mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-[#5a4bda]" />
           <p>Loading your dashboard...</p>
         </div>
       ) : hasOngoingCourse ? (
@@ -65,42 +72,46 @@ const MyCourses = () => {
             <p className="mt-1 text-slate-500">These are your ongoing purchased or assigned batches available for study.</p>
           </header>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {allCourses.map((c, idx) => (
-              <div key={c._id || idx} className="flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="p-5 flex flex-col h-full">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-4 gap-4">
-                    <h2 className="text-[17px] font-bold text-slate-800 leading-tight line-clamp-2">
-                      {c.title}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {allCourses.map((course, idx) => (
+              <div
+                key={course._id || idx}
+                className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+              >
+                <div className="flex h-full flex-col p-5">
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <h2 className="line-clamp-2 text-[17px] font-bold leading-tight text-slate-800">
+                      {course.title}
                     </h2>
-                    {/* <button className="text-slate-600 hover:text-green-600 transition-colors shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" /><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" /></svg>
-                    </button> */}
-                  </div>
-                  
-                  {/* Thumbnail Banner */}
-                  <div className="w-full h-36 bg-[#efeef9] rounded-xl mb-5 relative overflow-hidden flex flex-col justify-center p-4">
-                     <h3 className="text-[15px] font-black text-[#4b3088] uppercase leading-tight w-3/4 line-clamp-2">{c.title}</h3>
-                     <div className="mt-2 inline-block bg-[#8b6b9e] text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase max-w-fit shadow-sm">
-                       ONGOING BATCH
-                     </div>
-                     <div className="mt-auto pt-2 z-10">
-                       <span className="bg-white text-slate-800 px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm border border-slate-100">Hinglish</span>
-                     </div>
-                     {/* Decorative element representing image area */}
-                     <div className="absolute right-0 bottom-0 w-[45%] h-full bg-gradient-to-l from-[#dcd9f4] to-transparent"></div>
                   </div>
 
-                  {/* Dates */}
-                  <div className="flex items-start gap-2 text-[13px] text-slate-700 mb-6 font-medium">
-                    <Calendar className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                    <span className="leading-snug">Starts on {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'})} | Ends on 30 Jul 2026</span>
+                  <div className="relative mb-5 flex h-36 w-full flex-col justify-center overflow-hidden rounded-xl bg-[#efeef9] p-4">
+                    <h3 className="w-3/4 text-[15px] font-black uppercase leading-tight text-[#4b3088] line-clamp-2">
+                      {course.title}
+                    </h3>
+                    <div className="mt-2 inline-block max-w-fit rounded bg-[#8b6b9e] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+                      Ongoing Batch
+                    </div>
+                    <div className="z-10 mt-auto pt-2">
+                      <span className="rounded-md border border-slate-100 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-800 shadow-sm">
+                        Hinglish
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 right-0 h-full w-[45%] bg-gradient-to-l from-[#dcd9f4] to-transparent" />
                   </div>
 
-                  {/* Footer Button */}
-                  <div className="mt-auto pt-5 border-t border-slate-100">
-                    <Link to="/student/courses/active" className="block w-full text-center bg-[#5a4bda] text-white font-semibold py-2.5 rounded-lg hover:bg-[#4b3ec2] transition-colors">
+                  <div className="mb-6 flex items-start gap-2 text-[13px] font-medium text-slate-700">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                    <span className="leading-snug">
+                      Starts on {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} | Ends on 30 Jul 2026
+                    </span>
+                  </div>
+
+                  <div className="mt-auto border-t border-slate-100 pt-5">
+                    <Link
+                      to="/student/courses/active"
+                      className="block w-full rounded-lg bg-[#5a4bda] py-2.5 text-center font-semibold text-white transition-colors hover:bg-[#4b3ec2]"
+                    >
                       Let's Study
                     </Link>
                   </div>
@@ -110,17 +121,15 @@ const MyCourses = () => {
           </div>
         </>
       ) : (
-        /* Empty State - Popular Batches */
         <div className="space-y-10">
-          {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <h1 className="text-[22px] font-medium text-slate-800">Batches</h1>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search for batches" 
-                className="w-full sm:w-80 rounded-md border border-slate-300 pl-9 pr-4 py-2 text-sm focus:border-slate-400 focus:outline-none placeholder:text-slate-400"
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search for batches"
+                className="w-full rounded-md border border-slate-300 py-2 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none sm:w-80"
               />
             </div>
           </div>
@@ -129,105 +138,113 @@ const MyCourses = () => {
             You do not have any ongoing batch right now. Buy a batch below to unlock the full student study panel.
           </div>
 
-          {/* Ad Banner */}
-          <div className="w-full relative overflow-hidden rounded-md bg-gradient-to-r from-[#fae1e0] via-[#f5dede] to-[#f8ede3] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[200px]">
-             <div className="flex-1 flex justify-center items-center">
-               <div className="text-center">
-                 <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase" style={{fontFamily: 'serif'}}>
-                   MATHS<br/>PREPARATION<br/>OFFER
-                 </h2>
-               </div>
-             </div>
-             <div className="hidden md:flex gap-4 items-center pr-4">
-                {[
-                  { title: "Foundation Batch", price: "₹2,249" },
-                  { title: "Target Batch 2026", price: "₹1,529" },
-                  { title: "Maths Mahapack", price: "₹2,699" }
-                ].map((item, i) => (
-                  <div key={i} className="bg-pink-900/10 backdrop-blur-sm rounded-lg p-3 w-[120px] flex flex-col items-center text-center">
-                    <div className="h-8 w-8 bg-pink-800/20 rounded-full mb-3 flex items-center justify-center">
-                      <span className="text-pink-900 text-xs">🎓</span>
-                    </div>
-                    <p className="text-[10px] font-bold text-slate-800 leading-tight mb-3 h-8 flex items-center">{item.title}</p>
-                    <div className="w-full bg-black text-white text-[10px] font-bold py-1.5 rounded-full">NOW @ {item.price}</div>
+          <div className="relative flex min-h-[200px] w-full flex-col items-center justify-between gap-8 overflow-hidden rounded-md bg-gradient-to-r from-[#fae1e0] via-[#f5dede] to-[#f8ede3] p-6 md:flex-row md:p-8">
+            <div className="flex flex-1 items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-4xl font-black uppercase tracking-tighter text-slate-900 md:text-5xl" style={{ fontFamily: 'serif' }}>
+                  Maths
+                  <br />
+                  Preparation
+                  <br />
+                  Offer
+                </h2>
+              </div>
+            </div>
+            <div className="hidden items-center gap-4 pr-4 md:flex">
+              {[
+                { title: 'Foundation Batch', price: 'Rs 2,249' },
+                { title: 'Target Batch 2026', price: 'Rs 1,529' },
+                { title: 'Maths Mahapack', price: 'Rs 2,699' },
+              ].map((item) => (
+                <div key={item.title} className="flex w-[120px] flex-col items-center rounded-lg bg-pink-900/10 p-3 text-center backdrop-blur-sm">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-pink-800/20">
+                    <span className="text-xs text-pink-900">B</span>
                   </div>
-                ))}
-             </div>
+                  <p className="mb-3 flex h-8 items-center text-[10px] font-bold leading-tight text-slate-800">{item.title}</p>
+                  <div className="w-full rounded-full bg-black py-1.5 text-[10px] font-bold text-white">NOW @ {item.price}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Popular Batches Section */}
           <div>
-            <h2 className="text-[22px] font-medium text-slate-800 mb-6">Popular Batches</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="mb-6 text-[22px] font-medium text-slate-800">Popular Batches</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {publicCourses.map((course, idx) => {
                 const bgs = ['bg-[#ffe4e1]', 'bg-[#e1f5fe]', 'bg-[#e0f7fa]'];
                 const cardBg = bgs[idx % bgs.length];
-                const originalPrice = Math.round(course.price * 1.5);
-                const discount = Math.round(((originalPrice - course.price) / originalPrice) * 100);
+                const fee = Number(course.feeAmount ?? course.price ?? 0);
+                const originalPrice = Number(course.mrp ?? Math.round(fee * 1.5));
+                const discount = originalPrice > fee && originalPrice > 0
+                  ? Math.round(((originalPrice - fee) / originalPrice) * 100)
+                  : 0;
 
                 return (
-                <div key={course._id} className="flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                  {/* Thumbnail area */}
-                  <div className={`h-44 w-full ${cardBg} flex flex-col items-center justify-center p-6 text-center`}>
-                    <h3 className="text-xl font-black text-slate-800 mb-2 uppercase tracking-tight">{course.title}</h3>
-                    <p className="text-[10px] font-bold text-white bg-sky-500 px-2 py-1 rounded shadow-sm">TARGET BATCH</p>
-                  </div>
-                  
-                  {/* Details area */}
-                  <div className="flex flex-col flex-1 p-5">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-xs font-bold text-[#ff6b00]">{course.category || 'MATHS'}</span>
-                      <span className="text-[10px] font-medium border border-slate-300 px-2 py-0.5 rounded text-slate-600">HINGLISH</span>
-                    </div>
-                    
-                    <h4 className="font-semibold text-slate-800 text-[17px] mb-3 line-clamp-2 leading-tight">{course.title}</h4>
-                    
-                    <div className="space-y-2 mb-6">
-                      <div className="flex items-center gap-2 text-[13px] text-slate-600">
-                        <BookOpen className="h-4 w-4 text-slate-400" />
-                        <span>{course.category || 'General Exams'}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-[13px] text-slate-600">
-                        <Clock className="h-4 w-4 text-slate-400" />
-                        <span>Starts on 25th May'26</span>
-                      </div>
+                  <div
+                    key={course._id}
+                    className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow duration-300 hover:shadow-lg"
+                  >
+                    <div className={`flex h-44 w-full flex-col items-center justify-center p-6 text-center ${cardBg}`}>
+                      <h3 className="mb-2 text-xl font-black uppercase tracking-tight text-slate-800">{course.title}</h3>
+                      <p className="rounded bg-sky-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">TARGET BATCH</p>
                     </div>
 
-                    <div className="mt-auto">
-                      <div className="flex items-end justify-between mb-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[22px] font-bold text-slate-900 leading-none">₹{course.price}</span>
-                            <span className="text-[13px] text-slate-400 line-through">₹{originalPrice}</span>
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#ff6b00]">{course.category || 'MATHS'}</span>
+                        <span className="rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-600">HINGLISH</span>
+                      </div>
+
+                      <h4 className="mb-3 line-clamp-2 text-[17px] font-semibold leading-tight text-slate-800">{course.title}</h4>
+
+                      <div className="mb-6 space-y-2">
+                        <div className="flex items-center gap-2 text-[13px] text-slate-600">
+                          <BookOpen className="h-4 w-4 text-slate-400" />
+                          <span>{course.category || 'General Exams'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[13px] text-slate-600">
+                          <Clock className="h-4 w-4 text-slate-400" />
+                          <span>Starts on 25th May'26</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto">
+                        <div className="mb-4 flex items-end justify-between">
+                          <div>
+                            <div className="mb-0.5 flex items-center gap-2">
+                              <span className="text-[22px] font-bold leading-none text-slate-900">{formatPrice(fee)}</span>
+                              {originalPrice > fee && (
+                                <span className="text-[13px] text-slate-400 line-through">{formatPrice(originalPrice)}</span>
+                              )}
+                            </div>
+                            {discount > 0 && <span className="text-[13px] font-bold text-green-600">{discount}% OFF</span>}
                           </div>
-                          <span className="text-[13px] font-bold text-green-600">{discount}% OFF</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => navigate(`/checkout/${course._id}`)}
+                              className="rounded-md bg-slate-900 px-6 py-2 text-[15px] font-medium text-white transition hover:bg-slate-800"
+                            >
+                              Buy Now
+                            </button>
+                            <button className="flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-slate-600 transition hover:bg-slate-50">
+                              <ChevronRight className="h-5 w-5" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => navigate(`/checkout/${course._id}`)}
-                            className="bg-slate-900 text-white text-[15px] font-medium py-2 px-6 rounded-md hover:bg-slate-800 transition"
-                          >
-                            Buy Now
-                          </button>
-                          <button className="border border-slate-300 text-slate-600 px-3 py-2 rounded-md hover:bg-slate-50 transition flex items-center justify-center">
-                            <ChevronRight className="h-5 w-5" />
-                          </button>
+
+                        <div className="mt-1 flex items-center overflow-hidden rounded border border-orange-100 bg-orange-50/50 text-[11px]">
+                          <div className="bg-[#ff6b00] px-2 py-1.5 font-medium text-white">MidMonthOffer</div>
+                          <div className="px-2 py-1.5 font-medium text-orange-800">Limited time offer valid till 15th May</div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center text-[11px] rounded overflow-hidden border border-orange-100 bg-orange-50/50 mt-1">
-                        <div className="bg-[#ff6b00] text-white font-medium px-2 py-1.5">MidMonthOffer</div>
-                        <div className="text-orange-800 font-medium px-2 py-1.5">Limited time offer valid till 15th May</div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )})}
+                );
+              })}
 
-              {/* Placeholder cards if no public courses available from API yet */}
               {publicCourses.length === 0 && (
-                <div className="col-span-1 md:col-span-2 lg:col-span-3 p-10 text-center text-slate-500 bg-white border border-dashed border-slate-300 rounded-xl">
-                  Loading popular batches...
+                <div className="col-span-1 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 md:col-span-2 lg:col-span-3">
+                  No popular batches available right now.
                 </div>
               )}
             </div>

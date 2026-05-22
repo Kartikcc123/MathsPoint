@@ -36,13 +36,13 @@ const missionVision = [
     title: 'Our Mission',
     icon: Target,
     description:
-      'To make mathematics simpler, structured, and more rewarding for every learner through disciplined teaching and meaningful support.',
+      'To provide quality education through smart learning techniques, conceptual clarity, and personalized guidance that helps students achieve academic excellence and success in competitive examinations.',
   },
   {
     title: 'Our Vision',
     icon: Rocket,
     description:
-      'To become a trusted learning destination where students and families rely on MathsPoint for academic excellence and long-term growth.',
+      'To become a trusted and leading educational platform that inspires students to unlock their true potential, build strong foundations, and achieve their dreams through knowledge, confidence, and continuous growth.',
   },
 ];
 
@@ -71,12 +71,12 @@ const values = [
 
 const timeline = [
   {
-    year: '2021',
+    year: '2015',
     title: 'Foundation phase',
     description: 'The institute began with a clear goal: strong mathematics teaching with close student attention.',
   },
   {
-    year: '2022',
+    year: '2020',
     title: 'Program expansion',
     description: 'More structured batches, deeper practice support, and better exam-focused planning were introduced.',
   },
@@ -86,7 +86,7 @@ const timeline = [
     description: 'The learning community grew through referrals, stronger parent trust, and visible student progress.',
   },
   {
-    year: '2024-25',
+    year: '2026-27',
     title: 'Digital presence',
     description: 'This website became a modern public-facing platform for discovery, communication, and student access.',
   },
@@ -151,8 +151,7 @@ const About = () => {
               Built for students. Trusted by families. Designed to make mathematics click.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
-              This page introduces the client behind the platform and explains how the website supports discovery,
-              trust, communication, and structured learning for the MathsPoint community.
+              Believing that every student can succeed with the right guidance, his mission is to create future toppers through discipline, knowledge, and smart learning techniques.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -221,10 +220,7 @@ const About = () => {
               A coaching institute with a practical, modern website presence.
             </h2>
             <p className="mt-5 text-base leading-8 text-slate-600">
-              MathsPoint is presented as a performance-focused academic institute where students receive a stronger
-              foundation in mathematics through clear explanation, careful practice, and consistent feedback. The
-              website extends that identity online by giving families a reliable first impression and a simple way to
-              understand the institute before reaching out.
+              This website is designed to provide students and parents with complete information about our courses, expert faculty, academic programs, competitive exam preparation, latest updates, and learning opportunities at MATHS Point. It serves as a smart platform to connect students with quality education, guidance, and academic excellence.
             </p>
             <p className="mt-4 text-base leading-8 text-slate-600">
               Instead of acting like a basic brochure, the site helps communicate the institute&apos;s values, showcase
@@ -341,10 +337,7 @@ const About = () => {
               A digital platform that explains the brand and supports real institute workflows
             </h2>
             <p className="mt-5 text-base leading-8 text-slate-600">
-              The website is more than a promotional page. It serves as a structured touchpoint where prospective
-              students can understand the institute, explore offerings, connect with the team, and continue into the
-              right next step. It also prepares the ground for logged-in student and admin experiences already present
-              in the project.
+              Since 2017, MATHS Point has been a trusted name and one of Bhilwara’s leading institutes for Bank and SSC preparation. With consistent results, expert guidance, and student-focused teaching methods, we continue to expand our programs to help aspirants achieve success in competitive examinations.
             </p>
 
             <div className="mt-8 grid gap-5 md:grid-cols-2">
@@ -391,8 +384,7 @@ const About = () => {
                 <h3 className="text-2xl font-bold">MathsPoint</h3>
               </div>
               <p className="text-sm leading-7 text-slate-300">
-                A mathematics-focused education brand that wants its website to communicate trust, clarity, and a
-                professional student journey from the first visit onward.
+                Believing that every student can succeed with the right guidance, his mission is to create future toppers through discipline, knowledge, and smart learning techniques.
               </p>
               <Link
                 to="/contact"
