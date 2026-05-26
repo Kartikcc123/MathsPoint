@@ -4,7 +4,7 @@ const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.DEV
     ? 'http://localhost:5000/api'
-    : 'https://mathspoint.onrender.com/api');
+    : 'https://mathspoint-yqnv.onrender.com/api');
 
 const api = axios.create({
   baseURL,

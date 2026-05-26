@@ -34,7 +34,7 @@ const SecureDocumentViewer = ({ materialId, fileUrl, title }) => {
       const token = localStorage.getItem('token');
       const base =
         import.meta.env.VITE_API_BASE_URL ||
-        (import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://mathspoint.onrender.com/api');
+        (import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://mathspoint-yqnv.onrender.com/api');
 
       setStreamUrl(`${base}/student/material/${materialId}/stream?token=${encodeURIComponent(token)}`);
       return;
