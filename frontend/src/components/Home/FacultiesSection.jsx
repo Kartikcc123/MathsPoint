@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildSrcSet } from '../../utils/image';
 
+import akankshaImg from '../../assets/Akanksha.jpeg';
 import deepakImg from '../../assets/Deepak.jpeg';
 import mansiImg from '../../assets/Mansi.jpeg';
 import ashishImg from '../../assets/DirectorCutout.png';
+import samdaniImg from '../../assets/Samdani.png';
+import shruutiImg from '../../assets/Shruuti.jpeg';
 
 const faculties = [
   { 
@@ -17,6 +20,22 @@ const faculties = [
     img: ashishImg
   },
   { 
+    name: "Deepak Sharma", 
+    subject: "Physics", 
+    exp: "10 Years", 
+    tag: "Physics Expert",
+    desc: "Master of Physics concepts, dedicated to simplifying complex theories for exam readiness.",
+    img: deepakImg 
+  },
+  { 
+    name: "Akanksha Gautam", 
+    subject: "Biology", 
+    exp: "9 Years", 
+    tag: "Biology Expert",
+    desc: "Specialized in Biology, helping students build strong foundational knowledge and clear medical entrance exams.",
+    img: akankshaImg
+  },
+  { 
     name: "Mansi Acharya", 
     subject: "Chemistry", 
     exp: "8 Years", 
@@ -25,13 +44,21 @@ const faculties = [
     img: mansiImg
   },
   { 
-    name: "Deepak Sharma", 
-    subject: "Physics", 
-    exp: "10 Years", 
-    tag: "Physics Expert",
-    desc: "Master of Physics concepts, dedicated to simplifying complex theories for exam readiness.",
-    img: deepakImg 
-  }
+    name: "CA Sudeep Samdani", 
+    subject: "Accountancy", 
+    exp: "Experienced", 
+    tag: "Accountancy Expert",
+    desc: "Dedicated to building strong fundamentals in Accountancy through practical learning and conceptual clarity.",
+    img: samdaniImg
+  },
+  { 
+    name: "Shruti Kharbanda", 
+    subject: "Business Studies", 
+    exp: "18 Years", 
+    tag: "B.St Coach",
+    desc: "Dedicated to making Business Studies easy, practical, and concept-oriented through student-friendly teaching methods.",
+    img: shruutiImg
+  },
 ];
 
 const FacultiesSection = () => {
@@ -50,14 +77,14 @@ const FacultiesSection = () => {
             Expert Faculties
           </div>
           <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#1a202c] tracking-tight mb-4">
-            Learn from the Math Masters
+            Learn from Mentors Who Shape Confident Achievers
           </h2>
           <p className="text-slate-500 text-[16px] max-w-2xl mx-auto leading-relaxed">
-            India's top educators right on your screen, combining deep subject knowledge with the best exam-oriented strategies.
+            Learn from experienced mentors dedicated to turning students into confident achievers and future toppers.
           </p>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {faculties.map((fac, idx) => (
             <motion.div 
               key={idx}

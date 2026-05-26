@@ -23,15 +23,6 @@ const director = {
 
 const teachers = [
   {
-    name: 'Mansi Acharya',
-    role: 'Chemistry Catalyst',
-    expertise: 'Chemistry',
-    experience: '8 Years Experience',
-    image: mansiImg,
-    description: 'Expert in unraveling the complexities of Chemistry, simplifying organic and inorganic concepts for a competitive edge.',
-    bullets: ['Chemistry mastery', 'Organic & Inorganic', 'Competitive focus'],
-  },
-  {
     name: 'Deepak Sharma',
     role: 'Physics Expert',
     expertise: 'Physics',
@@ -39,16 +30,6 @@ const teachers = [
     image: deepakImg,
     description: 'Dedicated to making Physics simple, conceptual, and interesting through practical understanding and result-oriented teaching methods.',
     bullets: ['Physics theories', 'Problem-solving', 'Board & competitive preparation'],
-  },
-  {
-    name: 'Shruuti Kharbanda',
-    role: 'B.St Coach',
-    expertise: 'Business Studies',
-    experience: '18 yrs Experience',
-    image: shruutiImg,
-    imagePosition: 'object-center scale-110',
-    description: 'Dedicated to making Business Studies easy, practical, and concept-oriented through interactive and student-friendly teaching methods.',
-    bullets: ['Business Studies coaching', 'Concept clarity', 'Practical approach'],
   },
   {
     name: 'Akanksha Gautam',
@@ -60,7 +41,16 @@ const teachers = [
     bullets: ['Biology fundamentals', 'Exam readiness', 'Conceptual depth'],
   },
   {
-    name: 'Sandeep Samdani',
+    name: 'Mansi Acharya',
+    role: 'Chemistry Catalyst',
+    expertise: 'Chemistry',
+    experience: '8 Years Experience',
+    image: mansiImg,
+    description: 'Expert in unraveling the complexities of Chemistry, simplifying organic and inorganic concepts for a competitive edge.',
+    bullets: ['Chemistry mastery', 'Organic & Inorganic', 'Competitive focus'],
+  },
+  {
+    name: 'CA Sudeep Samdani',
     role: 'Accountancy Expert',
     expertise: 'Accountancy (CA)',
     experience: 'Experienced Professional',
@@ -68,7 +58,17 @@ const teachers = [
     imagePosition: 'object-center',
     description: 'Dedicated to building strong fundamentals in Accountancy through practical learning, conceptual clarity, and result-oriented teaching.',
     bullets: ['Accountancy mastery', 'Practical approach', 'CA exam preparation'],
-  }
+  },
+  {
+    name: 'Shruti Kharbanda',
+    role: 'B.St Coach',
+    expertise: 'Business Studies',
+    experience: '18 yrs Experience',
+    image: shruutiImg,
+    imagePosition: 'object-center scale-110',
+    description: 'Dedicated to making Business Studies easy, practical, and concept-oriented through interactive and student-friendly teaching methods.',
+    bullets: ['Business Studies coaching', 'Concept clarity', 'Practical approach'],
+  },
 ];
 
 const heroFaculty = [

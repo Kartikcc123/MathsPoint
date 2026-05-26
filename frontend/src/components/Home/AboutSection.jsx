@@ -93,7 +93,7 @@ const AboutSection = () => {
                 />
                 {/* Speech Bubble */}
                 <div className="absolute -left-28 sm:-left-32 -top-4 bg-white text-slate-800 text-[11px] sm:text-[12px] font-bold p-2.5 rounded-lg rounded-br-none shadow-[0_4px_15px_rgba(0,0,0,0.08)] border border-gray-100 truncate w-max">
-                  How can I score 100/100?
+                  How can I score 93/100?
                 </div>
               </div>
             </div>
