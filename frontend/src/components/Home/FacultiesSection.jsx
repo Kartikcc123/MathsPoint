@@ -11,7 +11,7 @@ const faculties = [
   { 
     name: "Ashish Upadhyay", 
     subject: "Mathematics", 
-    exp: "21 Years", 
+    exp: "12 Years", 
     tag: "Director",
     desc: "Visionary leader and senior faculty, driving academic excellence and disciplined mentoring for over two decades.",
     img: ashishImg

@@ -7,13 +7,23 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const { protect } = require('../middleware/authMiddleware');
 
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+
+if (!razorpayKeyId || !razorpayKeySecret) {
+  console.error('Missing Razorpay credentials. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env');
+}
+
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback_key',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+  key_id: razorpayKeyId,
+  key_secret: razorpayKeySecret,
 });
 
 // Create Order API
 router.post('/create-order', protect, async (req, res) => {
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      return res.status(500).json({ message: 'Razorpay credentials are not configured.' });
+    }
   try {
     const { courseId } = req.body;
     const course = await Course.findById(courseId);
@@ -46,7 +56,7 @@ router.post('/create-order', protect, async (req, res) => {
     res.json({
       success: true,
       order: razorpayOrder,
-      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback_key'
+      key_id: razorpayKeyId
     });
 
   } catch (error) {
@@ -60,9 +70,13 @@ router.post('/verify-payment', protect, async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
+    if (!razorpayKeySecret) {
+      return res.status(500).json({ message: 'Razorpay credentials are not configured.' });
+    }
+
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'fallback_secret')
+      .createHmac("sha256", razorpayKeySecret)
       .update(sign.toString())
       .digest("hex");
 

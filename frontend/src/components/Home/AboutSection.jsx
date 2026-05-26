@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Video, FileText, BrainCircuit, Award } from 'lucide-react';
+import nimitImage from '../../assets/nimit.jpeg';
+import soumyaImage from '../../assets/Soumya.png';
 
 const AboutSection = () => {
   return (
@@ -62,13 +64,13 @@ const AboutSection = () => {
             <div className="absolute top-1/2 left-[30%] lg:left-[40%] -translate-x-1/2 -translate-y-1/2 z-20">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop" 
+                  src={nimitImage}
                   alt="Lead Mentor" 
                   loading="lazy"
                   decoding="async"
                   width={224}
                   height={224}
-                  className="w-40 h-40 md:w-56 md:h-56 object-cover object-top rounded-full border-4 border-white shadow-xl bg-indigo-50"
+                  className="w-40 h-40 md:w-56 md:h-56 object-cover object-[center_16%] scale-150 rounded-full border-4 border-white shadow-xl bg-indigo-50"
                 />
                 {/* Speech Bubble */}
                 <div className="absolute -right-28 sm:-right-40 top-1/2 bg-[#120a45] text-white text-[11px] sm:text-[13px] font-medium p-3 rounded-xl rounded-bl-none shadow-lg max-w-[180px] sm:max-w-[220px] transform hover:scale-105 transition-transform z-30">
@@ -81,13 +83,13 @@ const AboutSection = () => {
             <div className="absolute top-[15%] right-[5%] sm:right-[15%] z-10 hover:z-30">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1974&auto=format&fit=crop" 
+                  src={soumyaImage}
                   alt="Student" 
                   loading="lazy"
                   decoding="async"
                   width={144}
                   height={144}
-                  className="w-24 h-24 md:w-36 md:h-36 object-cover object-top rounded-full border-4 border-white shadow-lg bg-pink-50"
+                  className="w-24 h-24 md:w-36 md:h-36 object-cover object-[center_18%] scale-150 rounded-full border-4 border-white shadow-lg bg-pink-50"
                 />
                 {/* Speech Bubble */}
                 <div className="absolute -left-28 sm:-left-32 -top-4 bg-white text-slate-800 text-[11px] sm:text-[12px] font-bold p-2.5 rounded-lg rounded-br-none shadow-[0_4px_15px_rgba(0,0,0,0.08)] border border-gray-100 truncate w-max">

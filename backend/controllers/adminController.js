@@ -52,6 +52,37 @@ const buildAttendanceRangeMatch = (req, attendanceDateField = 'attendanceDate') 
 const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ').toLowerCase();
 const normalizePhone = (value = '') => value.replace(/\D/g, '');
 
+const formatMonthFromDate = (date) => {
+  if (!date) return '';
+  return new Date(date).toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+};
+
+const normalizeOrderPaymentRecord = (order) => {
+  const student = order.studentId && order.studentId.toObject ? order.studentId.toObject() : order.studentId || {};
+  const course = order.courseId && order.courseId.title ? order.courseId : undefined;
+  if (course) {
+    student.course = course;
+  }
+
+  const paymentDate = order.updatedAt || order.createdAt || new Date();
+  const status = order.status === 'Success' ? 'Paid' : 'Unpaid';
+
+  return {
+    _id: order._id,
+    studentId: student,
+    amount: order.amount,
+    status,
+    dueDate: order.createdAt,
+    paidDate: paymentDate,
+    month: formatMonthFromDate(paymentDate),
+    receiptUrl: null,
+    paymentMethod: 'Razorpay',
+    paymentReference: order.razorpayPaymentId,
+    paymentNote: 'Course purchase payment',
+    createdAt: order.createdAt,
+  };
+};
+
 const getDuplicateStudentMessage = async ({ email, phone, name, studentId }, excludeUserId = null) => {
   const filters = [];
 
@@ -171,7 +202,7 @@ const updateInquiryStatus = async (req, res) => {
 // @access  Private/Admin
 const getDashboardSummary = async (_req, res) => {
   try {
-    const [students, courses, materials, payments, notifications, attendanceAggregate, unpublishedResults] = await Promise.all([
+    const [students, courses, materials, feePayments, orderPayments, notifications, attendanceAggregate, unpublishedResults] = await Promise.all([
       User.find({ role: 'student' }).select('name email course studentPanelAllowed createdAt').populate('course').sort({ createdAt: -1 }),
       Course.find({}).sort({ createdAt: -1 }),
       CourseMaterial.find({}).sort({ createdAt: -1 }),
@@ -182,6 +213,10 @@ const getDashboardSummary = async (_req, res) => {
           populate: { path: 'course', select: 'title' },
         })
         .sort({ dueDate: -1, createdAt: -1 }),
+      Order.find({})
+        .populate('studentId', 'name email studentId course')
+        .populate('courseId', 'title')
+        .sort({ createdAt: -1 }),
       Notification.find({}).sort({ updatedAt: -1, createdAt: -1 }),
       Attendance.aggregate([
         { $unwind: '$records' },
@@ -204,11 +239,15 @@ const getDashboardSummary = async (_req, res) => {
       Result.countDocuments({ published: false }),
     ]);
 
-    const totalRevenue = payments
+    const totalRevenue = feePayments
       .filter((payment) => payment.status === 'Paid')
-      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
+      + orderPayments
+        .filter((order) => order.status === 'Success')
+        .reduce((sum, order) => sum + Number(order.amount || 0), 0);
 
-    const pendingPayments = payments.filter((payment) => payment.status !== 'Paid').length;
+    const pendingPayments = feePayments.filter((payment) => payment.status !== 'Paid').length
+      + orderPayments.filter((order) => order.status !== 'Success').length;
     const studentsWithAccess = students.filter((student) => student.course || student.studentPanelAllowed).length;
 
     const attendanceEntries = attendanceAggregate[0]?.attendanceEntries || 0;
@@ -218,8 +257,13 @@ const getDashboardSummary = async (_req, res) => {
       ? Math.round((attendancePresent / attendanceEntries) * 100)
       : 0;
 
-    const revenueByMonth = payments
-      .filter((payment) => payment.status === 'Paid' && payment.paidDate)
+    const revenueByMonth = [
+      ...feePayments.filter((payment) => payment.status === 'Paid' && payment.paidDate),
+      ...orderPayments.filter((order) => order.status === 'Success').map((order) => ({
+        amount: order.amount,
+        paidDate: order.updatedAt || order.createdAt,
+      })),
+    ]
       .reduce((accumulator, payment) => {
         const monthKey = new Date(payment.paidDate).toLocaleString('en-IN', {
           month: 'short',
@@ -249,7 +293,7 @@ const getDashboardSummary = async (_req, res) => {
         courses: courses.length,
         materials: materials.length,
         notifications: notifications.length,
-        payments: payments.length,
+        payments: feePayments.length + orderPayments.length,
         totalRevenue,
         pendingPayments,
         averageAttendance,
@@ -823,13 +867,22 @@ const deleteFreeStudyMaterial = async (req, res) => {
 
 const getPaymentRecords = async (req, res) => {
   try {
-    const payments = await Fee.find({})
+    const feePayments = await Fee.find({})
       .populate('studentId', 'name email studentId course')
       .populate({
         path: 'studentId',
         populate: { path: 'course', select: 'title' },
       })
       .sort({ dueDate: -1, createdAt: -1 });
+
+    const orderPayments = await Order.find({})
+      .populate('studentId', 'name email studentId course')
+      .populate('courseId', 'title')
+      .sort({ createdAt: -1 });
+
+    const normalizedOrderPayments = orderPayments.map(normalizeOrderPaymentRecord);
+
+    const payments = [...feePayments, ...normalizedOrderPayments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.json(payments);
   } catch (error) {

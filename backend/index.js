@@ -128,6 +128,10 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.warn('WARNING: Razorpay credentials are missing. Payment order creation will fail until RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set.');
+}
+
 if (!process.env.VIDEO_ENCRYPTION_KEY || process.env.VIDEO_ENCRYPTION_KEY.length !== 64) {
   console.warn('WARNING: VIDEO_ENCRYPTION_KEY is missing or invalid (must be 64 hex chars). Video lessons will not work.');
 }
