@@ -335,7 +335,9 @@ const getLessonPlayer = async (req, res) => {
       iv_load_policy: '3',
       playsinline: '1',
       enablejsapi: '1',
-      origin: process.env.CORS_ORIGIN?.split(',')[0]?.trim() || 'http://localhost:5173',
+      origin:
+        process.env.CORS_ORIGIN?.split(',')[0]?.trim() ||
+        'https://mathspoint.co.in',
     });
 
     const embedUrl = `https://www.youtube.com/embed/${plainVideoId}?${embedParams.toString()}`;
@@ -574,4 +576,3 @@ module.exports = {
   testYouTubeEmbed,
   extractYouTubeId,
 };
-
