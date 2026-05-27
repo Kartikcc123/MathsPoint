@@ -1,27 +1,36 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { buildSrcSet } from '../../utils/image';
+import MentorImage from '../../assets/nimit.jpeg';
+import SomyaImage from '../../assets/Somya.png';
+// import StudentImage from '../../assets/Student.jpeg';
 import LazyImage from '../Shared/LazyImage';
+
+const getImageProps = (img) => {
+  const isRemote = typeof img === 'string' && /^https?:\/\//.test(img);
+
+  return {
+    src: img,
+    srcSet: isRemote ? buildSrcSet(img) : undefined,
+    placeholder: isRemote ? `${img}?q=10&w=80` : img,
+  };
+};
 
 const testimonials = [
   { 
-    name: "Aman Gupta", 
-    role: "JEE Main 2024 AIR 78 | JEE", 
-    text: "Maths Point's lectures and specially editorial discussions from where I made important pointers. I also watched some history videos like Buddhism, Jainism as the topics were explained very clearly... all these were very helpful during my preparation...",
-    img: "https://images.unsplash.com/photo-1599566147214-ce487862ea4f?q=80&w=1976&auto=format&fit=crop"
+    name: "Somya Lodha", 
+    role: "Class 10 Topper | Maths 97/100", 
+    text: "Maths Point helped me build strong concepts in mathematics and improve my confidence step by step. The teaching style made difficult topics feel simple, and that support helped me score 97/100 in Maths.",
+    img: SomyaImage,
+    imageClassName: "scale-[2.25] object-[center_22%]"
   },
   { 
-    name: "Ravi Majhi", 
-    role: "GATE 2024 AIR 1 | GATE", 
-    text: "I am Ravi Majhi, and I am thrilled to share that I have secured All India Rank 1 (AIR 1) in the GATE 2024 examination. From the very beginning, Maths Point stood out for its structured and comprehensive curriculum.",
-    img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1974&auto=format&fit=crop"
+    name: "Nimit Mehta", 
+    role: "Class 12 Commerce Topper | 98.2%", 
+    text: "My experience with Maths Point has been excellent throughout my Class 12 journey. The guidance, regular practice, and clear explanations played a big role in helping me achieve 98.2% in Commerce.",
+    img: MentorImage,
+    imageClassName: "scale-[2.1] object-[center_18%]"
   },
-  { 
-    name: "Amit Kumar Mandal", 
-    role: "IBPS Topper | Banking", 
-    text: "Maths Point helped me in establishing the basics of every subject through which I was able to progress quickly and was also able to increase my speed and also maintaining accuracy.",
-    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop"
-  }
 ];
 
 const TestimonialsSection = () => {
@@ -60,8 +69,8 @@ const TestimonialsSection = () => {
                className="w-full h-full object-cover opacity-60 mix-blend-luminosity"
              />
              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 pointer-events-none">
-                 <h3 className="text-white font-extrabold text-3xl">JEE ADV</h3>
-                 <p className="text-yellow-400 font-black text-5xl tracking-tighter">AIR 1</p>
+                 <h3 className="text-white font-extrabold text-3xl">Class 10 & 12</h3>
+                 <p className="text-yellow-400 font-black text-5xl tracking-tighter">Top Maths Results</p>
              </div>
            </div>
 
@@ -69,19 +78,22 @@ const TestimonialsSection = () => {
            <div className="md:w-2/3 p-8 flex flex-col justify-center relative">
               <span className="text-8xl text-slate-100 font-serif absolute top-2 left-6 leading-none -z-0">“</span>
               <p className="text-slate-600 text-[15px] leading-relaxed relative z-10 mb-8 pt-4">
-                My name is Tathagat Awatar. I secured All India Rank 1 by scoring full marks in JEE Advanced 2024. I started my preparation with Maths Point in 12th grade by joining the premium batch, then I took 2 drops... My teachers and their guidance helps me to achieve AIR1 and motivated me during my drop year....
+                Maths Point is dedicated to helping Class 10 and Class 12 students master mathematics with clarity and confidence. Through strong concept building, regular practice, and focused guidance, our students improve their scores, perform well in board exams, and achieve top results.
               </p>
               
               <div className="mt-auto">
-                 <h4 className="font-extrabold text-[#1a202c] text-base mb-1">Multiple Rankers</h4>
-                 <p className="text-indigo-600 text-[13px] font-bold">AIR 1, AIR 86 and other <span className="text-slate-300 mx-1">|</span> JEE</p>
+                 <h4 className="font-extrabold text-[#1a202c] text-base mb-1">Focused Board Preparation</h4>
+                 <p className="text-indigo-600 text-[13px] font-bold">Class 10 Excellence <span className="text-slate-300 mx-1">|</span> Class 12 Top Scores</p>
               </div>
            </div>
         </motion.div>
         
         {/* Secondary Row Testimonials */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((test, idx) => (
+          {testimonials.map((test, idx) => {
+            const imageProps = getImageProps(test.img);
+
+            return (
             <motion.div 
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -97,14 +109,25 @@ const TestimonialsSection = () => {
               </p>
               
               <div className="flex items-center gap-4 mt-auto border-t border-gray-50 pt-5 relative z-10">
-                <LazyImage src={test.img} srcSet={buildSrcSet(test.img)} sizes="44px" alt={test.name} placeholder={`${test.img}?q=10&w=80`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-gray-200" />
+                <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-200 bg-white shrink-0">
+                  <LazyImage
+                    src={imageProps.src}
+                    srcSet={imageProps.srcSet}
+                    sizes="56px"
+                    alt={test.name}
+                    placeholder={imageProps.placeholder}
+                    width={56}
+                    height={56}
+                    className={`w-full h-full object-cover ${test.imageClassName ?? "scale-150 object-center"}`}
+                  />
+                </div>
                 <div>
                   <h4 className="font-extrabold text-[#1a202c] text-[15px] mb-0.5">{test.name}</h4>
                   <span className="text-[#4b6bfb] text-[12px] font-bold">{test.role.split('|')[0]} <span className="text-gray-300 mx-1">|</span> {test.role.split('|')[1]}</span>
                 </div>
               </div>
             </motion.div>
-          ))}
+          )})}
         </div>
 
       </div>

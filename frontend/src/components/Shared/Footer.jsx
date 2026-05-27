@@ -69,7 +69,22 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 border-t border-slate-800 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} MathsPoint Institute. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6">
+            <p>&copy; {new Date().getFullYear()} MathsPoint Institute. All rights reserved.</p>
+            <Link to="/privacy-policy" className="font-medium text-stone-300 transition hover:text-sky-400">Privacy Policy</Link>
+            <Link to="/terms-and-conditions" className="font-medium text-stone-300 transition hover:text-sky-400">Terms & Conditions</Link>
+          </div>
+          <p className="mt-4">
+            Designed and Developed by{' '}
+            <a
+              href="https://www.kartikagarwal.in.net"
+              className="font-medium text-sky-400 transition hover:text-sky-300"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Kartik Agarwal and Ashish Sharma
+            </a>
+          </p>
         </div>
       </div>
     </footer>

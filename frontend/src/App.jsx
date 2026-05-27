@@ -9,6 +9,8 @@ import Faculties from './pages/Public/Faculties';
 import Contact from './pages/Public/Contact';
 import Login from './pages/Public/Login';
 import FreeStudyMaterials from './pages/Public/FreeStudyMaterials';
+import PrivacyPolicy from './pages/Public/PrivacyPolicy';
+import TermsAndConditions from './pages/Public/TermsAndConditions';
 import ParentLogin from './pages/Public/ParentLogin';
 import TeacherLogin from './pages/Public/TeacherLogin';
 import Register from './pages/Public/Register';
@@ -69,6 +71,8 @@ function App() {
           <Route path="faculties" element={<Faculties />} />
           <Route path="contact" element={<Contact />} />
           <Route path="free-study-materials" element={<FreeStudyMaterials />} />
+          <Route path="privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="checkout/:courseId" element={<Checkout />} />
         </Route>
         <Route path="/login" element={<Login />} />
