@@ -4,7 +4,7 @@ import { buildSrcSet } from '../../utils/image';
 import LazyImage from '../Shared/LazyImage';
 
 const CourseCard = ({ course = {}, onContinue }) => {
-  const { title, faculty, thumbnail, progress = 0, enrolled = false, category } = course;
+  const { title, faculty, thumbnail, enrolled = false, category } = course;
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_22px_55px_-28px_rgba(15,23,42,0.28)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_65px_-26px_rgba(37,99,235,0.28)] dark:border-slate-800/90 dark:bg-slate-900/90">
@@ -26,10 +26,6 @@ const CourseCard = ({ course = {}, onContinue }) => {
             <p className="text-xs uppercase tracking-[0.25em] text-white/70">Faculty</p>
             <p className="mt-1 text-sm font-semibold">{faculty || 'Academic Team'}</p>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs backdrop-blur-sm">
-            <Clock3 className="h-3.5 w-3.5" />
-            {enrolled ? `${progress}% done` : 'Preview'}
-          </div>
         </div>
       </div>
 
@@ -41,17 +37,7 @@ const CourseCard = ({ course = {}, onContinue }) => {
           </p>
         </div>
 
-        {enrolled && (
-          <div className="w-full">
-            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-300">
-              <span>Progress</span>
-              <span>{Math.min(100, progress)}%</span>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-700">
-              <div className="h-2.5 rounded-full bg-[linear-gradient(90deg,#2563eb_0%,#22c55e_100%)]" style={{ width: `${Math.min(100, progress)}%` }} />
-            </div>
-          </div>
-        )}
+        {/* Progress bar removed for student batches */}
 
         <div className="mt-auto flex items-center justify-between gap-3">
           <button

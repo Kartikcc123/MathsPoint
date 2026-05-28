@@ -24,6 +24,7 @@ const defaultOrigins = [
   'https://mathspoint.co.in',
   'https://www.mathspoint.co.in',
   'https://mathspoint-client.onrender.com',
+  'https://mathspoint-yqnv.onrender.com',
 ];
 
 const effectiveOrigins = allowedOrigins.length === 0 ? defaultOrigins : [...new Set([...allowedOrigins, ...defaultOrigins])];

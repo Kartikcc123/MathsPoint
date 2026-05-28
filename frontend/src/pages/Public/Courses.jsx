@@ -53,7 +53,7 @@ const categoryConfig = [
   { id: 'class-10', label: 'Class 10th' },
   { id: 'class-11', label: 'Class 11th' },
   { id: 'class-12', label: 'Class 12th' },
-  { id: 'iit-jee', label: 'IIT-JEE' },
+  { id: 'CA', label: 'CA' },
   { id: 'boards', label: 'Boards' },
   { id: 'other', label: 'Other' },
 ];
@@ -61,11 +61,11 @@ const categoryConfig = [
 const categoryMatchers = {
   'class-5-8': ['class 5', 'class 6', 'class 7', 'class 8', '5th', '6th', '7th', '8th', 'junior division'],
   'class-9': ['class 9', '9th', 'ix'],
-  'class-10': ['class 10', '10th', 'x'],
-  'class-11': ['class 11', '11th', 'xi'],
+  'class-10': ['class 10', '10th'],
   'class-12': ['class 12', '12th', 'xii'],
-  'iit-jee': ['iit jee', 'jee', 'jee mains', 'jee advanced', 'engineering entrance', 'dropper'],
-  boards: ['board', 'cbse', 'icse', 'state board', 'school'],
+  'class-11': ['class 11', '11th', 'xi'],
+  'CA': ['ca', 'cpt', 'cs', 'law'],
+  'boards': ['board', 'cbse', 'icse', 'state board', 'school'],
 };
 
 const buildCourseHaystack = (course) =>
@@ -107,7 +107,7 @@ const isBoardsCourse = (course) => {
   const isClass10 = categoryMatchers['class-10'].some((term) => haystack.includes(term));
   const isClass12 = categoryMatchers['class-12'].some((term) => haystack.includes(term));
 
-  return isBoardTagged && (isClass10 || isClass12);
+  return isClass10 || isClass12 || isBoardTagged;
 };
 
 const getAudienceLabel = (category) => {
@@ -122,7 +122,7 @@ const getAudienceLabel = (category) => {
       return 'Senior Secondary';
     case 'class-12':
       return 'Exam Finisher';
-    case 'iit-jee':
+    case 'CA':
       return 'Competitive Track';
     case 'boards':
       return 'School Success';
@@ -143,6 +143,7 @@ const formatFee = (feeAmount) => {
 
 const resolveImageUrl = (url) => {
   if (!url) return '';
+  if (/^data:/i.test(url) || /^blob:/i.test(url)) return url;
   if (/^https?:\/\//i.test(url)) return url;
   const apiRoot = (api?.defaults?.baseURL || '').replace(/\/api$/, '');
   if (!apiRoot) return url;
