@@ -32,6 +32,7 @@ import AdminPayments from './pages/Admin/AdminPayments';
 import AdminNotifications from './pages/Admin/AdminNotifications';
 import AdminLessons from './pages/Admin/AdminLessons';
 import AdminFreeMaterials from './pages/Admin/AdminFreeMaterials';
+import AdminHomeContent from './pages/Admin/AdminHomeContent';
 import StudentDashboard from './pages/Student/Dashboard';
 
 // Layouts
@@ -88,6 +89,7 @@ function App() {
           <Route path="parents" element={<AdminParents />} />
           <Route path="teachers" element={<AdminTeachers />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="home-content" element={<AdminHomeContent />} />
           <Route path="free-materials" element={<AdminFreeMaterials />} />
           <Route path="courses/:courseId" element={<AdminCourseDetail />} />
           <Route path="materials" element={<AdminMaterials />} />

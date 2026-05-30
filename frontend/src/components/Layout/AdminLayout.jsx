@@ -20,6 +20,7 @@ import {
   LoaderCircle,
   GraduationCap,
   LibraryBig,
+  Images,
 } from 'lucide-react';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/admin/parents', label: 'Parent Accounts', icon: UserRoundPlus },
   { path: '/admin/teachers', label: 'Teacher Accounts', icon: GraduationCap },
   { path: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
+  { path: '/admin/home-content', label: 'Home Content', icon: Images },
   { path: '/admin/free-materials', label: 'Free Study Material', icon: LibraryBig },
   { path: '/admin/payments', label: 'Payment Records', icon: Receipt },
   { path: '/admin/notifications', label: 'Notifications', icon: Megaphone },

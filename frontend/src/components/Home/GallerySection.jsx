@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import advertise1 from '../../assets/Advertise1.png';
+import advertise2 from '../../assets/Advertise2.png';
+import advertise3 from '../../assets/Advertise3.png';
 
 const images = [
-  { url: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop", span: "col-span-2 row-span-2", alt: "Students in classroom" },
-  { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop", span: "col-span-1 row-span-1", alt: "Group study" },
-  { url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop", span: "col-span-1 row-span-1", alt: "Presentation" },
-  { url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop", span: "col-span-2 row-span-1", alt: "Maths workshop" }
+  { url: advertise1, span: 'md:col-span-2', alt: 'Maths Point advertisement poster 1' },
+  { url: advertise2, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 2' },
+  { url: advertise3, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 3' },
 ];
 
 const GallerySection = () => {
@@ -21,18 +23,18 @@ const GallerySection = () => {
           className="text-center mb-16 flex flex-col items-center"
         >
           <div className="bg-[#fff1f2] text-[#9f1239] text-[13px] font-bold px-4 py-1.5 rounded-full mb-5">
-            Campus Life
+            Featured Posters
           </div>
           <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#1a202c] tracking-tight mb-4">
-            Moments of Excellence
+            Latest Advertisements
           </h2>
           <p className="text-slate-500 text-[16px] max-w-2xl mx-auto leading-relaxed">
-            Glimpses into our interactive workshops, rigorous math classrooms, and the collaborative environment that fosters academic brilliance.
+            Explore the latest Maths Point posters highlighting our programs, batches, and student-focused learning opportunities.
           </p>
         </motion.div>
         
-        {/* Masonry-Style Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-4 h-[600px]">
+        {/* Poster Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[260px] md:auto-rows-[320px]">
           {images.map((img, idx) => (
             <motion.div 
               key={idx}
@@ -48,7 +50,7 @@ const GallerySection = () => {
                 transition={{ duration: 0.6, ease: "easeOut" }}
                 src={img.url} 
                 alt={img.alt} 
-                className="w-full h-full object-cover z-0 relative" 
+                className="w-full h-full object-contain bg-white z-0 relative" 
               />
             </motion.div>
           ))}

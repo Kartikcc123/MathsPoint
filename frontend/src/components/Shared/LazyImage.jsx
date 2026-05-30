@@ -13,6 +13,8 @@ const LazyImage = ({
   width,
   height,
   style,
+  imgClassName = '',
+  imgStyle,
   ariaHidden = false,
   onLoad,
 }) => {
@@ -105,7 +107,9 @@ const LazyImage = ({
             opacity: loaded ? 1 : 0,
             transform: loaded ? 'translateZ(0) scale(1)' : 'scale(1.01)',
             zIndex: 1,
+            ...imgStyle,
           }}
+          className={imgClassName}
         />
       )}
 

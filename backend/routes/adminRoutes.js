@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, deleteCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, createFreeStudyMaterial, getFreeStudyMaterials, deleteFreeStudyMaterial, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
+const { getAdminHomeContent, updateHomeContent } = require('../controllers/homeContentController');
 const { protect, admin, attendanceManager } = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({
@@ -49,6 +50,34 @@ const freeMaterialUpload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+const homeContentStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'home-content');
+    const fs = require('fs');
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${Date.now()}-${safeName}`);
+  },
+});
+
+const homeContentFileFilter = (_req, file, cb) => {
+  const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed for home page content.'), false);
+  }
+};
+
+const homeContentUpload = multer({
+  storage: homeContentStorage,
+  fileFilter: homeContentFileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 },
+});
+
 router.route('/students')
   .get(protect, attendanceManager, getStudents);
 
@@ -57,6 +86,10 @@ router.route('/inquiries')
 
 router.route('/dashboard-summary')
   .get(protect, admin, getDashboardSummary);
+
+router.route('/home-content')
+  .get(protect, admin, getAdminHomeContent)
+  .put(protect, admin, homeContentUpload.any(), updateHomeContent);
 
 router.route('/student')
   .post(protect, admin, registerStudent);

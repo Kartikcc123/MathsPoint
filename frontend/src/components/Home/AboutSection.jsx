@@ -4,8 +4,29 @@ import { Link } from 'react-router-dom';
 import { Video, FileText, BrainCircuit, Award } from 'lucide-react';
 import nimitImage from '../../assets/nimit.jpeg';
 import soumyaImage from '../../assets/Soumya.png';
+import { resolveMediaUrl } from '../../utils/media';
 
-const AboutSection = () => {
+const fallbackSpotlight = {
+  primaryImageUrl: nimitImage,
+  primaryAlt: 'Lead Mentor',
+  primaryQuote: 'Maths is easy when taught with logic and consistent practice!',
+  secondaryImageUrl: soumyaImage,
+  secondaryAlt: 'Student',
+  secondaryQuote: 'How can I score 93/100?',
+};
+
+const AboutSection = ({ studentSpotlight }) => {
+  const spotlight = {
+    ...fallbackSpotlight,
+    ...(studentSpotlight || {}),
+    primaryImageUrl: studentSpotlight?.primaryImageUrl
+      ? resolveMediaUrl(studentSpotlight.primaryImageUrl)
+      : fallbackSpotlight.primaryImageUrl,
+    secondaryImageUrl: studentSpotlight?.secondaryImageUrl
+      ? resolveMediaUrl(studentSpotlight.secondaryImageUrl)
+      : fallbackSpotlight.secondaryImageUrl,
+  };
+
   return (
     <section id="about" className="relative bg-white pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden">
       
@@ -64,8 +85,8 @@ const AboutSection = () => {
             <div className="absolute top-1/2 left-[30%] lg:left-[40%] -translate-x-1/2 -translate-y-1/2 z-20">
               <div className="relative">
                 <img 
-                  src={nimitImage}
-                  alt="Lead Mentor" 
+                  src={spotlight.primaryImageUrl}
+                  alt={spotlight.primaryAlt}
                   loading="lazy"
                   decoding="async"
                   width={224}
@@ -74,7 +95,7 @@ const AboutSection = () => {
                 />
                 {/* Speech Bubble */}
                 <div className="absolute -right-28 sm:-right-40 top-1/2 bg-[#120a45] text-white text-[11px] sm:text-[13px] font-medium p-3 rounded-xl rounded-bl-none shadow-lg max-w-[180px] sm:max-w-[220px] transform hover:scale-105 transition-transform z-30">
-                  Maths is easy when taught with logic and consistent practice!
+                  {spotlight.primaryQuote}
                 </div>
               </div>
             </div>
@@ -83,8 +104,8 @@ const AboutSection = () => {
             <div className="absolute top-[15%] right-[5%] sm:right-[15%] z-10 hover:z-30">
               <div className="relative">
                 <img 
-                  src={soumyaImage}
-                  alt="Student" 
+                  src={spotlight.secondaryImageUrl}
+                  alt={spotlight.secondaryAlt}
                   loading="lazy"
                   decoding="async"
                   width={144}
@@ -93,7 +114,7 @@ const AboutSection = () => {
                 />
                 {/* Speech Bubble */}
                 <div className="absolute -left-28 sm:-left-32 -top-4 bg-white text-slate-800 text-[11px] sm:text-[12px] font-bold p-2.5 rounded-lg rounded-br-none shadow-[0_4px_15px_rgba(0,0,0,0.08)] border border-gray-100 truncate w-max">
-                  How can I score 93/100?
+                  {spotlight.secondaryQuote}
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildSrcSet } from '../../utils/image';
+import { resolveMediaUrl } from '../../utils/media';
 
 import akankshaImg from '../../assets/Akanksha.jpeg';
 import deepakImg from '../../assets/Deepak.jpeg';
@@ -10,7 +11,7 @@ import ashishImg from '../../assets/DirectorCutout.png';
 import samdaniImg from '../../assets/Samdani.png';
 import shruutiImg from '../../assets/Shruuti.jpeg';
 
-const faculties = [
+const fallbackFaculties = [
   { 
     name: "Ashish Upadhyay", 
     subject: "Mathematics", 
@@ -61,7 +62,14 @@ const faculties = [
   },
 ];
 
-const FacultiesSection = () => {
+const FacultiesSection = ({ facultyItems = [] }) => {
+  const faculties = facultyItems.length
+    ? facultyItems.map((faculty) => ({
+        ...faculty,
+        img: faculty.img ? resolveMediaUrl(faculty.img) : '',
+      }))
+    : fallbackFaculties;
+
   return (
     <section id="faculties" className="py-24 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
