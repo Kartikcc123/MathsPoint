@@ -21,6 +21,9 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
 const defaultOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost',
+  'https://localhost',
+  'capacitor://localhost',
   'https://mathspoint.co.in',
   'https://www.mathspoint.co.in',
   'https://mathspoint-client.onrender.com',
