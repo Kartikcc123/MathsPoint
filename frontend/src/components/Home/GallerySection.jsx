@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 // import advertise1 from '../../assets/Advertise1.png';
 // import advertise2 from '../../assets/Advertise2.png';
-import advertise3 from '../../assets/Advertise3.png';
+// import advertise3 from '../../assets/Advertise3.png';
 
 const images = [
   // { url: advertise1, span: 'md:col-span-2', alt: 'Maths Point advertisement poster 1' },
   // { url: advertise2, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 2' },
-  { url: advertise3, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 3' },
+  // { url: advertise3, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 3' },
 ];
 
 const GallerySection = () => {

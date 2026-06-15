@@ -25,7 +25,6 @@ const defaultOrigins = [
   'https://localhost',
   'capacitor://localhost',
   'https://mathspoint.co.in',
-  'https://www.mathspoint.co.in',
   'https://mathspoint-client.onrender.com',
   'https://mathspoint-yqnv.onrender.com',
 ];
