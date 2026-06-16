@@ -16,7 +16,7 @@ const GallerySection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Elements */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -32,7 +32,7 @@ const GallerySection = () => {
             Explore the latest Maths Point posters highlighting our programs, batches, and student-focused learning opportunities.
           </p>
         </motion.div>
-        
+         */}
         {/* Poster Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[260px] md:auto-rows-[320px]">
           {images.map((img, idx) => (
