@@ -195,20 +195,39 @@ const generateDescription = (form, setForm, setGenerating) => {
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  const openers = [
-    `Master ${title.trim()} with our comprehensive, expertly designed course`,
-    `Unlock your potential with the ${title.trim()} batch — a structured learning program`,
-  ];
-  const subjectPhrases = [
-    subjectList.length > 0 ? ` covering ${subjectList.join(', ')}` : '',
-  ];
-  const durationPhrases = [dur ? ` Designed to be completed in ${dur.toLowerCase()}` : ''];
-  const feePhrases = fee === 0 ? [' — completely free of cost!'] : fee > 0 ? [` Available at just ₹${fee}.`] : [''];
-  const closers = [' Includes video lectures, practice sets, and study materials curated by top educators.'];
-  const ctas = [' Start learning today and stay ahead of the competition!'];
+  const startDate = form.startedAt ? fmtDate(form.startedAt) : 'Upcoming';
+  const endDateStr = form.duration ? ` (Valid for ${form.duration})` : '';
+  const subjStr = subjectList.length > 0 ? subjectList.join(', ') : 'All key subjects';
+  
+  const desc = `🗓️ Course Duration:
+${startDate}${endDateStr}
 
-  const desc = pick(openers) + pick(subjectPhrases) + '.' + pick(durationPhrases) + pick(feePhrases) + pick(closers) + pick(ctas);
-  const cleaned = desc.replace(/\.\.+/g, '.').replace(/\s+/g, ' ').trim();
+⭐ Validity:
+Until Course Completion
+
+⭐ Online & Recorded lectures
+⭐ One-to-one telephonic guidance
+⭐ Comprehensive study material & DPPs
+⭐ Regular mock tests and analysis
+⭐ 24/7 doubt solving support
+
+📚 Subjects:
+${subjStr}
+
+FAQ's
+Q: Batch is for Whom?
+A: This batch is for students aiming to master the syllabus thoroughly.
+
+Q: Lectures will be live or recorded?
+A: You will get live lectures as well as recorded backups.
+
+Q: Classes will be on app or Youtube?
+A: All classes will be conducted exclusively on our app.
+
+Q: What are other offerings?
+A: You get access to premium notes, DPPs, and special guidance sessions.`;
+
+  const cleaned = desc;
 
   let i = 0;
   setForm((p) => ({ ...p, description: '' }));

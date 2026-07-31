@@ -315,4 +315,84 @@ const updateStudentProfile = async (req, res) => {
   }
 };
 
-module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile };
+const getStudentPurchases = async (req, res) => {
+  try {
+    const Order = require('../models/Order');
+    const orders = await Order.find({ studentId: req.user._id, status: 'Success' })
+      .populate('courseId')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load purchases.');
+  }
+};
+
+// ── COMMENTS ───────────────────────────────────────────────────────────────────
+
+const getComments = async (req, res) => {
+  try {
+    const Comment = require('../models/Comment');
+    const comments = await Comment.find({ materialId: req.params.id })
+      .populate('student', 'name')
+      .sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to load comments.');
+  }
+};
+
+const addComment = async (req, res) => {
+  try {
+    const Comment = require('../models/Comment');
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ message: 'Comment text is required' });
+    }
+    const newComment = new Comment({
+      materialId: req.params.id,
+      student: req.user._id,
+      text: text,
+    });
+    await newComment.save();
+    await newComment.populate('student', 'name');
+    res.status(201).json(newComment);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to post comment.');
+  }
+};
+
+const toggleLikeComment = async (req, res) => {
+  try {
+    const Comment = require('../models/Comment');
+    const comment = await Comment.findById(req.params.id);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    
+    const userId = req.user._id;
+    const index = comment.likes.indexOf(userId);
+    if (index === -1) {
+      comment.likes.push(userId);
+    } else {
+      comment.likes.splice(index, 1);
+    }
+    await comment.save();
+    res.json(comment);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to toggle like.');
+  }
+};
+
+const reportComment = async (req, res) => {
+  try {
+    const Comment = require('../models/Comment');
+    const comment = await Comment.findById(req.params.id);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    
+    comment.reports = (comment.reports || 0) + 1;
+    await comment.save();
+    res.json({ message: 'Reported successfully' });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to report comment.');
+  }
+};
+
+module.exports = { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile, getStudentPurchases, getComments, addComment, toggleLikeComment, reportComment };

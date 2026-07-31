@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const { sendErrorResponse } = require('../utils/api');
-
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
+const bcrypt = require('bcrypt');
 const normalizePhone = (value = '') => value.replace(/\D/g, '');
 
 const getUiRole = (user) => {
@@ -33,8 +35,13 @@ const loginUser = async (req, res) => {
       const normalizedEmail = identifier.toLowerCase();
       user = await User.findOne({ email: normalizedEmail }).populate('course').populate('enrolledCourses');
     } else {
-      // allow login by studentId as well
-      user = await User.findOne({ studentId: identifier }).populate('course').populate('enrolledCourses');
+      // allow login by studentId or phone as well
+      user = await User.findOne({ 
+        $or: [
+          { studentId: identifier },
+          { normalizedPhone: normalizePhone(identifier) }
+        ]
+      }).populate('course').populate('enrolledCourses');
     }
 
     if (user && (await user.matchPassword(password))) {
@@ -194,6 +201,61 @@ const verifySetup2FA = async (req, res) => {
   }
 };
 
+// @desc    Check if a user exists by phone number
+// @route   POST /api/auth/check-phone
+// @access  Public
+const checkPhoneExists = async (req, res) => {
+  const { phone } = req.body;
+  const normalizedPhone = normalizePhone(phone);
+
+  if (!normalizedPhone) {
+    return res.status(400).json({ message: 'Phone number is required' });
+  }
+
+  try {
+    const user = await User.findOne({
+      $or: [
+        { normalizedPhone: normalizedPhone },
+        { phone: phone },
+        { phone: normalizedPhone },
+        { studentId: phone }
+      ]
+    });
+    
+    if (user) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to check phone.');
+  }
+};
+
+// @desc    Check if a user exists by email address
+// @route   POST /api/auth/check-email
+// @access  Public
+const checkEmailExists = async (req, res) => {
+  const { email } = req.body;
+  const normalizedEmail = email?.trim().toLowerCase();
+
+  if (!normalizedEmail) {
+    return res.status(400).json({ message: 'Email address is required' });
+  }
+
+  try {
+    const user = await User.findOne({ email: normalizedEmail });
+    
+    if (user) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to check email.');
+  }
+};
+
 // @desc    Register a new admin
 // @route   POST /api/auth/register-admin
 // @access  Public
@@ -346,6 +408,71 @@ const registerStudent = async (req, res) => {
   }
 };
 
+// @desc    Register a new student from the mobile app (no parent details)
+// @route   POST /api/auth/register-app
+// @access  Public
+const registerAppStudent = async (req, res) => {
+  const { name, email, phone, state, password } = req.body;
+  const normalizedEmail = email?.trim().toLowerCase();
+  const normalizedPhone = phone?.trim();
+
+  try {
+    if (!normalizedPhone || !name || !password) {
+      return res.status(400).json({
+        message: 'Name, phone, and password are required.',
+        code: 'STUDENT_DETAILS_REQUIRED',
+      });
+    }
+
+    const userExists = await User.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { normalizedPhone: normalizedPhone },
+        { phone: phone },
+        { phone: normalizedPhone },
+        { studentId: phone }
+      ],
+    });
+
+    if (userExists) {
+      let isEmailMatch = false;
+      if (userExists.email && userExists.email.toLowerCase() === normalizedEmail) {
+        isEmailMatch = true;
+      }
+      return res.status(400).json({
+        message: isEmailMatch ? 'This email is already registered.' : 'This mobile number is already registered.',
+        code: 'STUDENT_ALREADY_EXISTS',
+      });
+    }
+
+    const user = await User.create({
+      name,
+      email: normalizedEmail,
+      password,
+      role: 'student',
+      phone: normalizedPhone,
+      city: state, // storing state in city field if state doesn't exist, wait, the schema might not have state. Let's just use city for state or add state.
+    });
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        actualRole: user.role,
+        phone: user.phone,
+        enrolledCourses: user.enrolledCourses || [],
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data', code: 'STUDENT_INVALID_DATA' });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Mobile app registration failed.');
+  }
+};
+
 // @desc    Get user profile
 // @route   GET /api/auth/profile
 // @access  Private
@@ -387,6 +514,129 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Forgot password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Please provide an email' });
+  }
+
+  try {
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      // Don't leak if the user exists or not for security, just say email sent.
+      return res.status(200).json({ success: true, message: 'Email sent' });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    user.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set expire (10 minutes)
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // Create reset url
+    // When you deploy your app to the internet, you will set FRONTEND_URL in your server's .env file (e.g. FRONTEND_URL=https://mathspoint.com)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Password reset token',
+        message,
+      });
+
+      res.status(200).json({ success: true, message: 'Email sent' });
+    } catch (err) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({ message: 'Email could not be sent' });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Forgot password failed');
+  }
+};
+
+// @desc    Reset password
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = async (req, res) => {
+  // Get hashed token
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    // Set new password - the Mongoose pre('save') hook will hash it automatically!
+    user.password = req.body.password;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    sendErrorResponse(res, error, 'Reset password failed');
+  }
+};
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      user.phone = req.body.phone || user.phone;
+      if (req.body.username !== undefined) user.username = req.body.username;
+      if (req.body.bio !== undefined) user.bio = req.body.bio;
+      
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        username: updatedUser.username,
+        bio: updatedUser.bio,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to update profile');
+  }
+};
+
 module.exports = {
   getUserProfile,
   loginUser,
@@ -395,4 +645,10 @@ module.exports = {
   verifySetup2FA,
   registerAdmin,
   registerStudent,
+  checkPhoneExists,
+  checkEmailExists,
+  registerAppStudent,
+  forgotPassword,
+  resetPassword,
+  updateProfile,
 };

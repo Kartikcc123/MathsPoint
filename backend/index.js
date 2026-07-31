@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 const { attachRequestContext, requireJsonBody } = require('./middleware/requestMiddleware');
+const { scheduleAdvertisementJobs } = require('./utils/cronJobs');
 
 dotenv.config();
 
@@ -38,6 +39,11 @@ const corsOptions = {
       return callback(null, true);
     }
 
+    // Allow all local dev ports (e.g. Flutter web, React dev server)
+    if (origin.startsWith('http://localhost:') || origin === 'http://localhost') {
+      return callback(null, true);
+    }
+
     return callback(null, effectiveOrigins.includes(origin));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -46,14 +52,14 @@ const corsOptions = {
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.RATE_LIMIT_MAX) || 100,
+  max: Number(process.env.RATE_LIMIT_MAX) || 2000,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.AUTH_RATE_LIMIT_MAX) || 20,
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX) || 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many authentication attempts. Please try again later.' },
@@ -104,6 +110,7 @@ const publicRoutes = require('./routes/publicRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const lessonRoutes = require('./routes/lessonRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const advertisementRoutes = require('./routes/advertisementRoutes');
 
 // Mount Routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -114,6 +121,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api', lessonRoutes);
 app.use('/api/session', sessionRoutes);
+app.use('/api/advertisements', advertisementRoutes);
 
 // Base Route
 app.get('/', (req, res) => {
@@ -132,6 +140,9 @@ if (!process.env.JWT_SECRET) {
   console.error('Missing JWT_SECRET in environment variables.');
   process.exit(1);
 }
+
+// Start Background Jobs
+scheduleAdvertisementJobs();
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   console.warn('WARNING: Razorpay credentials are missing. Payment order creation will fail until RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set.');

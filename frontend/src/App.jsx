@@ -17,6 +17,8 @@ import Register from './pages/Public/Register';
 import Checkout from './pages/Public/Checkout';
 import AdminLogin from './pages/Public/AdminLogin';
 
+import ResetPassword from './pages/Public/ResetPassword';
+
 // Private Pages
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminStudents from './pages/Admin/AdminStudents';
@@ -33,6 +35,7 @@ import AdminNotifications from './pages/Admin/AdminNotifications';
 import AdminLessons from './pages/Admin/AdminLessons';
 import AdminFreeMaterials from './pages/Admin/AdminFreeMaterials';
 import AdminHomeContent from './pages/Admin/AdminHomeContent';
+import AdminAdvertisements from './pages/Admin/AdminAdvertisements';
 import StudentDashboard from './pages/Student/Dashboard';
 
 // Layouts
@@ -77,6 +80,7 @@ function App() {
           <Route path="checkout/:courseId" element={<Checkout />} />
         </Route>
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/parent-login" element={<ParentLogin />} />
         <Route path="/teacher-portal-7f4b2k1m" element={<TeacherLogin />} />
         <Route path="/register" element={<Register />} />
@@ -89,6 +93,7 @@ function App() {
           <Route path="parents" element={<AdminParents />} />
           <Route path="teachers" element={<AdminTeachers />} />
           <Route path="courses" element={<AdminCourses />} />
+          <Route path="advertisements" element={<AdminAdvertisements />} />
           <Route path="home-content" element={<AdminHomeContent />} />
           <Route path="free-materials" element={<AdminFreeMaterials />} />
           <Route path="courses/:courseId" element={<AdminCourseDetail />} />
@@ -116,6 +121,7 @@ function App() {
           <Route path="material/:materialId" element={<MaterialPlayer />} />
         </Route>
 
+        {/* Teacher Panel Routes */}
         <Route path="/teacher" element={<TeacherLayout />}>
           <Route index element={<TeacherDashboard />} />
           <Route path="dashboard" element={<TeacherDashboard />} />

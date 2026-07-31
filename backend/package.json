@@ -11,6 +11,7 @@
   },
   "type": "commonjs",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1100.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
@@ -20,10 +21,12 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
+    "node-cron": "^4.6.0",
     "nodemailer": "^8.0.7",
     "nodemon": "^3.1.14",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
+    "sharp": "^0.35.3",
     "speakeasy": "^2.0.0"
   }
 }

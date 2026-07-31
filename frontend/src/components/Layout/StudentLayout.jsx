@@ -15,6 +15,7 @@ import {
   Phone,
   Info,
   MonitorPlay,
+  Radio,
   UserCircle,
   ChevronDown,
   ShoppingBag
@@ -100,8 +101,9 @@ const StudentLayout = () => {
       : 'flex items-center gap-3 px-4 py-2.5 text-[15px] font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors';
   };
 
-  // Check if we are in the video player route to hide the standard sidebar/nav
-  const isPlayerRoute = location.pathname.includes('/lesson/');
+  // Hide the standard dashboard chrome on focused player-style screens
+  const isPlayerRoute =
+    location.pathname.includes('/lesson/');
 
   if (isPlayerRoute) {
     return (

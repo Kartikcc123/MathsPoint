@@ -53,10 +53,20 @@ const normalizeFaculties = (faculties = [], uploadedFiles = {}) =>
     }))
     .filter((faculty) => faculty.name || faculty.subject || faculty.img);
 
+const normalizeGalleryImages = (galleryImages = [], uploadedFiles = {}) =>
+  galleryImages
+    .map((item, index) => ({
+      title: sanitizeText(item.title),
+      imageUrl: uploadedFiles[item.imageFileKey] || sanitizeText(item.imageUrl),
+      order: index,
+    }))
+    .filter((item) => item.imageUrl);
+
 const serializeHomeContent = (doc) => ({
   heroAds: sortByOrder(doc.heroAds || []),
   studentSpotlight: doc.studentSpotlight || {},
   faculties: sortByOrder(doc.faculties || []),
+  galleryImages: sortByOrder(doc.galleryImages || []),
   updatedAt: doc.updatedAt,
 });
 
@@ -69,6 +79,7 @@ const getPublicHomeContent = async (_req, res) => {
         heroAds: [],
         studentSpotlight: {},
         faculties: [],
+        galleryImages: [],
       });
     }
 
@@ -99,6 +110,7 @@ const updateHomeContent = async (req, res) => {
     doc.heroAds = normalizeHeroAds(payload.heroAds, uploadedFiles);
     doc.studentSpotlight = normalizeStudentSpotlight(payload.studentSpotlight, uploadedFiles);
     doc.faculties = normalizeFaculties(payload.faculties, uploadedFiles);
+    doc.galleryImages = normalizeGalleryImages(payload.galleryImages, uploadedFiles);
 
     await doc.save();
 

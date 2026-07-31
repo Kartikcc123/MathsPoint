@@ -40,6 +40,14 @@ const createEmptyFaculty = () => ({
   previewUrl: '',
 });
 
+const createEmptyGalleryImage = () => ({
+  _clientId: createClientId(),
+  title: '',
+  imageUrl: '',
+  file: null,
+  previewUrl: '',
+});
+
 const createEmptySpotlight = () => ({
   primaryImageUrl: '',
   primaryAlt: 'Lead student',
@@ -65,6 +73,12 @@ const mapIncomingFaculty = (faculty = {}) => ({
   previewUrl: faculty.img ? resolveMediaUrl(faculty.img) : '',
 });
 
+const mapIncomingGalleryImage = (image = {}) => ({
+  ...createEmptyGalleryImage(),
+  ...image,
+  previewUrl: image.imageUrl ? resolveMediaUrl(image.imageUrl) : '',
+});
+
 const mapIncomingSpotlight = (spotlight = {}) => ({
   ...createEmptySpotlight(),
   ...spotlight,
@@ -76,6 +90,7 @@ const AdminHomeContent = () => {
   const [heroAds, setHeroAds] = useState([]);
   const [studentSpotlight, setStudentSpotlight] = useState(createEmptySpotlight());
   const [faculties, setFaculties] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -90,6 +105,7 @@ const AdminHomeContent = () => {
       setHeroAds((data.heroAds || []).map(mapIncomingAd));
       setStudentSpotlight(mapIncomingSpotlight(data.studentSpotlight || {}));
       setFaculties((data.faculties || []).map(mapIncomingFaculty));
+      setGalleryImages((data.galleryImages || []).map(mapIncomingGalleryImage));
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load home content settings.');
     } finally {
@@ -105,8 +121,9 @@ const AdminHomeContent = () => {
     () => ({
       ads: heroAds.length,
       faculty: faculties.length,
+      gallery: galleryImages.length,
     }),
-    [heroAds.length, faculties.length]
+    [galleryImages.length, heroAds.length, faculties.length]
   );
 
   const moveItem = (items, fromIndex, toIndex) => {
@@ -181,6 +198,30 @@ const AdminHomeContent = () => {
     }));
   };
 
+  const handleGalleryChange = (index, field, value) => {
+    setGalleryImages((current) =>
+      current.map((image, idx) => (idx === index ? { ...image, [field]: value } : image))
+    );
+  };
+
+  const handleGalleryFileChange = (index, file) => {
+    if (!file) {
+      return;
+    }
+
+    setGalleryImages((current) =>
+      current.map((image, idx) =>
+        idx === index
+          ? {
+              ...image,
+              file,
+              previewUrl: URL.createObjectURL(file),
+            }
+          : image
+      )
+    );
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -222,6 +263,14 @@ const AdminHomeContent = () => {
             imageFileKey,
           };
         }),
+        galleryImages: galleryImages.map((image) => {
+          const imageFileKey = image.file ? `gallery-image-${image._clientId}` : '';
+          return {
+            title: image.title,
+            imageUrl: image.imageUrl,
+            imageFileKey,
+          };
+        }),
       };
 
       const formData = new FormData();
@@ -247,6 +296,12 @@ const AdminHomeContent = () => {
         }
       });
 
+      galleryImages.forEach((image) => {
+        if (image.file) {
+          formData.append(`gallery-image-${image._clientId}`, image.file);
+        }
+      });
+
       const res = await api.put('/admin/home-content', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -257,6 +312,7 @@ const AdminHomeContent = () => {
       setHeroAds((data.heroAds || []).map(mapIncomingAd));
       setStudentSpotlight(mapIncomingSpotlight(data.studentSpotlight || {}));
       setFaculties((data.faculties || []).map(mapIncomingFaculty));
+      setGalleryImages((data.galleryImages || []).map(mapIncomingGalleryImage));
       setSuccess(res.data?.message || 'Home page content saved successfully.');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save home page content.');
@@ -294,6 +350,9 @@ const AdminHomeContent = () => {
           </div>
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
             {stats.faculty} faculty cards
+          </div>
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            {stats.gallery} gallery images
           </div>
         </div>
       </header>
@@ -365,6 +424,69 @@ const AdminHomeContent = () => {
             )) : (
               <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-slate-500">
                 No hero advertisements added yet.
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-700">Gallery</p>
+              <h3 className="mt-2 text-2xl font-bold text-slate-900">Control home gallery images</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGalleryImages((current) => [...current, createEmptyGalleryImage()])}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <Plus className="h-4 w-4" />
+              Add Gallery Image
+            </button>
+          </div>
+
+          <div className="space-y-5">
+            {galleryImages.length ? galleryImages.map((image, index) => (
+              <div key={image._clientId} className="rounded-[24px] border border-slate-200 p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <ImagePlus className="h-4 w-4 text-slate-400" />
+                    Gallery Image {index + 1}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => setGalleryImages((current) => moveItem(current, index, index - 1))} className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" aria-label="Move gallery image up">
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => setGalleryImages((current) => moveItem(current, index, index + 1))} className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" aria-label="Move gallery image down">
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => setGalleryImages((current) => current.filter((_, idx) => idx !== index))} className="rounded-xl border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100" aria-label="Delete gallery image">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+                  <label className="flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-[20px] border border-dashed border-slate-300 bg-slate-50 p-4 text-center transition hover:border-sky-300 hover:bg-sky-50/40">
+                    {image.previewUrl ? (
+                      <img src={image.previewUrl} alt={image.title || 'Gallery image preview'} className="max-h-[240px] w-full rounded-2xl object-contain" />
+                    ) : (
+                      <>
+                        <ImagePlus className="h-8 w-8 text-sky-600" />
+                        <span className="mt-3 text-sm font-semibold text-slate-700">Upload gallery image</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" onChange={(event) => handleGalleryFileChange(index, event.target.files?.[0] || null)} className="hidden" />
+                  </label>
+
+                  <div className="grid gap-4 content-start">
+                    <input value={image.title} onChange={(event) => handleGalleryChange(index, 'title', event.target.value)} placeholder="Image title for alt text" className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                  </div>
+                </div>
+              </div>
+            )) : (
+              <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-slate-500">
+                No gallery images added yet.
               </div>
             )}
           </div>

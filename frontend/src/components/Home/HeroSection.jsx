@@ -6,11 +6,7 @@ import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 import { Pagination, Autoplay, EffectFade } from "swiper/modules";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import advertise1 from '../../assets/Advertise1.png';
-import advertise2 from '../../assets/Advertise2.png';
 import { resolveMediaUrl } from '../../utils/media';
-import advertise4 from '../../assets/Advertise4.png';
-import advertise3 from '../../assets/Advertise3.png';
 
 const SwiperNavButtons = () => {
   const swiper = useSwiper();
@@ -47,13 +43,6 @@ const SwiperNavButtons = () => {
   );
 };
 
-const fallbackSlides = [
-  { img: advertise1, alt: 'Maths Point advertisement poster 1' },
-  { img: advertise2, alt: 'Maths Point advertisement poster 2' },
-  { img: advertise3, alt: 'Maths Point advertisement poster 3' },
-  { img: advertise4, alt: 'Maths Point advertisement poster 4' },
-];
-
 export default function HeroSection({ ads = [] }) {
   const dynamicSlides = ads.length
     ? ads
@@ -63,7 +52,11 @@ export default function HeroSection({ ads = [] }) {
           alt: ad.title || `Maths Point advertisement poster ${index + 1}`,
         }))
     : [];
-  const slides = dynamicSlides.length ? dynamicSlides : fallbackSlides;
+  const slides = dynamicSlides;
+
+  if (!slides.length) {
+    return null;
+  }
 
   return (
     <section id="hero" className="w-full relative bg-slate-950">

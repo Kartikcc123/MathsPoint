@@ -87,7 +87,8 @@ const AboutSection = ({ studentSpotlight }) => {
                 <img 
                   src={spotlight.primaryImageUrl}
                   alt={spotlight.primaryAlt}
-                  loading="lazy"
+                  loading="eager"
+                  fetchPriority="high"
                   decoding="async"
                   width={224}
                   height={224}
@@ -106,7 +107,8 @@ const AboutSection = ({ studentSpotlight }) => {
                 <img 
                   src={spotlight.secondaryImageUrl}
                   alt={spotlight.secondaryAlt}
-                  loading="lazy"
+                  loading="eager"
+                  fetchPriority="high"
                   decoding="async"
                   width={144}
                   height={144}

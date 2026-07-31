@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile } = require('../controllers/studentController');
+const { getStudentDashboard, getStudentAttendance, getStudentMaterials, getStudentMaterialById, streamMaterialFile, getStudentPayments, payStudentFee, getStudentNotifications, updateStudentProfile, getStudentPurchases, getComments, addComment, toggleLikeComment, reportComment } = require('../controllers/studentController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 
 router.route('/dashboard').get(protect, authorizeRoles('student'), getStudentDashboard);
@@ -10,8 +10,15 @@ router.route('/materials').get(protect, authorizeRoles('student'), getStudentMat
 router.route('/material/:materialId').get(protect, authorizeRoles('student'), getStudentMaterialById);
 router.route('/material/:materialId/stream').get(protect, authorizeRoles('student'), streamMaterialFile);
 router.route('/payments').get(protect, authorizeRoles('student'), getStudentPayments);
+router.route('/purchases').get(protect, authorizeRoles('student'), getStudentPurchases);
 router.route('/payments/:feeId/pay').post(protect, authorizeRoles('student'), payStudentFee);
 router.route('/notifications').get(protect, authorizeRoles('student'), getStudentNotifications);
+
+// Comments
+router.route('/material/:id/comments').get(protect, authorizeRoles('student'), getComments);
+router.route('/material/:id/comment').post(protect, authorizeRoles('student'), addComment);
+router.route('/comment/:id/like').post(protect, authorizeRoles('student'), toggleLikeComment);
+router.route('/comment/:id/report').post(protect, authorizeRoles('student'), reportComment);
 
 // Test series endpoint - returns results formatted as test entries
 router.route('/test-series').get(protect, authorizeRoles('student'), async (req, res) => {

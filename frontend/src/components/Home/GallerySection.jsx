@@ -1,22 +1,37 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-// import advertise1 from '../../assets/Advertise1.png';
-// import advertise2 from '../../assets/Advertise2.png';
-// import advertise3 from '../../assets/Advertise3.png';
+import { resolveMediaUrl } from '../../utils/media';
 
-const images = [
-  // { url: advertise1, span: 'md:col-span-2', alt: 'Maths Point advertisement poster 1' },
-  // { url: advertise2, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 2' },
-  // { url: advertise3, span: 'md:col-span-1', alt: 'Maths Point advertisement poster 3' },
-];
+const getSpanClass = (index) => {
+  if (index % 5 === 0) {
+    return 'md:col-span-2 md:row-span-2';
+  }
 
-const GallerySection = () => {
+  if (index % 3 === 0) {
+    return 'md:col-span-2';
+  }
+
+  return 'md:col-span-1';
+};
+
+const GallerySection = ({ images = [] }) => {
+  const galleryItems = images
+    .filter((image) => image?.imageUrl)
+    .map((image, index) => ({
+      url: resolveMediaUrl(image.imageUrl),
+      alt: image.title || `Maths Point gallery image ${index + 1}`,
+      span: getSpanClass(index),
+    }));
+
+  if (!galleryItems.length) {
+    return null;
+  }
+
   return (
     <section id="gallery" className="py-24 bg-gray-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Elements */}
-        {/* <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -29,14 +44,13 @@ const GallerySection = () => {
             Latest Advertisements
           </h2>
           <p className="text-slate-500 text-[16px] max-w-2xl mx-auto leading-relaxed">
-            Explore the latest Maths Point posters highlighting our programs, batches, and student-focused learning opportunities.
+            Explore the latest Maths Point moments and posters uploaded directly from the admin panel.
           </p>
         </motion.div>
-         */}
-        {/* Poster Grid */}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[260px] md:auto-rows-[320px]">
-          {images.map((img, idx) => (
-            <motion.div 
+          {galleryItems.map((img, idx) => (
+            <motion.div
               key={idx}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -47,15 +61,15 @@ const GallerySection = () => {
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-10"></div>
               <motion.img 
                 whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                src={img.url} 
-                alt={img.alt} 
-                className="w-full h-full object-contain bg-white z-0 relative" 
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                src={img.url}
+                alt={img.alt}
+                className="w-full h-full object-cover bg-white z-0 relative"
               />
             </motion.div>
           ))}
         </div>
-        
+
       </div>
     </section>
   );

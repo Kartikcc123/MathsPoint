@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'teacher', 'student', 'parent'], default: 'student', index: true },
+  username: { type: String, unique: true, sparse: true, trim: true },
+  bio: { type: String, trim: true },
   // Student specific fields
   studentId: { type: String, unique: true, sparse: true, trim: true },
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', index: true },
@@ -34,6 +36,8 @@ const userSchema = new mongoose.Schema({
   lastLoginAt: { type: Date },
   twoFactorSecret: { type: String },
   twoFactorEnabled: { type: Boolean, default: false },
+  resetPasswordToken: { type: String },
+  resetPasswordExpire: { type: Date },
 }, { timestamps: true });
 
 userSchema.pre('validate', function () {

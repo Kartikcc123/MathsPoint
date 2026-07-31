@@ -37,6 +37,15 @@ const facultySchema = new mongoose.Schema(
   { _id: false }
 );
 
+const galleryImageSchema = new mongoose.Schema(
+  {
+    title: { type: String, trim: true, default: '' },
+    imageUrl: { type: String, trim: true, default: '' },
+    order: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
 const homeContentSchema = new mongoose.Schema(
   {
     singletonKey: {
@@ -55,6 +64,10 @@ const homeContentSchema = new mongoose.Schema(
     },
     faculties: {
       type: [facultySchema],
+      default: [],
+    },
+    galleryImages: {
+      type: [galleryImageSchema],
       default: [],
     },
   },
