@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // If running on Android emulator, you might need to change localhost to 10.0.2.2
-  static const String baseUrl = 'http://localhost:5000/api'; 
+  static const String baseUrl = 'https://mathspoint-yqnv.onrender.com/api';
   static String? authToken;
 
   final Dio _dio = Dio(BaseOptions(baseUrl: baseUrl))..interceptors.add(
@@ -90,6 +90,17 @@ class ApiService {
       throw Exception('Failed to load courses: ${(e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message}');
     } catch (e) {
       throw Exception('Failed to load courses: $e');
+    }
+  }
+
+  Future<List<dynamic>> getPublicFreeStudyMaterials(String section) async {
+    try {
+      final response = await _dio.get('/public/free-study-materials', queryParameters: {'section': section});
+      return response.data as List<dynamic>;
+    } on DioException catch (e) {
+      throw Exception('Failed to load materials: ${(e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message}');
+    } catch (e) {
+      throw Exception('Failed to load materials: $e');
     }
   }
 

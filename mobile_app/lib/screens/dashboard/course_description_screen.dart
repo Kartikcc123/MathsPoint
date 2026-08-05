@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/services/cart_manager.dart';
+import '../../core/services/api_service.dart';
+import '../auth/login_screen.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class CourseDescriptionScreen extends StatelessWidget {
   final Map<String, dynamic> course;
@@ -188,9 +191,12 @@ class CourseDescriptionScreen extends StatelessWidget {
       }
     } else {
       featureWidgets.add(
-        Text(
-          featuresText,
-          style: const TextStyle(fontSize: 15, color: Color(0xFF374151), height: 1.6),
+        MarkdownBody(
+          data: featuresText,
+          styleSheet: MarkdownStyleSheet(
+            p: const TextStyle(fontSize: 15, color: Color(0xFF374151), height: 1.6),
+            listBullet: const TextStyle(fontSize: 15, color: Color(0xFF374151)),
+          ),
         ),
       );
     }
@@ -468,6 +474,10 @@ class CourseDescriptionScreen extends StatelessWidget {
                 ),
                 child: ElevatedButton(
                   onPressed: () {
+                    if (ApiService.authToken == null || ApiService.authToken!.isEmpty) {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                      return;
+                    }
                     CartManager().selectedCourse = course;
                     if (CartManager().switchTab != null) {
                       CartManager().switchTab!(2);

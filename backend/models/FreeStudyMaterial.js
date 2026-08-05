@@ -5,7 +5,7 @@ const freeStudyMaterialSchema = new mongoose.Schema({
   description: { type: String, default: '', trim: true },
   section: {
     type: String,
-    enum: ['Reference Books', 'NCERT Solutions', 'Notes'],
+    enum: ['Reference Books', 'NCERT Solutions', 'Notes', 'Free Videos', 'Tests'],
     required: true,
   },
   classLabel: { type: String, default: '', trim: true },

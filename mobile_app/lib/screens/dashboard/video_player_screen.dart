@@ -29,6 +29,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   double _currentPosition = 0;
   double _videoDuration = 1;
   bool _isPlaying = false;
+  bool _isYouTubeStarted = false;
   
   bool _showControls = true;
   bool _isFullscreen = false;
@@ -48,37 +49,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         params: const YoutubePlayerParams(
           showControls: false,
           showFullscreenButton: false,
+          pointerEvents: PointerEvents.none,
         ),
       );
-      
-      _ytController!.listen((event) {
-        if (!mounted) return;
-        final isPlaying = event.playerState == PlayerState.playing;
-        if (_isPlaying != isPlaying) {
-          setState(() {
-            _isPlaying = isPlaying;
-          });
-          if (isPlaying) {
-            _ytTimer?.cancel();
-            _ytTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
-              if (!mounted) {
-                timer.cancel();
-                return;
-              }
-              final pos = await _ytController!.currentTime;
-              final dur = await _ytController!.duration;
-              if (mounted) {
-                setState(() {
-                  _currentPosition = pos;
-                  if (dur > 0) _videoDuration = dur;
-                });
-              }
-            });
-          } else {
-            _ytTimer?.cancel();
-          }
-        }
-      });
     } else {
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
         ..initialize().then((_) {
@@ -176,20 +149,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   void _skipBackward() {
     if (_controller != null) {
-      final newPosition = _controller!.value.position - const Duration(seconds: 10);
+      final newPosition = _controller!.value.position - const Duration(seconds: 5);
       _controller!.seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
     } else if (_ytController != null) {
-      final newPos = _currentPosition - 10;
+      final newPos = _currentPosition - 5;
       _ytController!.seekTo(seconds: newPos < 0 ? 0 : newPos, allowSeekAhead: true);
     }
   }
 
   void _skipForward() {
     if (_controller != null) {
-      final newPosition = _controller!.value.position + const Duration(seconds: 10);
+      final newPosition = _controller!.value.position + const Duration(seconds: 5);
       _controller!.seekTo(newPosition > _controller!.value.duration ? _controller!.value.duration : newPosition);
     } else if (_ytController != null) {
-      final newPos = _currentPosition + 10;
+      final newPos = _currentPosition + 5;
       _ytController!.seekTo(seconds: newPos > _videoDuration ? _videoDuration : newPos, allowSeekAhead: true);
     }
   }
@@ -205,8 +178,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     } else if (_ytController != null) {
       if (_isPlaying) {
         _ytController!.pauseVideo();
+        _isPlaying = false;
       } else {
         _ytController!.playVideo();
+        _isPlaying = true;
         _hideControlsTimer();
       }
     }
@@ -230,6 +205,25 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ]);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
+  }
+  
+  void _startYoutubeTimer() {
+    _ytTimer?.cancel();
+    _ytTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      if (!mounted || _ytController == null) return;
+      try {
+        final pos = await _ytController!.currentTime;
+        final dur = await _ytController!.duration;
+        if (mounted) {
+          setState(() {
+            _currentPosition = pos;
+            if (dur > 0) _videoDuration = dur;
+          });
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    });
   }
 
   @override
@@ -268,48 +262,79 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             // Video Player Area
             Container(
               color: Colors.black,
-              child: widget.isYouTube && _ytController != null
-                  ? GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _toggleControls,
+              constraints: BoxConstraints(
+                maxHeight: _isFullscreen 
+                    ? double.infinity 
+                    : MediaQuery.of(context).size.height * 0.45,
+              ),
+              child: widget.isYouTube
+                  ? Center(
                       child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            IgnorePointer(child: YoutubePlayer(controller: _ytController!)),
-                            Positioned(
-                              top: 0, left: 0, right: 0, height: 60,
-                              child: AbsorbPointer(child: Container(color: Colors.transparent)),
+                      aspectRatio: 16 / 9,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (_isYouTubeStarted && _ytController != null)
+                            YoutubePlayer(controller: _ytController!),
+                          
+                          if (!_isYouTubeStarted)
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onTap: () {
+                                  _ytController!.playVideo();
+                                  setState(() {
+                                    _isYouTubeStarted = true;
+                                    _isPlaying = true;
+                                    _startYoutubeTimer();
+                                    _hideControlsTimer();
+                                  });
+                                },
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Image.network(
+                                      'https://img.youtube.com/vi/${YoutubePlayerController.convertUrlToId(widget.videoUrl) ?? widget.videoUrl.split('/').last.split('?').first}/hqdefault.jpg',
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      errorBuilder: (c, e, s) => Container(color: Colors.black),
+                                    ),
+                                    Container(color: Colors.black.withOpacity(0.3)),
+                                    const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
+                                  ],
+                                ),
+                              ),
                             ),
-                            Positioned(
-                              bottom: 0, right: 0, width: 120, height: 60,
-                              child: AbsorbPointer(child: Container(color: Colors.transparent)),
-                            ),
-                            if (_showControls) _buildControls(),
-                          ],
-                        ),
+                            
+                          if (_isYouTubeStarted && _showControls)
+                            _buildControls(),
+                        ],
                       ),
-                    )
+                    ),
+                  )
                   : (_controller != null && _controller!.value.isInitialized
-                      ? GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: _toggleControls,
-                          child: AspectRatio(
-                            aspectRatio: _controller!.value.aspectRatio,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                VideoPlayer(_controller!),
-                                if (_showControls) _buildControls(),
-                              ],
+                      ? Center(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _toggleControls,
+                            child: AspectRatio(
+                              aspectRatio: _controller!.value.aspectRatio,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  VideoPlayer(_controller!),
+                                  if (_showControls) _buildControls(),
+                                ],
+                              ),
                             ),
                           ),
                         )
-                      : const AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Center(
-                            child: CircularProgressIndicator(color: Colors.white),
+                      : const Center(
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: Center(
+                              child: CircularProgressIndicator(color: Colors.white),
+                            ),
                           ),
                         )),
             ),
@@ -385,52 +410,59 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       color: Colors.black.withOpacity(0.4),
       child: Stack(
         children: [
-          // Top Bar
-          Positioned(
-            top: 0, left: 0, right: 0,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () {
-                      if (_isFullscreen) {
-                        _toggleFullscreen();
-                      }
-                      Navigator.pop(context);
-                    },
-                  ),
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _toggleControls,
+              child: Container(color: Colors.transparent),
             ),
           ),
-
-          // Center Controls
-          Positioned(
-            top: 0, bottom: 0, left: 0, right: 0,
+          
+        // Top Bar
+        Positioned(
+          top: 0, left: 0, right: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    if (_isFullscreen) {
+                      _toggleFullscreen();
+                    }
+                    Navigator.pop(context);
+                  },
+                ),
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Center Controls
+        Positioned(
+          top: 0, bottom: 0, left: 0, right: 0,
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               IconButton(
                 iconSize: 36,
-                icon: const Icon(Icons.replay_10, color: Colors.white),
+                icon: const Icon(Icons.replay_5, color: Colors.white),
                 onPressed: _skipBackward,
               ),
               IconButton(
@@ -443,21 +475,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               ),
               IconButton(
                 iconSize: 36,
-                icon: const Icon(Icons.forward_10, color: Colors.white),
+                icon: const Icon(Icons.forward_5, color: Colors.white),
                 onPressed: _skipForward,
               ),
             ],
           ),
         ),
 
-          // Bottom Bar
-          Positioned(
-            bottom: 0, left: 0, right: 0,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        // Bottom Bar
+        Positioned(
+          bottom: 0, left: 0, right: 0,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -507,8 +539,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             ),
           ),
         ),
-        ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 }

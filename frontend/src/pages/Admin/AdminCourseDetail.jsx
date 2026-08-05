@@ -78,6 +78,9 @@ const AdminCourseDetail = () => {
   const [activeCurriculumSubject, setActiveCurriculumSubject] = useState(null);
   const [newChapterName, setNewChapterName] = useState('');
   const [addingChapter, setAddingChapter] = useState(false);
+  
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [updatingThumbnail, setUpdatingThumbnail] = useState(false);
 
   // ─── Fetch course + materials ────────────────────────────────────────────────
   const loadData = useCallback(async () => {
@@ -105,6 +108,32 @@ const AdminCourseDetail = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleThumbnailUpdate = async (e) => {
+    e.preventDefault();
+    if (!thumbnailFile) return;
+    
+    setUpdatingThumbnail(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('thumbnailFile', thumbnailFile);
+      
+      const res = await api.put(`/admin/course/${courseId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      setCourse(normalizeCourseData(res.data));
+      setSuccess('Thumbnail updated successfully.');
+      setThumbnailFile(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update thumbnail.');
+    } finally {
+      setUpdatingThumbnail(false);
+    }
+  };
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
   const openModal = () => {
@@ -665,6 +694,32 @@ const AdminCourseDetail = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* ── Course Thumbnail Update ───────────────────────────────── */}
+      <div className="mt-8 overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm p-6">
+        <h3 className="text-lg font-bold text-slate-800 mb-4">Update Course Thumbnail</h3>
+        <form onSubmit={handleThumbnailUpdate} className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              New Thumbnail
+              <span className="normal-case text-slate-400 font-medium">Recommended: 1280x720px (16:9)</span>
+            </label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={(e) => setThumbnailFile(e.target.files[0])} 
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 file:mr-4 file:rounded-xl file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100" 
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={!thumbnailFile || updatingThumbnail} 
+            className="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700 disabled:opacity-70 h-[50px]"
+          >
+            {updatingThumbnail ? 'Updating...' : 'Update Thumbnail'}
+          </button>
+        </form>
       </div>
 
       {/* ── Publish Material Modal ───────────────────────────────── */}

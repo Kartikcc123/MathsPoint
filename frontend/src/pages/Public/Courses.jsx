@@ -48,24 +48,18 @@ const fmtDate = (dateStr) => {
 
 const categoryConfig = [
   { id: 'all', label: 'All Programs' },
-  { id: 'class-5-8', label: 'Class 5-8th' },
   { id: 'class-9', label: 'Class 9th' },
   { id: 'class-10', label: 'Class 10th' },
   { id: 'class-11', label: 'Class 11th' },
   { id: 'class-12', label: 'Class 12th' },
-  { id: 'CA', label: 'CA' },
-  { id: 'boards', label: 'Boards' },
   { id: 'other', label: 'Other' },
 ];
 
 const categoryMatchers = {
-  'class-5-8': ['class 5', 'class 6', 'class 7', 'class 8', '5th', '6th', '7th', '8th', 'junior division'],
   'class-9': ['class 9', '9th', 'ix'],
   'class-10': ['class 10', '10th'],
-  'class-12': ['class 12', '12th', 'xii'],
   'class-11': ['class 11', '11th', 'xi'],
-  'CA': ['ca', 'cpt', 'cs', 'law'],
-  'boards': ['board', 'cbse', 'icse', 'state board', 'school'],
+  'class-12': ['class 12', '12th', 'xii'],
 };
 
 const buildCourseHaystack = (course) =>
@@ -101,19 +95,8 @@ const inferCourseCategory = (course) => {
   return matchedCategory?.[0] || 'other';
 };
 
-const isBoardsCourse = (course) => {
-  const haystack = buildCourseHaystack(course);
-  const isBoardTagged = categoryMatchers.boards.some((term) => haystack.includes(term));
-  const isClass10 = categoryMatchers['class-10'].some((term) => haystack.includes(term));
-  const isClass12 = categoryMatchers['class-12'].some((term) => haystack.includes(term));
-
-  return isClass10 || isClass12 || isBoardTagged;
-};
-
 const getAudienceLabel = (category) => {
   switch (category) {
-    case 'class-5-8':
-      return 'Junior Division';
     case 'class-9':
       return 'Foundation Batch';
     case 'class-10':
@@ -122,10 +105,6 @@ const getAudienceLabel = (category) => {
       return 'Senior Secondary';
     case 'class-12':
       return 'Exam Finisher';
-    case 'CA':
-      return 'Competitive Track';
-    case 'boards':
-      return 'School Success';
     case 'other':
       return 'Special Program';
     default:
@@ -194,10 +173,6 @@ const Courses = () => {
   const filteredCourses = useMemo(() => {
     if (activeCategory === 'all') {
       return normalizedCourses;
-    }
-
-    if (activeCategory === 'boards') {
-      return normalizedCourses.filter((course) => isBoardsCourse(course));
     }
 
     return normalizedCourses.filter(

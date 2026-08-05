@@ -23,6 +23,7 @@ const {
   getCourseRoster,
   validateAttendanceRecords,
 } = require('../utils/attendance');
+const { uploadToS3 } = require('../services/awsService');
 
 const parsePositiveInteger = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);
@@ -431,6 +432,16 @@ const createCourse = async (req, res) => {
 
   try {
     let finalThumbnail = thumbnail;
+    
+    if (req.file) {
+      finalThumbnail = await uploadToS3(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        'courses'
+      );
+    }
+
     if (!finalThumbnail && title) {
       const { generateSvgThumbnail } = require('../utils/thumbnailGenerator');
       const primarySubject = Array.isArray(subjects) && subjects.length ? subjects[0] : '';
@@ -502,6 +513,15 @@ const updateCourse = async (req, res) => {
       course.subjects = Array.isArray(subjects)
         ? [...new Set(subjects.map((subject) => String(subject).trim()).filter(Boolean))]
         : course.subjects;
+    }
+
+    if (req.file) {
+      course.thumbnail = await uploadToS3(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        'courses'
+      );
     }
     
     if (chapters !== undefined) {
@@ -807,15 +827,34 @@ const getMaterials = async (req, res) => {
 };
 
 const createFreeStudyMaterial = async (req, res) => {
-  const { title, description, section, classLabel } = req.body;
+  const { title, description, section, classLabel, videoUrl } = req.body;
 
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'Please upload a file for the free study material.' });
-    }
-
     if (!title?.trim() || !section?.trim()) {
       return res.status(400).json({ message: 'Title and section are required.' });
+    }
+
+    if (section === 'Free Videos') {
+      if (!videoUrl?.trim()) {
+        return res.status(400).json({ message: 'Please provide a YouTube video URL for Free Videos.' });
+      }
+
+      const material = await FreeStudyMaterial.create({
+        title: title.trim(),
+        description: description?.trim() || '',
+        section: section.trim(),
+        classLabel: classLabel?.trim() || '',
+        fileUrl: videoUrl.trim(),
+        fileName: 'YouTube Video',
+        mimeType: 'video/youtube',
+        publishedBy: req.user._id,
+      });
+      const populated = await material.populate('publishedBy', 'name');
+      return res.status(201).json(populated);
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file for the free study material.' });
     }
 
     const material = await FreeStudyMaterial.create({

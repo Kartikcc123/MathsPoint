@@ -109,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: brandBlue,
       body: SafeArea(
+        bottom: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             bool isDesktop = constraints.maxWidth >= 800;
@@ -218,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: IntrinsicHeight(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 24.0 + MediaQuery.of(context).padding.bottom),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [

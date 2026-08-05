@@ -115,15 +115,22 @@ router.route('/parent/:id/students')
 router.route('/teacher/:id/courses')
   .patch(protect, admin, assignTeacherCourses);
 
+const courseStorage = multer.memoryStorage();
+const courseUpload = multer({
+  storage: courseStorage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for course thumbnails
+});
+
 router.route('/courses')
   .get(protect, attendanceManager, getCourses);
 
 router.route('/course')
-  .post(protect, admin, createCourse);
+  .post(protect, admin, courseUpload.single('thumbnailFile'), createCourse);
 
 router.route('/course/:id')
   .delete(protect, admin, deleteCourse)
-  .put(protect, admin, require('../controllers/adminController').updateCourse);
+  .put(protect, admin, courseUpload.single('thumbnailFile'), require('../controllers/adminController').updateCourse);
 
 router.route('/course/:id/delete-subject')
   .patch(protect, admin, require('../controllers/adminController').deleteSubject);

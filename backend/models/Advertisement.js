@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const advertisementSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: function() { return this.type === 'text-card'; },
     trim: true,
   },
   description: {

@@ -406,6 +406,7 @@ const AdminHomeContent = () => {
                       <>
                         <ImagePlus className="h-8 w-8 text-sky-600" />
                         <span className="mt-3 text-sm font-semibold text-slate-700">Upload advertisement image</span>
+                        <span className="mt-1 text-xs text-slate-500">Recommended: 1920 × 600</span>
                       </>
                     )}
                     <input type="file" accept="image/*" onChange={(event) => handleAdFileChange(index, event.target.files?.[0] || null)} className="hidden" />

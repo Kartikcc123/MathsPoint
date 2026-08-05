@@ -6,17 +6,18 @@ import '../dashboard/course_description_screen.dart';
 import '../../widgets/custom_thumbnail.dart';
 
 class CoursesScreen extends StatefulWidget {
-  const CoursesScreen({super.key});
+  final int initialClassIndex;
+  const CoursesScreen({super.key, this.initialClassIndex = 0});
 
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
 }
 
 class _CoursesScreenState extends State<CoursesScreen> {
-  int _selectedClassIndex = 2; // Class 11
+  late int _selectedClassIndex;
   int _selectedCategoryIndex = 0; // All
 
-  final List<String> _classes = ['Class 9', 'Class 10', 'Class 11', 'Class 12', 'Dropper'];
+  final List<String> _classes = ['All', 'Class 9', 'Class 10', 'Class 11', 'Class 12', 'Others'];
   final List<String> _categories = ['All', 'Algebra', 'Calculus', 'Coordinate Geo'];
 
   late Future<List<dynamic>> _coursesFuture;
@@ -24,6 +25,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedClassIndex = widget.initialClassIndex;
     _coursesFuture = ApiService().getPublicCourses();
   }
 
@@ -33,7 +35,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Courses'),
+        foregroundColor: const Color(0xFF1F2937),
+        elevation: 0,
+        title: const Text('Courses', style: TextStyle(color: Color(0xFF1F2937))),
+        leading: Navigator.canPop(context) ? IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937)),
+          onPressed: () => Navigator.pop(context),
+        ) : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Color(0xFF1F2937)),
@@ -57,7 +65,42 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   return const Center(child: Text('No courses available.'));
                 }
 
-                final courses = snapshot.data!;
+                final allCourses = snapshot.data!;
+                final selectedClass = _classes[_selectedClassIndex].toLowerCase();
+                final selectedCategory = _categories[_selectedCategoryIndex].toLowerCase();
+
+                final courses = allCourses.where((course) {
+                  final title = (course['title'] ?? '').toString().toLowerCase();
+                  final desc = (course['description'] ?? '').toString().toLowerCase();
+                  final subjects = (course['subjects'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
+
+                  bool matchesClass = false;
+                  if (selectedClass == 'all') {
+                    matchesClass = true;
+                  } else if (selectedClass == 'others') {
+                    matchesClass = !title.contains('class 9') && 
+                                   !title.contains('class 10') && 
+                                   !title.contains('class 11') && 
+                                   !title.contains('class 12') &&
+                                   !desc.contains('class 9') && 
+                                   !desc.contains('class 10') && 
+                                   !desc.contains('class 11') && 
+                                   !desc.contains('class 12');
+                  } else {
+                    matchesClass = title.contains(selectedClass) || desc.contains(selectedClass);
+                  }
+                  
+                  bool matchesCategory = selectedCategory == 'all' || 
+                      subjects.any((s) => s.contains(selectedCategory)) || 
+                      title.contains(selectedCategory) || 
+                      desc.contains(selectedCategory);
+
+                  return matchesClass && matchesCategory;
+                }).toList();
+
+                if (courses.isEmpty) {
+                  return const Center(child: Text('No courses found for selected filters.'));
+                }
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: courses.length,

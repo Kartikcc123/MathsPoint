@@ -145,7 +145,7 @@ const AdvertisementFormModal = ({ ad, onClose, onSuccess }) => {
                       <p className="font-medium text-gray-700 mb-1">Click to upload banner image</p>
                       <p className="text-sm text-gray-500 mb-2">JPG, PNG, WebP up to 10MB</p>
                       <div className="text-xs bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full border border-yellow-200">
-                        Recommended size: 1920 × 1080 or higher
+                        Recommended size: 1920 × 600 (aspect ratio 3.2:1)
                       </div>
                     </div>
                   )}
@@ -184,8 +184,8 @@ const AdvertisementFormModal = ({ ad, onClose, onSuccess }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input type="text" name="title" value={formData.title} onChange={handleInputChange} required className="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="e.g. Summer Sale 50% Off" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title {formData.type === 'text-card' && '*'}</label>
+                <input type="text" name="title" value={formData.title} onChange={handleInputChange} required={formData.type === 'text-card'} className="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="e.g. Summer Sale 50% Off" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>

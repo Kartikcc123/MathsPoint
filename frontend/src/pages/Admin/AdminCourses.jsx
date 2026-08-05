@@ -23,6 +23,7 @@ const initialForm = {
   mrp: '',
   classLabel: '',
   startedAt: '',
+  thumbnailFile: null,
 };
 
 /* ─── Gradient palettes for courses without a thumbnail ─── */
@@ -284,18 +285,40 @@ const AdminCourses = () => {
     setError('');
     setSuccess('');
     try {
-      const payload = {
-        title: form.title,
-        description: form.description,
-        subjects: form.subjects.split(',').map((s) => s.trim()).filter(Boolean),
-        feeAmount: Number(form.feeAmount),
-        duration: form.duration,
-        language: form.language || undefined,
-        mrp: form.mrp ? Number(form.mrp) : undefined,
-        classLabel: form.classLabel || undefined,
-        startedAt: form.startedAt || undefined,
-      };
-      const res = await api.post('/admin/course', payload);
+      const subjectsArray = form.subjects.split(',').map((s) => s.trim()).filter(Boolean);
+      let res;
+      
+      if (form.thumbnailFile) {
+        const formData = new FormData();
+        formData.append('title', form.title);
+        formData.append('description', form.description);
+        subjectsArray.forEach((s) => formData.append('subjects', s));
+        formData.append('feeAmount', form.feeAmount);
+        formData.append('duration', form.duration);
+        if (form.language) formData.append('language', form.language);
+        if (form.mrp) formData.append('mrp', form.mrp);
+        if (form.classLabel) formData.append('classLabel', form.classLabel);
+        if (form.startedAt) formData.append('startedAt', form.startedAt);
+        formData.append('thumbnailFile', form.thumbnailFile);
+
+        res = await api.post('/admin/course', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } else {
+        const payload = {
+          title: form.title,
+          description: form.description,
+          subjects: subjectsArray,
+          feeAmount: Number(form.feeAmount),
+          duration: form.duration,
+          language: form.language || undefined,
+          mrp: form.mrp ? Number(form.mrp) : undefined,
+          classLabel: form.classLabel || undefined,
+          startedAt: form.startedAt || undefined,
+        };
+        res = await api.post('/admin/course', payload);
+      }
+
       setCourses((cur) => [res.data, ...cur]);
       setSuccess('Course created successfully.');
       closeModal();
@@ -437,6 +460,18 @@ const AdminCourses = () => {
                 <div className="md:col-span-2">
                   <label className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wider">Started On</label>
                   <input name="startedAt" type="date" value={form.startedAt} onChange={handleChange} className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Course Thumbnail
+                    <span className="normal-case text-slate-400 font-medium">Recommended: 1280x720px (16:9)</span>
+                  </label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => setForm((cur) => ({ ...cur, thumbnailFile: e.target.files[0] }))} 
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 file:mr-4 file:rounded-xl file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100" 
+                  />
                 </div>
               </div>
 

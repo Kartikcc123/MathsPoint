@@ -7,10 +7,11 @@ const initialForm = {
   description: '',
   section: 'Reference Books',
   classLabel: '',
+  videoUrl: '',
   file: null,
 };
 
-const sectionOptions = ['Reference Books', 'NCERT Solutions', 'Notes'];
+const sectionOptions = ['Reference Books', 'NCERT Solutions', 'Notes', 'Free Videos', 'Tests'];
 
 const getFileHref = (fileUrl) => {
   if (!fileUrl) {
@@ -88,7 +89,9 @@ const AdminFreeMaterials = () => {
     setSuccess('');
 
     try {
-      if (!form.file) {
+      if (form.section === 'Free Videos' && !form.videoUrl) {
+        throw new Error('Please provide a YouTube video URL.');
+      } else if (form.section !== 'Free Videos' && !form.file) {
         throw new Error('Please choose a file to upload.');
       }
 
@@ -97,7 +100,11 @@ const AdminFreeMaterials = () => {
       payload.append('description', form.description);
       payload.append('section', form.section);
       payload.append('classLabel', form.classLabel);
-      payload.append('file', form.file);
+      if (form.section === 'Free Videos') {
+        payload.append('videoUrl', form.videoUrl);
+      } else {
+        payload.append('file', form.file);
+      }
 
       await api.post('/admin/free-materials', payload, {
         headers: {
@@ -208,16 +215,26 @@ const AdminFreeMaterials = () => {
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             />
 
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-sky-300 hover:bg-sky-50/40">
-              <UploadCloud className="h-8 w-8 text-sky-600" />
-              <span className="mt-3 text-sm font-semibold text-slate-700">
-                {form.file ? form.file.name : 'Choose PDF, image, or Word document'}
-              </span>
-              <span className="mt-1 text-xs text-slate-500">
-                Supported formats: PDF, image, DOC, DOCX up to 50 MB
-              </span>
-              <input type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx" onChange={handleFileChange} className="hidden" />
-            </label>
+            {form.section === 'Free Videos' ? (
+              <input
+                name="videoUrl"
+                value={form.videoUrl}
+                onChange={handleChange}
+                placeholder="YouTube Video URL"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              />
+            ) : (
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-sky-300 hover:bg-sky-50/40">
+                <UploadCloud className="h-8 w-8 text-sky-600" />
+                <span className="mt-3 text-sm font-semibold text-slate-700">
+                  {form.file ? form.file.name : 'Choose PDF, image, or Word document'}
+                </span>
+                <span className="mt-1 text-xs text-slate-500">
+                  Supported formats: PDF, image, DOC, DOCX up to 50 MB
+                </span>
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx" onChange={handleFileChange} className="hidden" />
+              </label>
+            )}
 
             <button
               type="submit"

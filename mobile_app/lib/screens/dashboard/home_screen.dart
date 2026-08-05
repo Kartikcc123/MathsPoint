@@ -7,6 +7,8 @@ import '../../core/services/cart_manager.dart';
 import '../../core/theme/theme_provider.dart';
 import '../notifications/notifications_screen.dart';
 import '../../widgets/custom_thumbnail.dart';
+import 'free_materials_screen.dart';
+import '../courses/courses_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -36,6 +38,8 @@ class HomeScreen extends StatelessWidget {
               _buildContinueLearningCard(context),
               const SizedBox(height: 24),
             ],
+                  _buildFourActionGrid(context),
+                  const SizedBox(height: 24),
                   _buildSectionHeader(context, 'Top Courses', ''),
                   const SizedBox(height: 12),
                   const _TopCoursesList(),
@@ -48,6 +52,83 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+
+  Widget _buildFourActionGrid(BuildContext context) {
+    final actions = [
+      {'icon': Icons.ondemand_video_rounded, 'label': 'Free\nVideos'},
+      {'icon': Icons.fact_check_rounded, 'label': 'Tests'},
+      {'icon': Icons.menu_book_rounded, 'label': 'Free PDF'},
+      {'icon': Icons.psychology_rounded, 'label': 'Courses'},
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: actions.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 2.2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+      ),
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            final label = actions[index]['label'] as String;
+            if (label == 'Courses') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CoursesScreen()),
+              );
+            } else {
+              String section = label == 'Free\nVideos' ? 'Free Videos' : (label == 'Free PDF' ? 'Notes' : 'Tests');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FreeMaterialsScreen(section: section)),
+              );
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF1F2937), width: 1.5),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFFFDE047),
+                  offset: Offset(0, 4),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  actions[index]['icon'] as IconData,
+                  color: const Color(0xFF4B5563),
+                  size: 32,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    actions[index]['label'] as String,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildActionGrid(BuildContext context) {
     final actions = [
@@ -343,20 +424,24 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
                                 const PopupMenuItem<String>(value: 'CBSE Class 11', child: Text('CBSE Class 11')),
                                 const PopupMenuItem<String>(value: 'CBSE Class 12', child: Text('CBSE Class 12')),
                               ],
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(_selectedClass, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                                  const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                color: Colors.transparent, // Ensures the entire area is clickable
+                                padding: const EdgeInsets.symmetric(vertical: 4), // Added some padding for better hit area
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(child: Text(_selectedClass, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18), overflow: TextOverflow.ellipsis)),
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 18),
                                     ),
-                                    child: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 18),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -420,7 +505,7 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
                       children: [
                         Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.8), size: 22),
                         const SizedBox(width: 10),
-                        Text('Search courses, tests, topics...', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15)),
+                        Expanded(child: Text('Search courses, tests, topics...', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 15), overflow: TextOverflow.ellipsis)),
                       ],
                     ),
                   ),
@@ -518,6 +603,25 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
           if (ad['_id'] != null) {
             ApiService().trackAdClick(ad['_id']);
           }
+          
+          final redirectLink = (ad['redirectLink'] ?? '').toString().toLowerCase();
+          int classIndex = 0; // Default to 'All'
+          if (redirectLink.contains('class 9')) {
+            classIndex = 1;
+          } else if (redirectLink.contains('class 10')) {
+            classIndex = 2;
+          } else if (redirectLink.contains('class 11')) {
+            classIndex = 3;
+          } else if (redirectLink.contains('class 12')) {
+            classIndex = 4;
+          } else if (redirectLink.contains('others')) {
+            classIndex = 5;
+          }
+          
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CoursesScreen(initialClassIndex: classIndex)),
+          );
         },
         child: Container(
           decoration: BoxDecoration(
@@ -547,10 +651,12 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
             // Content Layer
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                   if (title.isNotEmpty)
                     Text(
                       title,
@@ -587,6 +693,7 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
                       child: Text(linkLabel, style: const TextStyle(color: Color(0xFF3284FF), fontWeight: FontWeight.bold, fontSize: 14)),
                     ),
                 ],
+              ),
               ),
             ),
           ],
@@ -735,10 +842,11 @@ class _TopCoursesListState extends State<_TopCoursesList> {
                 const SizedBox(height: 14),
                 
                 // Info chips
-                Row(
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     _buildInfoChip(Icons.menu_book_rounded, 'Exam Target'),
-                    const SizedBox(width: 12),
                     _buildInfoChip(Icons.calendar_today_rounded, duration),
                   ],
                 ),

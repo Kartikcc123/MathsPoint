@@ -39,7 +39,7 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
       final data = await _apiService.login(widget.identifier, password);
       // Data contains user profile and token.
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
       }
     } catch (e) {
       if (mounted) {
