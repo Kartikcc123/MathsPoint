@@ -95,7 +95,7 @@ class HomeScreen extends StatelessWidget {
               border: Border.all(color: const Color(0xFF1F2937), width: 1.5),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0xFFFDE047),
+                  color: Color(0xFF38BDF8),
                   offset: Offset(0, 4),
                   blurRadius: 0,
                 ),
@@ -315,12 +315,11 @@ class _HeroHeader extends StatefulWidget {
   State<_HeroHeader> createState() => _HeroHeaderState();
 }
 
-class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderStateMixin {
+class _HeroHeaderState extends State<_HeroHeader> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
   String _selectedClass = 'CBSE Class 11';
-  late AnimationController _colorController;
   List<dynamic> _heroAds = [];
   bool _isLoading = true;
 
@@ -328,10 +327,6 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
   void initState() {
     super.initState();
     _fetchHeroAds();
-    _colorController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
 
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_pageController.hasClients && _heroAds.isNotEmpty) {
@@ -366,7 +361,6 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
 
   @override
   void dispose() {
-    _colorController.dispose();
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
@@ -376,25 +370,15 @@ class _HeroHeaderState extends State<_HeroHeader> with SingleTickerProviderState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AnimatedBuilder(
-          animation: _colorController,
-          builder: (context, child) {
-            final hue = _colorController.value * 360.0;
-            final color1 = HSVColor.fromAHSV(1.0, hue, 0.6, 0.9).toColor();
-            final color2 = HSVColor.fromAHSV(1.0, (hue + 45.0) % 360.0, 0.7, 1.0).toColor();
-
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color1, color2],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
-              ),
-              child: child,
-            );
-          },
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF38BDF8), Color(0xFF0284C7)], // Sky blue gradient
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+          ),
           child: SafeArea(
             bottom: false,
             child: Column(
