@@ -4,10 +4,23 @@ Math Point is a full-stack student management and learning platform built for a 
 
 ## Overview
 
-This project is split into two parts:
+This project is split into three parts:
 
 - `frontend` - React + Vite application for the website, student panel, and admin panel
 - `backend` - Express + MongoDB API for authentication, student management, course management, results, fees, attendance, and notifications
+- `mobile_app` - Flutter application for students to access courses, payments, and results on the go
+
+## Screenshots
+
+<div align="center">
+  <h3>Website / Web Panel</h3>
+  <img src="https://via.placeholder.com/800x450?text=Website+Screenshot+Placeholder" alt="Website Screenshot" width="800" />
+</div>
+
+<div align="center">
+  <h3>Mobile App</h3>
+  <img src="https://via.placeholder.com/300x600?text=Mobile+App+Screenshot+Placeholder" alt="Mobile App Screenshot" width="300" />
+</div>
 
 ## Main Features
 
