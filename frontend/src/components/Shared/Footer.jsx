@@ -73,6 +73,7 @@ const Footer = () => {
             <p>&copy; {new Date().getFullYear()} MathsPoint Institute. All rights reserved.</p>
             <Link to="/privacy-policy" className="font-medium text-stone-300 transition hover:text-sky-400">Privacy Policy</Link>
             <Link to="/terms-and-conditions" className="font-medium text-stone-300 transition hover:text-sky-400">Terms & Conditions</Link>
+            <Link to="/account-deletion" className="font-medium text-stone-300 transition hover:text-sky-400">Account Deletion</Link>
           </div>
           <p className="mt-4">
             Designed and Developed by{' '}
