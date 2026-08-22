@@ -17,6 +17,7 @@ const LazyImage = ({
   imgStyle,
   ariaHidden = false,
   onLoad,
+  priority = false, // priority prop
 }) => {
   const containerRef = useRef(null);
   const imgRef = useRef(null);
@@ -60,6 +61,40 @@ const LazyImage = ({
         backgroundPosition: 'center',
       }
     : {};
+
+  if (priority) {
+    return (
+      <span
+        aria-hidden={ariaHidden}
+        style={{ display: 'inline-block', position: 'relative', overflow: 'hidden', width: width ? width : undefined, height: height ? height : undefined, ...style }}
+        className={`lazy-image-wrapper ${className}`}
+      >
+        <img
+          src={src}
+          srcSet={srcSet}
+          sizes={sizes}
+          alt={alt}
+          width={width}
+          height={height}
+          onLoad={onLoad}
+          decoding="sync"
+          fetchpriority="high"
+          loading="eager"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+            ...imgStyle,
+          }}
+          className={imgClassName}
+        />
+        <style>{`
+          .lazy-image-wrapper img { display: block; }
+        `}</style>
+      </span>
+    );
+  }
 
   return (
     <span

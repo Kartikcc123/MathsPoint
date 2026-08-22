@@ -75,6 +75,7 @@ export default function HeroSection({ ads = [] }) {
                 src={slide.img}
                 alt={slide.alt}
                 placeholder={slide.img}
+                priority={index === 0}
                 className="absolute inset-0 w-full h-full"
                 imgClassName="bg-slate-950"
                 imgStyle={{ objectFit: 'contain', objectPosition: 'center' }}
