@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import mathsPointLogo from '../../assets/logo_transparent.png';
+const mathsPointLogo = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/c5846bccda5a94736097c404006b7cb0.png";
 
 const BrandLogo = ({
   to = '/',

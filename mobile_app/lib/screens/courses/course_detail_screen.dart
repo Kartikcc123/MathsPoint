@@ -182,7 +182,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

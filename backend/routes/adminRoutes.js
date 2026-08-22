@@ -6,18 +6,7 @@ const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, reg
 const { getAdminHomeContent, updateHomeContent } = require('../controllers/homeContentController');
 const { protect, admin, attendanceManager } = require('../middleware/authMiddleware');
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadDir = path.join(__dirname, '..', 'uploads', 'materials');
-    const fs = require('fs');
-    fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, `${Date.now()}-${safeName}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (_req, file, cb) => {
   const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'application/msword',
@@ -31,18 +20,7 @@ const fileFilter = (_req, file, cb) => {
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
 
-const freeMaterialStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadDir = path.join(__dirname, '..', 'uploads', 'free-materials');
-    const fs = require('fs');
-    fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, `${Date.now()}-${safeName}`);
-  },
-});
+const freeMaterialStorage = multer.memoryStorage();
 
 const freeMaterialUpload = multer({
   storage: freeMaterialStorage,
@@ -50,18 +28,7 @@ const freeMaterialUpload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
-const homeContentStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadDir = path.join(__dirname, '..', 'uploads', 'home-content');
-    const fs = require('fs');
-    fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, `${Date.now()}-${safeName}`);
-  },
-});
+const homeContentStorage = multer.memoryStorage();
 
 const homeContentFileFilter = (_req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

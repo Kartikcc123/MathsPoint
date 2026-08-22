@@ -187,17 +187,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 32),
           const Text(
-            'Welcome to Maths Point',
+            'Maths Point Career Institute',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 26,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 16),
           const Text(
-            'Over 10 crore learners trust us for online\nand offline coaching',
+            'Guide a student from class 5 to 12\nand competitive exams',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,

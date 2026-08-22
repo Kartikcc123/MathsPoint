@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
-import '../../core/theme/theme_provider.dart';
-import 'package:provider/provider.dart';
 import '../dashboard/course_description_screen.dart';
 import '../../widgets/custom_thumbnail.dart';
 

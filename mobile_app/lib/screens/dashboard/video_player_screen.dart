@@ -299,7 +299,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                       height: double.infinity,
                                       errorBuilder: (c, e, s) => Container(color: Colors.black),
                                     ),
-                                    Container(color: Colors.black.withOpacity(0.3)),
+                                    Container(color: Colors.black.withValues(alpha: 0.3)),
                                     const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
                                   ],
                                 ),
@@ -407,7 +407,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   Widget _buildControls() {
     return Container(
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.black.withValues(alpha: 0.4),
       child: Stack(
         children: [
           Positioned.fill(

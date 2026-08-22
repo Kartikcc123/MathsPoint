@@ -309,7 +309,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HeroHeader extends StatefulWidget {
-  const _HeroHeader({Key? key}) : super(key: key);
+  const _HeroHeader({super.key});
 
   @override
   State<_HeroHeader> createState() => _HeroHeaderState();
@@ -689,7 +689,7 @@ class _HeroHeaderState extends State<_HeroHeader> {
 }
 
 class _TopCoursesList extends StatefulWidget {
-  const _TopCoursesList({Key? key}) : super(key: key);
+  const _TopCoursesList({super.key});
 
   @override
   State<_TopCoursesList> createState() => _TopCoursesListState();

@@ -14,9 +14,9 @@ import {
   Target,
   Users,
 } from 'lucide-react';
-import heroImage from '../../assets/about-hero-maths.png';
-import directorImage from '../../assets/DirectorCutout.png';
-import mathsPointLogo from '../../assets/logo_transparent.png';
+const heroImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/ca2d069b907f2fff27d4cd1b0cd5d9f9.webp";
+const directorImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/1d08ec33b92cc52f60d3acbea8905c0a.webp";
+const mathsPointLogo = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/c5846bccda5a94736097c404006b7cb0.png";
 
 const storyPoints = [
   {

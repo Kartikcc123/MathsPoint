@@ -2,8 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Video, FileText, BrainCircuit, Award } from 'lucide-react';
-import nimitImage from '../../assets/nimit.jpeg';
-import soumyaImage from '../../assets/Soumya.png';
+const nimitImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/17b53ac618731af4b69154aaa9d8a559.jpeg";
+const soumyaImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/20cb7e75a6f30f7ceb9a13923b356fd4.webp";
 import { resolveMediaUrl } from '../../utils/media';
 
 const fallbackSpotlight = {

@@ -1,5 +1,6 @@
 const HomeContent = require('../models/HomeContent');
 const { sendErrorResponse } = require('../utils/api');
+const { uploadToS3 } = require('../services/awsService');
 
 const SINGLETON_KEY = 'home-page';
 
@@ -101,9 +102,13 @@ const getAdminHomeContent = async (_req, res) => {
 const updateHomeContent = async (req, res) => {
   try {
     const payload = req.body?.payload ? JSON.parse(req.body.payload) : {};
-    const uploadedFiles = Object.fromEntries(
-      (req.files || []).map((file) => [file.fieldname, `/uploads/home-content/${file.filename}`])
+    const uploadedFilesEntries = await Promise.all(
+      (req.files || []).map(async (file) => {
+        const fileUrl = await uploadToS3(file.buffer, file.originalname, file.mimetype, 'home-content');
+        return [file.fieldname, fileUrl];
+      })
     );
+    const uploadedFiles = Object.fromEntries(uploadedFilesEntries);
 
     const doc = await getOrCreateHomeContent();
 

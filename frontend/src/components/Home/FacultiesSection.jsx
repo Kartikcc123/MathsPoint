@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import { buildSrcSet } from '../../utils/image';
 import { resolveMediaUrl } from '../../utils/media';
 
-import akankshaImg from '../../assets/Akanksha.jpeg';
-import deepakImg from '../../assets/Deepak.jpeg';
-import mansiImg from '../../assets/Mansi.jpeg';
-import ashishImg from '../../assets/DirectorCutout.png';
-import samdaniImg from '../../assets/Samdani.png';
-import shruutiImg from '../../assets/Shruuti.jpeg';
+const akankshaImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/c6a992a05db54d7c694097d65d62dc04.jpeg";
+const deepakImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/7b79c3482042cb4118bb674f44d59163.jpeg";
+const mansiImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/0dc4cfe0da99b522a98aad040ff2a330.jpeg";
+const ashishImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/1d08ec33b92cc52f60d3acbea8905c0a.webp";
+const samdaniImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/e6d706d5ae28a20462c1ffb3d2b12441.webp";
+const shruutiImg = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/ef3ea2c1d5677b4304201a04a7d4381d.jpeg";
 
 const fallbackFaculties = [
   { 

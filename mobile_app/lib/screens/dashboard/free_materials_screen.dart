@@ -6,7 +6,7 @@ import 'video_player_screen.dart';
 class FreeMaterialsScreen extends StatefulWidget {
   final String section;
 
-  const FreeMaterialsScreen({Key? key, required this.section}) : super(key: key);
+  const FreeMaterialsScreen({super.key, required this.section});
 
   @override
   State<FreeMaterialsScreen> createState() => _FreeMaterialsScreenState();

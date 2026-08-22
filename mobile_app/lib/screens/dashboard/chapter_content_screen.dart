@@ -85,7 +85,7 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Row(
@@ -161,8 +161,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
     for (var material in _materials) {
       final type = material['type'] ?? 'Notes';
       if (_selectedFilter == 'All') {
-        if (type == 'Video') items.add(_buildLectureCard(material));
-        else items.add(_buildNoteCard(material));
+        if (type == 'Video') {
+          items.add(_buildLectureCard(material));
+        } else {
+          items.add(_buildNoteCard(material));
+        }
       } else if (_selectedFilter == 'Lectures' && type == 'Video') {
         items.add(_buildLectureCard(material));
       } else if (_selectedFilter == 'Notes' && type != 'Video') {

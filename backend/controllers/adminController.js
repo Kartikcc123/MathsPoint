@@ -771,8 +771,12 @@ const createMaterial = async (req, res) => {
     }
 
     const normalizedType = type || 'Notes';
-    // Store relative path — will be resolved at stream time
-    const fileUrl = `local:uploads/materials/${req.file.filename}`;
+    const fileUrl = await uploadToS3(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'materials'
+    );
 
     const material = await CourseMaterial.create({
       course,
@@ -857,12 +861,19 @@ const createFreeStudyMaterial = async (req, res) => {
       return res.status(400).json({ message: 'Please upload a file for the free study material.' });
     }
 
+    const fileUrl = await uploadToS3(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'free-materials'
+    );
+
     const material = await FreeStudyMaterial.create({
       title: title.trim(),
       description: description?.trim() || '',
       section: section.trim(),
       classLabel: classLabel?.trim() || '',
-      fileUrl: `/uploads/free-materials/${req.file.filename}`,
+      fileUrl: fileUrl,
       fileName: req.file.originalname,
       mimeType: req.file.mimetype,
       publishedBy: req.user._id,
@@ -1303,12 +1314,10 @@ const uploadResults = async (req, res) => {
   try {
     // Support preview mode (no DB writes) and create-from-rows mode (rows JSON)
     const mode = String(req.query.mode || 'preview');
-    const fs = require('fs');
     let csvData = '';
 
     if (req.file) {
-      const filePath = req.file.path;
-      csvData = fs.readFileSync(filePath, 'utf8');
+      csvData = req.file.buffer.toString('utf8');
     } else if (req.body.csvString) {
       csvData = req.body.csvString;
     } else if (mode === 'preview') {

@@ -64,7 +64,7 @@ class CustomThumbnail extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -90,11 +90,11 @@ class CustomThumbnail extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -141,7 +141,7 @@ class CustomThumbnail extends StatelessWidget {
                 : Text(
                     _getInitials(title),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontWeight: FontWeight.bold,
                       fontSize: effectiveHeight * 0.3,
                       letterSpacing: 2,

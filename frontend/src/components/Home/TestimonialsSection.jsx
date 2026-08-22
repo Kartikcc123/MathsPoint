@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { buildSrcSet } from '../../utils/image';
-import MentorImage from '../../assets/nimit.jpeg';
-import SomyaImage from '../../assets/Somya.png';
-// import StudentImage from '../../assets/Student.jpeg';
+const MentorImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/17b53ac618731af4b69154aaa9d8a559.jpeg";
+const SomyaImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/9f4fa78de602ede0aad0c2e2a50c364f.webp";
+// const StudentImage = "https://lmssystem.s3.ap-south-1.amazonaws.com/static-assets/65e26407d2d083d7d2f0b042a81662c4.jpeg";
 import LazyImage from '../Shared/LazyImage';
 
 const getImageProps = (img) => {

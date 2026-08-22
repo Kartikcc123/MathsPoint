@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
-import '../../core/theme/theme_provider.dart';
 import '../notifications/notifications_screen.dart';
 import 'enrolled_course_detail_screen.dart';
 import '../profile/help_support_screen.dart';

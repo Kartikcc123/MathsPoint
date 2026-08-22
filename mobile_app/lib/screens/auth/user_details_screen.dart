@@ -178,7 +178,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         DropdownButtonFormField<String>(
                           decoration: _premiumInputDecoration('Select State', Icons.location_on_outlined),
                           icon: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey.shade400),
-                          value: _selectedState,
+                          initialValue: _selectedState,
                           dropdownColor: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
