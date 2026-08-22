@@ -1,4 +1,4 @@
-package in.co.mathspoint.student
+package `in`.co.mathspoint.student
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -17,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'Student';
   String _userEmail = '';
   String _userPhone = '';
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _userName = user?['name'] ?? 'Student';
           _userEmail = user?['email'] ?? '';
           _userPhone = user?['phone'] ?? '';
+          _avatarUrl = user?['avatar'];
           _isLoading = false;
         });
       }
@@ -171,14 +173,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 38,
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
-                      child: Text(
-                        _initials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty 
+                          ? NetworkImage(_avatarUrl!) 
+                          : null,
+                      child: (_avatarUrl == null || _avatarUrl!.isEmpty)
+                          ? Text(
+                              _initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 20),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import '../../core/services/api_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -94,6 +96,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _pickAndUploadImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null) {
+        setState(() => _isLoading = true);
+        final Uint8List bytes = await image.readAsBytes();
+        
+        final updatedData = await ApiService().updateAvatar(bytes, image.name);
+        
+        setState(() {
+          _userProfile?['avatar'] = updatedData['avatar'];
+          _isLoading = false;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo updated successfully'), backgroundColor: Colors.green),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating photo: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -137,19 +171,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           color: Colors.grey.shade300,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
+                          image: _userProfile != null && _userProfile!['avatar'] != null && _userProfile!['avatar'].isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(_userProfile!['avatar']),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: Icon(Icons.person, size: 60, color: Colors.grey.shade500),
+                        child: (_userProfile == null || _userProfile!['avatar'] == null || _userProfile!['avatar'].isEmpty)
+                            ? Icon(Icons.person, size: 60, color: Colors.grey.shade500)
+                            : null,
                       ),
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF374151),
-                            shape: BoxShape.circle,
+                        child: GestureDetector(
+                          onTap: _pickAndUploadImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF374151),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.edit, size: 16, color: Colors.white),
                           ),
-                          child: const Icon(Icons.edit, size: 16, color: Colors.white),
                         ),
                       ),
                     ],

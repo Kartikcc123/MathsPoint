@@ -637,6 +637,44 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const { uploadToS3, deleteFromS3 } = require('../services/awsService');
+
+// @desc    Update user avatar
+// @route   POST /api/auth/profile/avatar
+// @access  Private
+const updateAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload an image file' });
+    }
+
+    // Delete old avatar if it exists and is an S3 url
+    if (user.avatar && user.avatar.includes('amazonaws.com')) {
+      await deleteFromS3(user.avatar);
+    }
+
+    // Upload new avatar to S3
+    const avatarUrl = await uploadToS3(req.file.buffer, req.file.originalname, req.file.mimetype, 'avatars');
+    
+    user.avatar = avatarUrl;
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      avatar: updatedUser.avatar,
+      message: 'Profile photo updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating avatar:', error);
+    res.status(500).json({ message: 'Failed to update profile photo' });
+  }
+};
+
 module.exports = {
   getUserProfile,
   loginUser,
@@ -651,4 +689,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   updateProfile,
+  updateAvatar,
 };

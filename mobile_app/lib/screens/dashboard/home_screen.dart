@@ -10,14 +10,50 @@ import '../../widgets/custom_thumbnail.dart';
 import 'free_materials_screen.dart';
 import '../courses/courses_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // TODO: Replace this with real backend data check
-    final bool hasEnrolledCourses = false;
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> _enrolledCourses = [];
+  bool _isLoadingCourses = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEnrolledCourses();
+  }
+
+  Future<void> _loadEnrolledCourses() async {
+    if (ApiService.authToken == null) {
+      if (mounted) setState(() => _isLoadingCourses = false);
+      return;
+    }
+    try {
+      final dashboardData = await ApiService().getStudentDashboard();
+      if (mounted) {
+        setState(() {
+          _enrolledCourses = dashboardData['enrolledCourses'] as List<dynamic>? ?? [];
+          if (_enrolledCourses.isEmpty && dashboardData['course'] != null) {
+            _enrolledCourses = [dashboardData['course']];
+          }
+          _isLoadingCourses = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingCourses = false);
+    }
+  }
+
+  void _switchToStudyTab() {
+    CartManager().switchTab?.call(0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: SingleChildScrollView(
@@ -30,17 +66,15 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-            if (hasEnrolledCourses) ...[
-              _buildActionGrid(context),
-              const SizedBox(height: 24),
-              _buildSectionHeader(context, 'Continue Learning', 'View all'),
-              const SizedBox(height: 12),
-              _buildContinueLearningCard(context),
-              const SizedBox(height: 24),
-            ],
-                  _buildFourActionGrid(context),
+                  _buildActionGrid(context),
                   const SizedBox(height: 24),
-                  _buildSectionHeader(context, 'Top Courses', ''),
+                  if (!_isLoadingCourses && _enrolledCourses.isNotEmpty) ...[
+                    _buildSectionHeader(context, 'Continue Learning', action: 'View all', onAction: _switchToStudyTab),
+                    const SizedBox(height: 12),
+                    _buildContinueLearningCards(),
+                    const SizedBox(height: 24),
+                  ],
+                  _buildSectionHeader(context, 'Top Courses'),
                   const SizedBox(height: 12),
                   const _TopCoursesList(),
                 ],
@@ -52,91 +86,13 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
-  Widget _buildFourActionGrid(BuildContext context) {
-    final actions = [
-      {'icon': Icons.ondemand_video_rounded, 'label': 'Free\nVideos'},
-      {'icon': Icons.fact_check_rounded, 'label': 'Tests'},
-      {'icon': Icons.menu_book_rounded, 'label': 'Free PDF'},
-      {'icon': Icons.psychology_rounded, 'label': 'Courses'},
-    ];
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: actions.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 2.2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-      ),
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            final label = actions[index]['label'] as String;
-            if (label == 'Courses') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CoursesScreen()),
-              );
-            } else {
-              String section = label == 'Free\nVideos' ? 'Free Videos' : (label == 'Free PDF' ? 'Notes' : 'Tests');
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => FreeMaterialsScreen(section: section)),
-              );
-            }
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF1F2937), width: 1.5),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0xFF38BDF8),
-                  offset: Offset(0, 4),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  actions[index]['icon'] as IconData,
-                  color: const Color(0xFF4B5563),
-                  size: 32,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    actions[index]['label'] as String,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildActionGrid(BuildContext context) {
     final actions = [
-      {'icon': Icons.videocam_rounded, 'label': 'Live Classes', 'color': const Color(0xFF8B5CF6)},
+      {'icon': Icons.videocam_rounded, 'label': 'Free\nClasses', 'color': const Color(0xFF8B5CF6)},
       {'icon': Icons.menu_book_rounded, 'label': 'Courses', 'color': const Color(0xFF3B82F6)},
-      {'icon': Icons.fact_check_rounded, 'label': 'Test Series', 'color': const Color(0xFF10B981)},
+      {'icon': Icons.fact_check_rounded, 'label': 'Test\nSeries', 'color': const Color(0xFF10B981)},
       {'icon': Icons.chat_rounded, 'label': 'Doubt', 'color': const Color(0xFFF59E0B)},
-      {'icon': Icons.description_rounded, 'label': 'Notes', 'color': const Color(0xFFEF4444)},
+      {'icon': Icons.description_rounded, 'label': 'Free\nNotes', 'color': const Color(0xFFEF4444)},
       {'icon': Icons.history_edu_rounded, 'label': 'PYQ', 'color': const Color(0xFF06B6D4)},
       {'icon': Icons.edit_note_rounded, 'label': 'Practice', 'color': const Color(0xFFEC4899)},
       {'icon': Icons.grid_view_rounded, 'label': 'More', 'color': const Color(0xFF6B7280)},
@@ -148,38 +104,78 @@ class HomeScreen extends StatelessWidget {
       itemCount: actions.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.8,
         mainAxisSpacing: 12,
       ),
       itemBuilder: (context, index) {
         final color = actions[index]['color'] as Color;
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
+        final label = actions[index]['label'] as String;
+        return GestureDetector(
+          onTap: () => _handleActionTap(context, label),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  actions[index]['icon'] as IconData,
+                  color: color,
+                  size: 26,
+                ),
               ),
-              child: Icon(
-                actions[index]['icon'] as IconData,
-                color: color,
-                size: 24,
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4B5563), height: 1.2),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              actions[index]['label'] as String,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF4B5563)),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, [String action = '']) {
+  void _handleActionTap(BuildContext context, String label) {
+    switch (label) {
+      case 'Free\nClasses':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Free Videos')));
+        break;
+      case 'Courses':
+        // If user has purchased courses, go to Study tab; else go to Courses page
+        if (_enrolledCourses.isNotEmpty) {
+          _switchToStudyTab();
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen()));
+        }
+        break;
+      case 'Test\nSeries':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Tests')));
+        break;
+      case 'Free\nNotes':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Notes')));
+        break;
+      case 'PYQ':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Notes')));
+        break;
+      case 'Practice':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Tests')));
+        break;
+      case 'Doubt':
+        // TODO: Add doubt screen when available
+        break;
+      case 'More':
+        _switchToStudyTab();
+        break;
+    }
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title, {String action = '', VoidCallback? onAction}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -206,18 +202,21 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         if (action.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3284FF).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              action,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF3284FF),
+          GestureDetector(
+            onTap: onAction,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3284FF).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                action,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF3284FF),
+                ),
               ),
             ),
           ),
@@ -225,87 +224,77 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContinueLearningCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF3284FF), Color(0xFF2563EB)],
+  Widget _buildContinueLearningCards() {
+    // Show max 1 recent course
+    final courses = _enrolledCourses.take(1).toList();
+    return Column(
+      children: courses.map((course) {
+        final title = course['title'] ?? course['name'] ?? 'Course';
+        final thumbnail = course['thumbnail'] ?? '';
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: () {
+              _switchToStudyTab();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.calculate_rounded, color: Colors.white, size: 28),
+                ],
               ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Quadratic Equations',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1F2937)),
+              child: Row(
+                children: [
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3284FF), Color(0xFF2563EB)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Class 11 • Algebra',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                    child: thumbnail.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.network(thumbnail, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
+                          )
+                        : const Icon(Icons.school_rounded, color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1F2937)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF3284FF), Color(0xFF2563EB)],
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: 0.65,
-                    backgroundColor: const Color(0xFFE5E7EB),
-                    minHeight: 6,
-                    valueColor: const AlwaysStoppedAnimation(Color(0xFF3284FF)),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3284FF), Color(0xFF2563EB)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(width: 12),
-              const Text('65%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF3284FF))),
-            ],
+            ),
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
-
 }
 
 class _HeroHeader extends StatefulWidget {

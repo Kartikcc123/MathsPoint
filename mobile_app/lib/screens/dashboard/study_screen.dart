@@ -164,7 +164,9 @@ class _StudyScreenState extends State<StudyScreen> {
             icon: Icons.videocam_rounded,
             label: 'Live Classes',
             gradient: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const _NoLiveClassScreen()));
+            },
           ),
         ),
         const SizedBox(width: 14),
@@ -173,7 +175,9 @@ class _StudyScreenState extends State<StudyScreen> {
             icon: Icons.quiz_rounded,
             label: 'Live Tests',
             gradient: const [Color(0xFF10B981), Color(0xFF059669)],
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const _LiveTestsScreen()));
+            },
           ),
         ),
       ],
@@ -422,9 +426,12 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Widget _buildStudyResourcesGrid() {
     final List<_ResourceItem> resources = [
-      _ResourceItem(Icons.podcasts_rounded, 'Live', const Color(0xFFEF4444), const Color(0xFFDC2626)),
-      _ResourceItem(Icons.download_rounded, 'Downloads', const Color(0xFF3B82F6), const Color(0xFF2563EB)),
-      _ResourceItem(Icons.assignment_rounded, 'Create Test', const Color(0xFF8B5CF6), const Color(0xFF7C3AED)),
+      _ResourceItem(Icons.podcasts_rounded, 'Live', const Color(0xFFEF4444), const Color(0xFFDC2626), onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const _NoLiveClassScreen()));
+      }),
+      _ResourceItem(Icons.assignment_rounded, 'Test', const Color(0xFF8B5CF6), const Color(0xFF7C3AED), onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => _EnrolledTestsScreen(enrolledCourses: _enrolledCourses)));
+      }),
       _ResourceItem(Icons.question_answer_rounded, 'Ask Doubt', const Color(0xFFF59E0B), const Color(0xFFD97706)),
       _ResourceItem(Icons.headset_mic_rounded, 'Help Desk', const Color(0xFF10B981), const Color(0xFF059669), onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
@@ -503,4 +510,204 @@ class _ResourceItem {
   final VoidCallback? onTap;
 
   _ResourceItem(this.icon, this.label, this.color1, this.color2, {this.onTap});
+}
+
+class _NoLiveClassScreen extends StatelessWidget {
+  const _NoLiveClassScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Live Classes'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F2937),
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.videocam_off_rounded, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'No live class available',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Currently there are no live classes scheduled.',
+              style: TextStyle(color: Colors.grey.shade500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EnrolledTestsScreen extends StatelessWidget {
+  final List<dynamic> enrolledCourses;
+  const _EnrolledTestsScreen({required this.enrolledCourses});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('My Tests'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F2937),
+        elevation: 0,
+      ),
+      body: enrolledCourses.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment_late_rounded, size: 64, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No tests available',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'You are not enrolled in any courses.',
+                    style: TextStyle(color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: enrolledCourses.length,
+              itemBuilder: (context, index) {
+                final course = enrolledCourses[index];
+                final title = course['title'] ?? course['name'] ?? 'Course';
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3284FF).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.assignment_rounded, color: Color(0xFF3284FF)),
+                    ),
+                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('View tests for this course', style: TextStyle(fontSize: 12)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => _CourseTestsScreen(courseTitle: title),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _CourseTestsScreen extends StatelessWidget {
+  final String courseTitle;
+  const _CourseTestsScreen({required this.courseTitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: Text(courseTitle),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F2937),
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3284FF).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.quiz_rounded, size: 64, color: Color(0xFF3284FF)),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No tests available',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                'There are currently no active tests for $courseTitle. Please check back later when new tests are added.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade500, height: 1.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveTestsScreen extends StatelessWidget {
+  const _LiveTestsScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Live Tests'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F2937),
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.quiz_rounded, size: 64, color: Color(0xFF10B981)),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No live tests available',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                'There are currently no active live tests. Please check back later when new tests are scheduled.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade500, height: 1.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

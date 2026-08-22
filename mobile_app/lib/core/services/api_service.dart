@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../main.dart'; // For navigatorKey
 
 class ApiService {
-  // If running on Android emulator, you might need to change localhost to 10.0.2.2
   static const String baseUrl = 'https://mathspoint.co.in/api';
   static String? authToken;
+  static const _secureStorage = FlutterSecureStorage();
 
   final Dio _dio = Dio(BaseOptions(
     baseUrl: baseUrl,
@@ -18,26 +19,32 @@ class ApiService {
         }
         return handler.next(options);
       },
+      onError: (DioException error, ErrorInterceptorHandler handler) {
+        if (error.response?.statusCode == 401) {
+          // Token expired or invalid, auto logout and navigate to login
+          clearToken().then((_) {
+            navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+          });
+        }
+        return handler.next(error);
+      },
     ),
   );
 
   /// Load saved token from persistent storage (call once at app startup)
   static Future<void> loadToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    authToken = prefs.getString('auth_token');
+    authToken = await _secureStorage.read(key: 'auth_token');
   }
 
   /// Save token to persistent storage
   static Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await _secureStorage.write(key: 'auth_token', value: token);
   }
 
   /// Clear token (for logout)
   static Future<void> clearToken() async {
     authToken = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await _secureStorage.delete(key: 'auth_token');
   }
 
   Future<Map<String, dynamic>> getHomeContent() async {
@@ -138,6 +145,20 @@ class ApiService {
       throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Failed to update profile');
     } catch (e) {
       throw Exception('Failed to update profile: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> updateAvatar(List<int> bytes, String filename) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': MultipartFile.fromBytes(bytes, filename: filename),
+      });
+      final response = await _dio.post('/auth/profile/avatar', data: formData);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Failed to update profile photo');
+    } catch (e) {
+      throw Exception('Failed to update profile photo: $e');
     }
   }
 

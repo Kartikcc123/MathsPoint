@@ -12,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _inputController = TextEditingController();
+  final FocusNode _inputFocusNode = FocusNode();
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
   String? _errorMessage;
@@ -20,14 +21,21 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _inputController.dispose();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
   void _toggleMode() {
+    // Unfocus first so Flutter picks up the new keyboardType
+    _inputFocusNode.unfocus();
     setState(() {
       _isEmailMode = !_isEmailMode;
       _inputController.clear();
       _errorMessage = null;
+    });
+    // Re-focus after frame so the correct keyboard appears
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _inputFocusNode.requestFocus();
     });
   }
 
@@ -274,6 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Expanded(
                             child: TextField(
                               controller: _inputController,
+                              focusNode: _inputFocusNode,
                               keyboardType: _isEmailMode ? TextInputType.emailAddress : TextInputType.phone,
                               style: const TextStyle(
                                   fontSize: 16, letterSpacing: 1.2),

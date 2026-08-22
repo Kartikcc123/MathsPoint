@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1053497533240",
+    "project_id": "mathspoint",
+    "storage_bucket": "mathspoint.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053497533240:android:09b1a3316da16b069617cd",
+        "android_client_info": {
+          "package_name": "in.co.mathspoint.student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVukSWdaM8g1013gpIQ9XNC084JIa1G0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
