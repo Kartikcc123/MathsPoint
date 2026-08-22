@@ -52,7 +52,7 @@ class CustomThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
     final parsedUrl = hasImage 
-        ? (imageUrl!.startsWith('http') ? imageUrl! : 'http://localhost:5000$imageUrl') 
+        ? (imageUrl!.startsWith('http') ? imageUrl! : 'https://mathspoint.co.in$imageUrl') 
         : null;
 
     final gradient = _getGradientForTitle(title);

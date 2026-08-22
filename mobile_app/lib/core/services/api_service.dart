@@ -3,10 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // If running on Android emulator, you might need to change localhost to 10.0.2.2
-  static const String baseUrl = 'https://mathspoint-yqnv.onrender.com/api';
+  static const String baseUrl = 'https://mathspoint.co.in/api';
   static String? authToken;
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: baseUrl))..interceptors.add(
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: baseUrl,
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 15),
+  ))..interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) {
         if (authToken != null) {

@@ -576,7 +576,7 @@ class _HeroHeaderState extends State<_HeroHeader> {
       if (rawImageUrl.startsWith('http')) {
         imageUrl = rawImageUrl;
       } else {
-        imageUrl = 'http://localhost:5000$rawImageUrl';
+        imageUrl = 'https://mathspoint.co.in$rawImageUrl';
       }
     }
 

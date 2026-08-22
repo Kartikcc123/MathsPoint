@@ -253,7 +253,7 @@ class _CartScreenState extends State<CartScreen> {
     final title = _course?['title'] ?? 'Course Title';
     final rawUrl = _course?['thumbnail'];
     final imageUrl = (rawUrl != null && rawUrl.toString().trim().isNotEmpty)
-        ? (rawUrl.toString().startsWith('http') ? rawUrl : 'http://localhost:5000$rawUrl')
+        ? (rawUrl.toString().startsWith('http') ? rawUrl : 'https://mathspoint.co.in$rawUrl')
         : null;
 
     return Container(

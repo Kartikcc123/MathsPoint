@@ -26,7 +26,7 @@ class _FreeMaterialsScreenState extends State<FreeMaterialsScreen> {
 
     // Check if it's a local upload
     if (url.startsWith('/uploads')) {
-      url = 'https://mathspoint-yqnv.onrender.com$url';
+      url = 'https://mathspoint.co.in$url';
     }
 
     if (widget.section == 'Free Videos' || mimeType == 'video/youtube') {
