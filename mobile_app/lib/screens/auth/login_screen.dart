@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Guide a student from class 5 to 12\nand competitive exams',
+            'By Er Ashish Upadhyay\nGrade 6th to 12th & All Competitive Exams',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -327,11 +327,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Continue Button
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _handleContinue,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: brandBlue,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),

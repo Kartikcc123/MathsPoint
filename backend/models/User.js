@@ -6,7 +6,7 @@ const normalizePhone = (value = '') => value.replace(/\D/g, '');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
-  normalizedName: { type: String, unique: true, sparse: true },
+  normalizedName: { type: String, sparse: true },
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'teacher', 'student', 'parent'], default: 'student', index: true },

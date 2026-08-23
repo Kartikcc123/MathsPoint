@@ -4,6 +4,7 @@ import 'help_support_screen.dart';
 import 'purchases_screen.dart';
 import 'settings_screen.dart';
 import '../../core/services/cart_manager.dart';
+import '../dashboard/coming_soon_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -90,16 +91,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _MenuItemData(Icons.shopping_bag_rounded, 'My Purchases', const Color(0xFF8B5CF6), onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const PurchasesScreen()));
                           }),
-                          _MenuItemData(Icons.bookmark_rounded, 'Bookmarks', const Color(0xFFF59E0B), onTap: () {}),
-                          _MenuItemData(Icons.download_rounded, 'Downloads', const Color(0xFF10B981), onTap: () {}),
+                          _MenuItemData(Icons.bookmark_rounded, 'Bookmarks', const Color(0xFFF59E0B), onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ComingSoonScreen(title: 'Bookmarks')));
+                          }),
+                          _MenuItemData(Icons.download_rounded, 'Downloads', const Color(0xFF10B981), onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ComingSoonScreen(title: 'Downloads')));
+                          }),
                         ]),
                         const SizedBox(height: 24),
                         // General section
                         _buildSectionLabel('GENERAL'),
                         const SizedBox(height: 8),
                         _buildMenuCard([
-                          _MenuItemData(Icons.settings_rounded, 'Settings', const Color(0xFF6B7280), onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                          _MenuItemData(Icons.settings_rounded, 'Settings', const Color(0xFF6B7280), onTap: () async {
+                            await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                            _fetchUserProfile();
                           }),
                           _MenuItemData(Icons.help_outline_rounded, 'Help & Support', const Color(0xFF0EA5E9), onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
@@ -152,8 +158,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                      onPressed: () async {
+                        await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                        _fetchUserProfile();
                       },
                     ),
                   ),

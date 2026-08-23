@@ -75,27 +75,7 @@ class CourseDescriptionScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                actions: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      children: [
-                        Text('XP', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70, fontSize: 12)),
-                        SizedBox(width: 4),
-                        Text('0', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ],
+                // Actions removed for consistency
                 bottom: const TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,

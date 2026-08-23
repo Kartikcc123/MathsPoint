@@ -43,11 +43,14 @@ class _CartScreenState extends State<CartScreen> {
       );
       
       if (mounted) {
-        setState(() => _isProcessing = false);
+        CartManager().selectedCourse = null;
+        setState(() {
+          _isProcessing = false;
+          _course = null;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Payment Successful! Course Unlocked.'), backgroundColor: Colors.green),
         );
-        CartManager().selectedCourse = null;
         if (CartManager().refreshEnrollment != null) {
           await CartManager().refreshEnrollment!();
         }
@@ -138,6 +141,16 @@ class _CartScreenState extends State<CartScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          if (_course != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              onPressed: () {
+                CartManager().selectedCourse = null;
+                setState(() => _course = null);
+              },
+            ),
+        ],
       ),
       body: _course == null
           ? _buildEmptyState()

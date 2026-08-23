@@ -3,6 +3,7 @@ import '../../core/services/api_service.dart';
 import '../notifications/notifications_screen.dart';
 import 'enrolled_course_detail_screen.dart';
 import '../profile/help_support_screen.dart';
+import 'coming_soon_screen.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -432,7 +433,9 @@ class _StudyScreenState extends State<StudyScreen> {
       _ResourceItem(Icons.assignment_rounded, 'Test', const Color(0xFF8B5CF6), const Color(0xFF7C3AED), onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => _EnrolledTestsScreen(enrolledCourses: _enrolledCourses)));
       }),
-      _ResourceItem(Icons.question_answer_rounded, 'Ask Doubt', const Color(0xFFF59E0B), const Color(0xFFD97706)),
+      _ResourceItem(Icons.question_answer_rounded, 'Ask Doubt', const Color(0xFFF59E0B), const Color(0xFFD97706), onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ComingSoonScreen(title: 'Ask Doubt')));
+      }),
       _ResourceItem(Icons.headset_mic_rounded, 'Help Desk', const Color(0xFF10B981), const Color(0xFF059669), onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
       }),

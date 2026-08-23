@@ -10,6 +10,7 @@ class EnrolledCourseDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
+      initialIndex: 1,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -29,35 +30,7 @@ class EnrolledCourseDetailScreen extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                children: [
-                  Text('XP', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12)),
-                  SizedBox(width: 4),
-                  Text('0', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.chat_bubble_outline, color: Colors.black87),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.notifications_none, color: Colors.black87),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.black87),
-              onPressed: () {},
-            ),
-          ],
+          // Actions removed as requested
           bottom: const TabBar(
             labelColor: Color(0xFF6366F1), // Indigo
             unselectedLabelColor: Colors.black87,

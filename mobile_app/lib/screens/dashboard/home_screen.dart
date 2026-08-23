@@ -9,6 +9,8 @@ import '../notifications/notifications_screen.dart';
 import '../../widgets/custom_thumbnail.dart';
 import 'free_materials_screen.dart';
 import '../courses/courses_screen.dart';
+import 'enrolled_course_detail_screen.dart';
+import 'coming_soon_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -167,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const FreeMaterialsScreen(section: 'Tests')));
         break;
       case 'Doubt':
-        // TODO: Add doubt screen when available
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ComingSoonScreen(title: 'Ask Doubt')));
         break;
       case 'More':
         _switchToStudyTab();
@@ -235,7 +237,12 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: GestureDetector(
             onTap: () {
-              _switchToStudyTab();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EnrolledCourseDetailScreen(course: course),
+                ),
+              );
             },
             child: Container(
               padding: const EdgeInsets.all(14),
