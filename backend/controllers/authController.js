@@ -311,13 +311,15 @@ const registerAdmin = async (req, res) => {
 const registerStudent = async (req, res) => {
   const { name, email, password, phone, parentName, parentEmail, parentPhone } = req.body;
   const normalizedEmail = email?.trim().toLowerCase();
-  const normalizedPhone = phone?.trim();
+  const trimmedPhone = phone?.trim();
+  const normalizedPhoneValue = normalizePhone(phone);
   const normalizedParentEmail = parentEmail?.trim().toLowerCase();
-  const normalizedParentPhone = parentPhone?.trim();
+  const trimmedParentPhone = parentPhone?.trim();
+  const normalizedParentPhoneValue = normalizePhone(parentPhone);
   const normalizedParentName = parentName?.trim();
 
   try {
-    if (!normalizedPhone || !normalizedParentName || !normalizedParentEmail || !normalizedParentPhone) {
+    if (!trimmedPhone || !normalizedParentName || !normalizedParentEmail || !trimmedParentPhone) {
       return res.status(400).json({
         message: 'Student phone, parent name, parent email, and parent phone are required.',
         code: 'STUDENT_PARENT_DETAILS_REQUIRED',
@@ -327,7 +329,9 @@ const registerStudent = async (req, res) => {
     const userExists = await User.findOne({
       $or: [
         { email: normalizedEmail },
-        { normalizedPhone: normalizePhone(normalizedPhone) },
+        { normalizedPhone: normalizedPhoneValue },
+        { phone: trimmedPhone },
+        { studentId: trimmedPhone }
       ],
     });
 
@@ -342,7 +346,8 @@ const registerStudent = async (req, res) => {
       role: 'parent',
       $or: [
         { email: normalizedParentEmail },
-        { normalizedPhone: normalizePhone(normalizedParentPhone) },
+        { normalizedPhone: normalizedParentPhoneValue },
+        { phone: trimmedParentPhone }
       ],
     });
 
@@ -350,7 +355,8 @@ const registerStudent = async (req, res) => {
       const conflictingParentIdentity = await User.findOne({
         $or: [
           { email: normalizedParentEmail },
-          { normalizedPhone: normalizePhone(normalizedParentPhone) },
+          { normalizedPhone: normalizedParentPhoneValue },
+          { phone: trimmedParentPhone }
         ],
       });
 
@@ -367,19 +373,19 @@ const registerStudent = async (req, res) => {
       email: normalizedEmail,
       password,
       role: 'student',
-      phone: normalizedPhone,
+      phone: trimmedPhone,
       parentName: normalizedParentName,
       parentEmail: normalizedParentEmail,
-      parentPhone: normalizedParentPhone,
+      parentPhone: trimmedParentPhone,
     });
 
     if (!parentUser) {
       parentUser = await User.create({
         name: normalizedParentName,
         email: normalizedParentEmail,
-        password: normalizedParentPhone,
+        password: trimmedParentPhone,
         role: 'parent',
-        phone: normalizedParentPhone,
+        phone: trimmedParentPhone,
         linkedStudents: [user._id],
       });
     } else if (!parentUser.linkedStudents.some((studentId) => String(studentId) === String(user._id))) {
@@ -404,6 +410,7 @@ const registerStudent = async (req, res) => {
       res.status(400).json({ message: 'Invalid user data', code: 'STUDENT_INVALID_DATA' });
     }
   } catch (error) {
+    console.error('Web Registration Error:', error);
     sendErrorResponse(res, error, 'Student registration failed.');
   }
 };
@@ -414,10 +421,11 @@ const registerStudent = async (req, res) => {
 const registerAppStudent = async (req, res) => {
   const { name, email, phone, state, password } = req.body;
   const normalizedEmail = email?.trim().toLowerCase();
-  const normalizedPhone = phone?.trim();
+  const trimmedPhone = phone?.trim();
+  const normalizedPhoneValue = normalizePhone(phone);
 
   try {
-    if (!normalizedPhone || !name || !password) {
+    if (!trimmedPhone || !name || !password) {
       return res.status(400).json({
         message: 'Name, phone, and password are required.',
         code: 'STUDENT_DETAILS_REQUIRED',
@@ -427,10 +435,9 @@ const registerAppStudent = async (req, res) => {
     const userExists = await User.findOne({
       $or: [
         { email: normalizedEmail },
-        { normalizedPhone: normalizedPhone },
-        { phone: phone },
-        { phone: normalizedPhone },
-        { studentId: phone }
+        { normalizedPhone: normalizedPhoneValue },
+        { phone: trimmedPhone },
+        { studentId: trimmedPhone }
       ],
     });
 
@@ -450,7 +457,7 @@ const registerAppStudent = async (req, res) => {
       email: normalizedEmail,
       password,
       role: 'student',
-      phone: normalizedPhone,
+      phone: trimmedPhone,
       city: state, // storing state in city field if state doesn't exist, wait, the schema might not have state. Let's just use city for state or add state.
     });
 
@@ -469,6 +476,7 @@ const registerAppStudent = async (req, res) => {
       res.status(400).json({ message: 'Invalid user data', code: 'STUDENT_INVALID_DATA' });
     }
   } catch (error) {
+    console.error('App Registration Error:', error);
     sendErrorResponse(res, error, 'Mobile app registration failed.');
   }
 };
