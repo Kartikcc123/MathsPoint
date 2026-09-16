@@ -16,6 +16,8 @@ import {
   Star,
   Clock,
   BookOpen,
+  UploadCloud,
+  Smartphone,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -29,6 +31,8 @@ const AdminLessons = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [appSaving, setAppSaving] = useState(false);
+  const [appUploadProgress, setAppUploadProgress] = useState(0);
   const [deletingId, setDeletingId] = useState(null);
 
   const [form, setForm] = useState({
@@ -41,6 +45,19 @@ const AdminLessons = () => {
     thumbnail: '',
     isPublished: false,
     isFree: false,
+  });
+
+  const [showAppModal, setShowAppModal] = useState(false);
+  const [appForm, setAppForm] = useState({
+    subject: '',
+    title: '',
+    description: '',
+    moduleTitle: '',
+    duration: '',
+    thumbnail: '',
+    isPublished: true,
+    isFree: false,
+    videoFile: null,
   });
 
   // Fetch courses
@@ -98,9 +115,29 @@ const AdminLessons = () => {
     setEditingLesson(null);
   };
 
+  const resetAppForm = () => {
+    setAppForm({
+      subject: '',
+      title: '',
+      description: '',
+      moduleTitle: '',
+      duration: '',
+      thumbnail: '',
+      isPublished: true,
+      isFree: false,
+      videoFile: null,
+    });
+    setAppUploadProgress(0);
+  };
+
   const openCreateModal = () => {
     resetForm();
     setShowModal(true);
+  };
+
+  const openAppUploadModal = () => {
+    resetAppForm();
+    setShowAppModal(true);
   };
 
   const openEditModal = (lesson) => {
@@ -157,6 +194,53 @@ const AdminLessons = () => {
       alert(err.response?.data?.message || 'Failed to save lesson');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAppSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedCourse || !appForm.title.trim() || !appForm.videoFile) return;
+
+    try {
+      setAppSaving(true);
+      setAppUploadProgress(0);
+
+      const payload = new FormData();
+      payload.append('video', appForm.videoFile);
+      payload.append('courseId', selectedCourse);
+      payload.append('subject', appForm.subject.trim());
+      payload.append('title', appForm.title.trim());
+      payload.append('description', appForm.description.trim());
+      payload.append('moduleTitle', appForm.moduleTitle.trim());
+      payload.append('duration', parseInt(appForm.duration, 10) || 0);
+      payload.append('thumbnail', appForm.thumbnail.trim());
+      payload.append('isPublished', appForm.isPublished);
+      payload.append('isFree', appForm.isFree);
+
+      await api.post('/admin/lesson/google-drive', payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (event) => {
+          if (!event.total) return;
+          setAppUploadProgress(Math.round((event.loaded * 100) / event.total));
+        },
+      });
+
+      setShowAppModal(false);
+      resetAppForm();
+      fetchData();
+    } catch (err) {
+      console.error('Failed to publish app video', err);
+      const data = err.response?.data;
+      const providerMessage = data?.details?.providerMessage;
+      const readableProviderMessage = typeof providerMessage === 'string'
+        ? providerMessage
+        : providerMessage
+          ? JSON.stringify(providerMessage)
+          : '';
+      const detail = readableProviderMessage ? `\n\nGoogle says: ${readableProviderMessage}` : '';
+      alert(`${data?.message || 'Failed to publish video for app'}${detail}`);
+    } finally {
+      setAppSaving(false);
     }
   };
 
@@ -230,6 +314,14 @@ const AdminLessons = () => {
             className="flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" /> Add Lesson
+          </button>
+
+          <button
+            onClick={openAppUploadModal}
+            disabled={!selectedCourse}
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Smartphone className="h-4 w-4" /> Publish Video for App
           </button>
         </div>
       </div>
@@ -311,6 +403,11 @@ const AdminLessons = () => {
                         <span className="flex items-center gap-1 text-xs text-emerald-500">
                           <Shield className="h-3 w-3" /> Encrypted
                         </span>
+                        {lesson.videoType === 'google_drive' && (
+                          <span className="flex items-center gap-1 text-xs text-indigo-500">
+                            <Smartphone className="h-3 w-3" /> App Video
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -534,6 +631,205 @@ const AdminLessons = () => {
                     <Save className="h-4 w-4" />
                   )}
                   {editingLesson ? 'Update Lesson' : 'Create Lesson'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* App Video Upload Modal */}
+      {showAppModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">Publish Video for App</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Upload a Google Drive backed lesson for the Flutter app. Website YouTube lessons are unchanged.
+                </p>
+              </div>
+              <button
+                onClick={() => { setShowAppModal(false); resetAppForm(); }}
+                className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAppSubmit} className="p-6 space-y-4">
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+                This upload goes to Google Drive through the backend and plays only in the mobile app custom player.
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Video File <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => setAppForm({ ...appForm, videoFile: e.target.files?.[0] || null })}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-indigo-700"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Lesson Title <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={appForm.title}
+                  onChange={(e) => setAppForm({ ...appForm, title: e.target.value })}
+                  placeholder="e.g. Introduction to Trigonometry"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    Subject <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={appForm.subject}
+                    onChange={(e) => setAppForm({ ...appForm, subject: e.target.value })}
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="" disabled>Select Subject</option>
+                    {(courses.find(c => c._id === selectedCourse)?.subjects || []).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    Module / Chapter <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={appForm.moduleTitle}
+                    onChange={(e) => setAppForm({ ...appForm, moduleTitle: e.target.value })}
+                    placeholder="e.g. Trigonometry"
+                    list="app-video-chapter-list"
+                    required
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                  <datalist id="app-video-chapter-list">
+                    {Array.from(new Set([
+                      ...((courses.find(c => c._id === selectedCourse)?.chapters?.[appForm.subject]) || []),
+                      ...materials.filter(m => (!appForm.subject || m.subject === appForm.subject) && (m.course === selectedCourse || m.course?._id === selectedCourse)).map(m => m.moduleName),
+                      ...lessons.filter(l => !appForm.subject || l.subject === appForm.subject).map(l => l.moduleTitle)
+                    ])).filter(Boolean).map(chapter => (
+                      <option key={chapter} value={chapter} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    Duration (seconds)
+                  </label>
+                  <input
+                    type="number"
+                    value={appForm.duration}
+                    onChange={(e) => setAppForm({ ...appForm, duration: e.target.value })}
+                    placeholder="e.g. 1063"
+                    min="0"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    Thumbnail URL
+                  </label>
+                  <input
+                    type="url"
+                    value={appForm.thumbnail}
+                    onChange={(e) => setAppForm({ ...appForm, thumbnail: e.target.value })}
+                    placeholder="Optional"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={appForm.description}
+                  onChange={(e) => setAppForm({ ...appForm, description: e.target.value })}
+                  placeholder="Brief description for app users..."
+                  rows={3}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={appForm.isPublished}
+                    onChange={(e) => setAppForm({ ...appForm, isPublished: e.target.checked })}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500/20"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Published</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={appForm.isFree}
+                    onChange={(e) => setAppForm({ ...appForm, isFree: e.target.checked })}
+                    className="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500/20"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Free Class</span>
+                </label>
+              </div>
+
+              {appSaving && (
+                <div>
+                  <div className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-500">
+                    <span>Uploading to backend</span>
+                    <span>{appUploadProgress}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-indigo-600 transition-all"
+                      style={{ width: `${appUploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowAppModal(false); resetAppForm(); }}
+                  className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={appSaving}
+                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {appSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UploadCloud className="h-4 w-4" />
+                  )}
+                  Publish for App
                 </button>
               </div>
             </form>

@@ -96,36 +96,47 @@ const SecureVideoPlayer = ({ embedUrl, lessonTitle, onProgress, isLoading, debug
     let player;
     loadYouTubeAPI().then(() => {
       player = new window.YT.Player(playerDivRef.current, {
-        videoId: videoId,
-        playerVars: {
-          autoplay: 0,
-          controls: 0, // Disable native controls
-          disablekb: 1, // Disable keyboard shortcuts natively
-          fs: 0, // Disable native fullscreen
-          modestbranding: 1,
-          rel: 0,
-          playsinline: 1,
-          iv_load_policy: 3, // Hide annotations
-        },
-        events: {
-          onReady: (event) => {
-            setPlayerInstance(event.target);
-            setDuration(event.target.getDuration() || 0);
-            setVolume(event.target.getVolume());
-            setIsMuted(event.target.isMuted());
-            setIsReady(true);
-            startTimeRef.current = Date.now();
-          },
-          onStateChange: (event) => {
-            if (event.data === window.YT.PlayerState.PLAYING) {
-              setIsPlaying(true);
-              setDuration(event.target.getDuration()); // Ensure we have the correct duration
-            } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
-              setIsPlaying(false);
-            }
-          },
-        },
-      });
+  videoId: videoId,
+
+  playerVars: {
+    autoplay: 0,
+    controls: 0,
+    disablekb: 1,
+    fs: 0,
+    rel: 0,
+    playsinline: 1,
+    iv_load_policy: 3,
+    origin: window.location.origin,
+  },
+
+  events: {
+    onReady: (event) => {
+      setPlayerInstance(event.target);
+      setDuration(event.target.getDuration() || 0);
+      setVolume(event.target.getVolume());
+      setIsMuted(event.target.isMuted());
+      setIsReady(true);
+      startTimeRef.current = Date.now();
+    },
+
+    onStateChange: (event) => {
+      if (event.data === window.YT.PlayerState.PLAYING) {
+        setIsPlaying(true);
+        setDuration(event.target.getDuration());
+      } else if (
+        event.data === window.YT.PlayerState.PAUSED ||
+        event.data === window.YT.PlayerState.ENDED
+      ) {
+        setIsPlaying(false);
+      }
+    },
+
+    onError: (event) => {
+      console.error("YouTube Player Error:", event.data);
+      setError(`YouTube playback error: ${event.data}`);
+    },
+  },
+});
     });
 
     return () => {

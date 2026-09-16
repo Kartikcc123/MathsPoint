@@ -7,6 +7,7 @@ const {
   getAdminLessons,
   reorderLessons,
   getCourseLessons,
+  getFreeLessons,
   getLessonPlayer,
   updateWatchProgress,
   getWatchProgress,
@@ -39,6 +40,9 @@ router.route('/lesson/:id')
 
 router.route('/lesson/:id/progress')
   .post(protect, authorizeRoles('student'), updateWatchProgress);
+
+router.route('/lessons/free')
+  .get(protect, authorizeRoles('student'), getFreeLessons);
 
 router.route('/lessons/course/:courseId')
   .get(protect, authorizeRoles('student'), getCourseLessons);

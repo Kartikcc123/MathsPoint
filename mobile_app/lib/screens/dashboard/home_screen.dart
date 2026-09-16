@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: thumbnail.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(14),
-                            child: Image.network(thumbnail, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
+                            child: Image.network(thumbnail, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
                           )
                         : const Icon(Icons.school_rounded, color: Colors.white, size: 28),
                   ),
@@ -305,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HeroHeader extends StatefulWidget {
-  const _HeroHeader({super.key});
+  const _HeroHeader();
 
   @override
   State<_HeroHeader> createState() => _HeroHeaderState();
@@ -685,7 +685,7 @@ class _HeroHeaderState extends State<_HeroHeader> {
 }
 
 class _TopCoursesList extends StatefulWidget {
-  const _TopCoursesList({super.key});
+  const _TopCoursesList();
 
   @override
   State<_TopCoursesList> createState() => _TopCoursesListState();

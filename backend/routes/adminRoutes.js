@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { getStudents, getInquiries, updateInquiryStatus, getDashboardSummary, registerStudent, createManagedUser, linkParentStudents, assignTeacherCourses, deleteStudent, createCourse, deleteCourse, getCourses, assignStudentCourse, createMaterial, deleteMaterial, getMaterials, createFreeStudyMaterial, getFreeStudyMaterials, deleteFreeStudyMaterial, getPaymentRecords, getAttendanceRecord, getAttendanceSummary, getAttendanceTrends, saveAttendanceRecord, getNotifications, createNotification, updateNotification } = require('../controllers/adminController');
 const { getAdminHomeContent, updateHomeContent } = require('../controllers/homeContentController');
@@ -19,6 +21,23 @@ const fileFilter = (_req, file, cb) => {
 };
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
+
+const videoUploadDir = path.join(os.tmpdir(), 'mathspoint-drive-videos');
+fs.mkdirSync(videoUploadDir, { recursive: true });
+
+const videoUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, videoUploadDir),
+    filename: (_req, file, cb) => {
+      const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      cb(null, `${Date.now()}-${safeName}`);
+    },
+  }),
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype?.startsWith('video/')) return cb(null, true);
+    cb(new Error('Please upload a valid video file.'), false);
+  },
+});
 
 const freeMaterialStorage = multer.memoryStorage();
 

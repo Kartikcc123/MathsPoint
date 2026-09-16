@@ -4,6 +4,7 @@ const WatchProgress = require('../models/WatchProgress');
 const User = require('../models/User');
 const { encryptVideoId, decryptVideoId } = require('../utils/crypto');
 const { AppError, sendErrorResponse } = require('../utils/api');
+const mongoose = require('mongoose');
 
 /**
  * Extract a YouTube video ID from various input formats:
@@ -291,32 +292,62 @@ const getCourseLessons = async (req, res) => {
 // @desc    Get secure playable lesson (THE CORE SECURE ENDPOINT)
 // @route   GET /api/lesson/:id
 // @access  Private (Student)
+
+const assertValidObjectId = (id, fieldName) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError(400, `Invalid ${fieldName} format.`, { code: 'INVALID_OBJECT_ID' });
+  }
+};
+
+const assertLessonAccess = (lesson, student) => {
+  if (!lesson.isPublished && !lesson.isFree) {
+    throw new AppError(404, 'Lesson not available.', { code: 'LESSON_NOT_AVAILABLE' });
+  }
+  if (!lesson.isFree) {
+    const courseId = lesson.course.toString();
+    const isEnrolled = student.course?._id?.toString() === courseId ||
+      (student.enrolledCourses || []).some((c) => (c._id || c).toString() === courseId);
+    if (!isEnrolled) {
+      throw new AppError(403, 'You are not enrolled in this course.', { code: 'LESSON_NOT_ENROLLED' });
+    }
+  }
+};
+
+// @desc    Get secure playable lesson (THE CORE SECURE ENDPOINT)
+// @route   GET /api/lesson/:id
+// @access  Private (Student)
 const getLessonPlayer = async (req, res) => {
   try {
     const student = req.user;
+    assertValidObjectId(req.params.id, 'Lesson ID');
+
     const lesson = await Lesson.findById(req.params.id);
 
     if (!lesson) {
       throw new AppError(404, 'Lesson not found.', { code: 'LESSON_NOT_FOUND' });
     }
 
-    if (!lesson.isPublished && !lesson.isFree) {
-      throw new AppError(404, 'Lesson not available.', { code: 'LESSON_NOT_AVAILABLE' });
-    }
+    assertLessonAccess(lesson, student);
 
-    // Verify enrollment (skip for free lessons)
-    if (!lesson.isFree) {
-      const courseId = lesson.course.toString();
-      const isEnrolled = student.course?._id?.toString() === courseId ||
-        (student.enrolledCourses || []).some((c) => (c._id || c).toString() === courseId);
+    const existingProgress = await WatchProgress.findOne({
+      student: student._id,
+      lesson: lesson._id,
+    });
 
-      if (!isEnrolled) {
-        throw new AppError(403, 'You are not enrolled in this course.', { code: 'LESSON_NOT_ENROLLED' });
-      }
+    if (!lesson.encryptedVideoId || !lesson.videoIV) {
+      throw new AppError(400, 'This lesson has no YouTube video configured.', { code: 'YOUTUBE_VIDEO_CONFIG_MISSING' });
     }
 
     // Decrypt the YouTube video ID internally
-    const rawVideoId = decryptVideoId(lesson.encryptedVideoId, lesson.videoIV);
+    let rawVideoId;
+    try {
+      rawVideoId = decryptVideoId(lesson.encryptedVideoId, lesson.videoIV);
+    } catch (decryptError) {
+      throw new AppError(400, 'This lesson has invalid encrypted YouTube video data.', {
+        code: 'YOUTUBE_VIDEO_CONFIG_INVALID',
+        details: { providerMessage: decryptError.message },
+      });
+    }
 
     // Auto-extract video ID from various YouTube URL formats
     const plainVideoId = extractYouTubeId(rawVideoId);
@@ -350,12 +381,6 @@ const getLessonPlayer = async (req, res) => {
       { expiresIn: expirySeconds }
     );
 
-    // Get existing progress
-    const existingProgress = await WatchProgress.findOne({
-      student: student._id,
-      lesson: lesson._id,
-    });
-
     res.json({
       embedUrl,
       lessonToken,
@@ -380,9 +405,6 @@ const getLessonPlayer = async (req, res) => {
   }
 };
 
-// @desc    Update watch progress
-// @route   POST /api/lesson/:id/progress
-// @access  Private (Student)
 const updateWatchProgress = async (req, res) => {
   try {
     const { progress, watchDuration } = req.body;
@@ -563,6 +585,21 @@ const testYouTubeEmbed = async (req, res) => {
   }
 };
 
+
+// @desc    Get free lessons
+// @route   GET /api/lessons/free
+// @access  Private (Student)
+const getFreeLessons = async (req, res) => {
+  try {
+    const lessons = await Lesson.find({ isFree: true, isPublished: true })
+      .select('-encryptedVideoId -videoIV')
+      .sort({ order: 1 });
+    res.json(lessons);
+  } catch (error) {
+    sendErrorResponse(res, error, 'Failed to fetch free lessons');
+  }
+};
+
 module.exports = {
   createLesson,
   updateLesson,
@@ -575,4 +612,5 @@ module.exports = {
   getWatchProgress,
   testYouTubeEmbed,
   extractYouTubeId,
+  getFreeLessons,
 };

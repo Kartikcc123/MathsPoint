@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/services/api_service.dart';
+import '../video/youtube_lesson_player_screen.dart';
 import 'package:intl/intl.dart';
-import 'video_player_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ChapterContentScreen extends StatefulWidget {
   final String chapterName;
   final String? courseId;
 
   const ChapterContentScreen({
-    super.key, 
+    super.key,
     required this.chapterName,
     this.courseId,
   });
@@ -21,7 +20,7 @@ class ChapterContentScreen extends StatefulWidget {
 class _ChapterContentScreenState extends State<ChapterContentScreen> {
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Lectures', 'Notes'];
-  
+
   final ApiService _apiService = ApiService();
   List<dynamic> _materials = [];
   bool _isLoading = true;
@@ -34,28 +33,32 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
 
   Future<void> _fetchMaterials() async {
     setState(() => _isLoading = true);
-    
+
     // Fetch materials (PDFs/Notes)
     final allMaterials = await _apiService.getStudentMaterials();
-    
+
     // Fetch lessons (Videos)
     List<dynamic> allLessons = [];
     if (widget.courseId != null) {
       allLessons = await _apiService.getCourseLessons(widget.courseId!);
     }
-    
+
     setState(() {
-      final filteredMaterials = allMaterials.where((m) => m['moduleName'] == widget.chapterName).toList();
-      
+      final filteredMaterials = allMaterials
+          .where((m) => m['moduleName'] == widget.chapterName)
+          .toList();
+
       final filteredLessons = allLessons
           .where((l) => l['moduleTitle'] == widget.chapterName)
-          .map((l) => {
-                ...l as Map<String, dynamic>,
-                'type': 'Video',
-                'fileUrl': 'lesson', // placeholder to indicate it's a lesson
-              })
+          .map(
+            (l) => {
+              ...l as Map<String, dynamic>,
+              'type': 'Video',
+              'fileUrl': 'lesson', // placeholder to indicate it's a lesson
+            },
+          )
           .toList();
-          
+
       _materials = [...filteredLessons, ...filteredMaterials];
       _isLoading = false;
     });
@@ -69,7 +72,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black87,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -90,9 +97,22 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
             ),
             child: const Row(
               children: [
-                Text('XP', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12)),
+                Text(
+                  'XP',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    fontSize: 12,
+                  ),
+                ),
                 SizedBox(width: 4),
-                Text('0', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(
+                  '0',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
               ],
             ),
           ),
@@ -119,19 +139,28 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF4B5563) : Colors.white,
+                        color: isSelected
+                            ? const Color(0xFF4B5563)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFF4B5563) : Colors.grey.shade300,
+                          color: isSelected
+                              ? const Color(0xFF4B5563)
+                              : Colors.grey.shade300,
                         ),
                       ),
                       child: Text(
                         filter,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           fontSize: 14,
                         ),
                       ),
@@ -141,11 +170,9 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
               }).toList(),
             ),
           ),
-          
+
           // Content List
-          Expanded(
-            child: _buildFilteredContent(),
-          ),
+          Expanded(child: _buildFilteredContent()),
         ],
       ),
     );
@@ -157,7 +184,7 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
     }
 
     List<Widget> items = [];
-    
+
     for (var material in _materials) {
       final type = material['type'] ?? 'Notes';
       if (_selectedFilter == 'All') {
@@ -188,10 +215,12 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
 
   Widget _buildLectureCard(Map<String, dynamic> material) {
     final title = material['title'] ?? 'Lecture';
-    final date = material['createdAt'] != null 
-        ? DateFormat('dd MMM yyyy').format(DateTime.parse(material['createdAt']))
+    final date = material['createdAt'] != null
+        ? DateFormat(
+            'dd MMM yyyy',
+          ).format(DateTime.parse(material['createdAt']))
         : '';
-        
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -216,7 +245,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
-                      child: Icon(Icons.play_arrow_rounded, size: 50, color: Colors.green.shade700),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        size: 50,
+                        color: Colors.green.shade700,
+                      ),
                     ),
                   ),
                   Positioned(
@@ -227,7 +260,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                         shape: BoxShape.circle,
                         color: Colors.white,
                       ),
-                      child: const Icon(Icons.play_circle_fill, color: Colors.red, size: 24),
+                      child: const Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.red,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -249,7 +286,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Icon(Icons.check_circle_outline, size: 16, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -263,7 +304,9 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      material['duration'] != null ? '${(material['duration'] / 60).floor()}m' : 'Video',
+                      material['duration'] != null
+                          ? '${(material['duration'] / 60).floor()}m'
+                          : 'Video',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -284,7 +327,10 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.download_outlined, color: Colors.black54),
+                  icon: const Icon(
+                    Icons.download_outlined,
+                    color: Colors.black54,
+                  ),
                   onPressed: () {},
                 ),
               ),
@@ -314,57 +360,16 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: InkWell(
-                  onTap: () async {
-                    final fileUrl = material['fileUrl'] ?? '';
-                    
-                    if (fileUrl == 'lesson') {
-                      // It's a YouTube Lesson
-                      showDialog(
-                        context: context, 
-                        barrierDismissible: false,
-                        builder: (_) => const Center(child: CircularProgressIndicator()),
-                      );
-                      
-                      try {
-                        final lessonData = await _apiService.getLessonPlayer(material['_id']);
-                        final embedUrl = lessonData['embedUrl'];
-                        if (context.mounted) Navigator.pop(context); // Close loading
-                        
-                        if (embedUrl != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => VideoPlayerScreen(
-                                videoUrl: embedUrl,
-                                title: title,
-                                isYouTube: true,
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load video: $e')));
-                        }
-                      }
-                    } else {
-                      // It's a local/streamed video
-                      final videoUrl = fileUrl.startsWith('local:') 
-                          ? _apiService.getMaterialStreamUrl(material['_id'])
-                          : fileUrl;
-                          
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VideoPlayerScreen(
-                            videoUrl: videoUrl,
-                            title: title,
-                            isYouTube: false,
-                          ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => YouTubeLessonPlayerScreen(
+                          lessonId: material['_id']?.toString(),
+                          initialLesson: material,
                         ),
-                      );
-                    }
+                      ),
+                    );
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
@@ -377,7 +382,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.play_circle, size: 18, color: Colors.black87),
+                        Icon(
+                          Icons.play_circle,
+                          size: 18,
+                          color: Colors.black87,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Watch',
@@ -401,10 +410,12 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
 
   Widget _buildNoteCard(Map<String, dynamic> material) {
     final title = material['title'] ?? 'Note';
-    final date = material['createdAt'] != null 
-        ? DateFormat('dd MMM yyyy').format(DateTime.parse(material['createdAt']))
+    final date = material['createdAt'] != null
+        ? DateFormat(
+            'dd MMM yyyy',
+          ).format(DateTime.parse(material['createdAt']))
         : '';
-        
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -427,7 +438,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Icon(Icons.picture_as_pdf, size: 40, color: Colors.red.shade600),
+                  child: Icon(
+                    Icons.picture_as_pdf,
+                    size: 40,
+                    color: Colors.red.shade600,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -481,7 +496,10 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.download_outlined, color: Colors.black54),
+                  icon: const Icon(
+                    Icons.download_outlined,
+                    color: Colors.black54,
+                  ),
                   onPressed: () {},
                 ),
               ),
@@ -500,7 +518,11 @@ class _ChapterContentScreenState extends State<ChapterContentScreen> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.remove_red_eye, size: 18, color: Colors.black87),
+                        Icon(
+                          Icons.remove_red_eye,
+                          size: 18,
+                          color: Colors.black87,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'View Document',

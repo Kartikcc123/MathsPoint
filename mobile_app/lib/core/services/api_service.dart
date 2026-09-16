@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../main.dart'; // For navigatorKey
 
 class ApiService {
-  static const String baseUrl = 'https://mathspoint.co.in/api';
+  static const String baseUrl = 'http://localhost:5000/api';
   static String? authToken;
   static const _secureStorage = FlutterSecureStorage();
 
@@ -112,6 +112,15 @@ class ApiService {
       throw Exception('Failed to load materials: ${(e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message}');
     } catch (e) {
       throw Exception('Failed to load materials: $e');
+    }
+  }
+
+  Future<List<dynamic>> getFreeLessons() async {
+    try {
+      final response = await _dio.get('/lessons/free');
+      return response.data as List<dynamic>;
+    } catch (e) {
+      return [];
     }
   }
 
@@ -299,8 +308,39 @@ class ApiService {
     try {
       final response = await _dio.get('/lesson/$lessonId');
       return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map ? data['message'] : null;
+      final code = data is Map ? data['code'] : null;
+      throw Exception(
+        [
+          message ?? 'Failed to fetch lesson player',
+          if (code != null) 'Code: $code',
+        ].join('\n'),
+      );
     } catch (e) {
       throw Exception('Failed to fetch lesson player: $e');
+    }
+  }
+
+
+
+  Future<Map<String, dynamic>> updateLessonProgress(
+    String lessonId, {
+    required double progress,
+    int watchDuration = 0,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/lesson/$lessonId/progress',
+        data: {
+          'progress': progress,
+          'watchDuration': watchDuration,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to update lesson progress: $e');
     }
   }
 

@@ -7,8 +7,9 @@ const lessonSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   moduleTitle: { type: String, default: '', trim: true },
   order: { type: Number, default: 0 },
-  encryptedVideoId: { type: String, required: true },
-  videoIV: { type: String, required: true },
+  encryptedVideoId: { type: String, default: '' },
+  videoIV: { type: String, default: '' },
+  thumbnailUrl: { type: String, default: '', trim: true },
   duration: { type: Number, default: 0 }, // seconds
   thumbnail: { type: String, default: '' },
   isPublished: { type: Boolean, default: false },

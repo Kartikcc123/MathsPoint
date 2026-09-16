@@ -50,7 +50,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         children: [
           Positioned.fill(
             child: CustomThumbnail(
-              title: widget.course['title'] ?? 'Maths Point',
+              title: 'Maths Point',
               isPlayable: true,
               borderRadius: 0,
             ),

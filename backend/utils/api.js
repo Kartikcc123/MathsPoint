@@ -24,9 +24,11 @@ const sendErrorResponse = (res, error, fallbackMessage = 'Something went wrong.'
     });
   }
 
+  console.error('Unhandled error:', error?.message, error?.stack);
   return res.status(500).json({
-    message: fallbackMessage,
+    message: error?.message || fallbackMessage,
     code: 'INTERNAL_SERVER_ERROR',
+    ...(process.env.NODE_ENV !== 'production' ? { stack: error?.stack } : {}),
   });
 };
 
