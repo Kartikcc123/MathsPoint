@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV || 'https://mathspoint.co.in/api');
+  (import.meta.env.DEV || 'https://mathspoint.co.in');
 
 const api = axios.create({
   baseURL,
