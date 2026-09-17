@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../main.dart'; // For navigatorKey
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5000/api';
+  static const String baseUrl = 'http://mathspoint.co.in/api';
   static String? authToken;
   static const _secureStorage = FlutterSecureStorage();
 
