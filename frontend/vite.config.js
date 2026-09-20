@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://mathspoint-yqnv.onrender.com',
+        target: 'https://mathspoint.co.in',
         changeOrigin: true,
         secure: true,
       },

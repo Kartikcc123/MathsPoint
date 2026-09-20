@@ -26,8 +26,8 @@ const defaultOrigins = [
   'https://localhost',
   'capacitor://localhost',
   'https://mathspoint.co.in',
-  'https://mathspoint-client.onrender.com',
-  'https://mathspoint-yqnv.onrender.com',
+  'https://mathspoint.co.in',
+
 ];
 
 const effectiveOrigins = allowedOrigins.length === 0 ? defaultOrigins : [...new Set([...allowedOrigins, ...defaultOrigins])];
