@@ -28,7 +28,9 @@ const ResetPassword = () => {
 
     try {
       setIsLoading(true);
-      const API_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://mathspoint-yqnv.onrender.com/api';
+      const API_URL =
+        import.meta.env.VITE_API_BASE_URL ||
+        (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
       const res = await axios.post(`${API_URL}/auth/reset-password/${token}`, {
         password
       });
