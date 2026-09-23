@@ -555,7 +555,7 @@ const forgotPassword = async (req, res) => {
 
     // Create reset url
     // When you deploy your app to the internet, you will set FRONTEND_URL in your server's .env file (e.g. FRONTEND_URL=https://mathspoint.com)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://mathspoint.co.in';
     const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;

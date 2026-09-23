@@ -152,9 +152,7 @@ class _YouTubeLessonPlayerScreenState
                 return NavigationDecision.navigate;
               }
 
-              if (url.startsWith('http://127.0.0.1:5500') ||
-                  url.startsWith('http://localhost:5500') ||
-                  url.startsWith('https://mathspoint.co.in')) {
+              if (url.startsWith('https://mathspoint.co.in')) {
                 return NavigationDecision.navigate;
               }
 
@@ -164,51 +162,11 @@ class _YouTubeLessonPlayerScreenState
         );
     }
 
-    final videoId = _extractYouTubeVideoId(embedUrl);
-
-    if (videoId.isEmpty) {
-      debugPrint(
-        'Invalid YouTube video URL: $embedUrl',
-      );
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-
-      return;
-    }
-
-    /*
-     * LOCAL DEVELOPMENT
-     *
-     * Your youtube-player.html is currently running through
-     * VS Code Live Server at:
-     *
-     * http://127.0.0.1:5500
-     *
-     * Later, after deployment, change only this URL to:
-     *
-     * https://mathspoint.co.in/youtube-player.html
-     */
-    final playerUrl = Uri(
-      scheme: 'http',
-      host: '127.0.0.1',
-      port: 5500,
-      path: '/youtube-player.html',
-      queryParameters: {
-        'videoId': videoId,
-      },
-    ).toString();
-
-    debugPrint(
-      'Loading MathsPoint YouTube player: $playerUrl',
-    );
+    debugPrint('Loading MathsPoint YouTube player: $embedUrl');
 
     controller.loadRequest(
-  Uri.parse(playerUrl),
-);
+      Uri.parse(embedUrl),
+    );
 
 // Chrome / Flutter Web does not reliably trigger
 // the native WebView page-finished callback.

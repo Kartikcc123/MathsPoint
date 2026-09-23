@@ -101,7 +101,7 @@ const updateAdvertisement = async (req, res) => {
       if (ad.thumbnailImage) await deleteFromS3(ad.thumbnailImage);
     }
 
-    const updatedAd = await Advertisement.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedAd = await Advertisement.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
     res.status(200).json({ message: 'Advertisement updated', advertisement: updatedAd });
   } catch (error) {
     console.error('Error updating advertisement:', error);

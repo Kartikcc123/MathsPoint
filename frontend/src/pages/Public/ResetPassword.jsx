@@ -30,7 +30,7 @@ const ResetPassword = () => {
       setIsLoading(true);
       const API_URL =
         import.meta.env.VITE_API_BASE_URL ||
-        (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
+        (import.meta.env.DEV ? 'https://mathspoint.co.in/api' : '/api');
       const res = await axios.post(`${API_URL}/auth/reset-password/${token}`, {
         password
       });

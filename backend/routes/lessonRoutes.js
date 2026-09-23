@@ -16,19 +16,21 @@ const {
 const { protect, admin, authorizeRoles } = require('../middleware/authMiddleware');
 const { validateSession } = require('../controllers/sessionController');
 
+const lessonManager = authorizeRoles('admin', 'teacher');
+
 // ── Admin Routes ──
 router.route('/admin/lesson')
-  .post(protect, admin, createLesson);
+  .post(protect, lessonManager, createLesson);
 
 router.route('/admin/lesson/:id')
-  .put(protect, admin, updateLesson)
-  .delete(protect, admin, deleteLesson);
+  .put(protect, lessonManager, updateLesson)
+  .delete(protect, lessonManager, deleteLesson);
 
 router.route('/admin/lessons/:courseId')
-  .get(protect, admin, getAdminLessons);
+  .get(protect, lessonManager, getAdminLessons);
 
 router.route('/admin/lessons/reorder')
-  .patch(protect, admin, reorderLessons);
+  .patch(protect, lessonManager, reorderLessons);
 
 // ── Test/Diagnostic Route ──
 router.route('/test-youtube')

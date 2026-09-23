@@ -20,14 +20,8 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .filter(Boolean);
 
 const defaultOrigins = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost',
-  'https://localhost',
-  'capacitor://localhost',
   'https://mathspoint.co.in',
-  'https://mathspoint.co.in',
-
+  'https://www.mathspoint.co.in'
 ];
 
 const effectiveOrigins = allowedOrigins.length === 0 ? defaultOrigins : [...new Set([...allowedOrigins, ...defaultOrigins])];
@@ -36,11 +30,6 @@ const corsOptions = {
   origin(origin, callback) {
     // Allow tools like Postman and same-origin server requests.
     if (!origin) {
-      return callback(null, true);
-    }
-
-    // Allow all local dev ports (e.g. Flutter web, React dev server)
-    if (origin.startsWith('http://localhost:') || origin === 'http://localhost') {
       return callback(null, true);
     }
 

@@ -447,7 +447,7 @@ const updateWatchProgress = async (req, res) => {
           course: lesson.course,
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     res.json({
