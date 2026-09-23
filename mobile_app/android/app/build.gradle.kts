@@ -37,17 +37,20 @@ android {
     }
 
     signingConfigs {
+        /*
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
             keyPassword = keystoreProperties["keyPassword"] as String?
             storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
             storePassword = keystoreProperties["storePassword"] as String?
         }
+        */
     }
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // Using debug signing config temporarily so you can build the APK without a keystore
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }

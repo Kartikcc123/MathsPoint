@@ -164,9 +164,32 @@ class _YouTubeLessonPlayerScreenState
 
     debugPrint('Loading MathsPoint YouTube player: $embedUrl');
 
-    controller.loadRequest(
-      Uri.parse(embedUrl),
-    );
+    if (!kIsWeb) {
+      final htmlContent = '''
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <style>
+          body { margin: 0; padding: 0; background-color: black; overflow: hidden; }
+          iframe { width: 100vw; height: 100vh; border: none; }
+        </style>
+      </head>
+      <body>
+        <iframe src="$embedUrl" allow="autoplay; fullscreen" allowfullscreen></iframe>
+      </body>
+      </html>
+      ''';
+
+      controller.loadHtmlString(
+        htmlContent,
+        baseUrl: 'https://mathspoint.co.in',
+      );
+    } else {
+      controller.loadRequest(
+        Uri.parse(embedUrl),
+      );
+    }
 
 // Chrome / Flutter Web does not reliably trigger
 // the native WebView page-finished callback.
