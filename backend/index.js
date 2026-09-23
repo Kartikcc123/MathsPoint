@@ -33,6 +33,11 @@ const corsOptions = {
       return callback(null, true);
     }
 
+    // Allow local development (Flutter web, React) to test against this API
+    if (origin.startsWith('http://localhost:') || origin === 'http://localhost') {
+      return callback(null, true);
+    }
+
     return callback(null, effectiveOrigins.includes(origin));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
