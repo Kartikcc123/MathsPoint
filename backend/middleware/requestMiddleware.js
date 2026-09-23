@@ -12,7 +12,7 @@ const attachRequestContext = (req, _res, next) => {
 };
 
 const requireJsonBody = (req, _res, next) => {
-  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'DELETE') {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'DELETE' || req.method === 'OPTIONS') {
     return next();
   }
 
